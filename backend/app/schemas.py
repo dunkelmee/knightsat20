@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 def _to_camel(snake: str) -> str:
@@ -188,3 +188,38 @@ class AdminLoginRequest(CamelModel):
 
 class AdminSessionOut(CamelModel):
     is_admin: bool
+
+
+# ---------------------------------------------------------------------------
+# User auth (email OTP)
+# ---------------------------------------------------------------------------
+
+
+class RegisterRequest(CamelModel):
+    email: EmailStr
+    full_name: str = Field(min_length=1, max_length=200)
+    mobile_number: str = Field(min_length=1, max_length=50)
+
+
+class LoginRequest(CamelModel):
+    email: EmailStr
+
+
+class VerifyOtpRequest(CamelModel):
+    email: EmailStr
+    code: str = Field(min_length=6, max_length=6)
+
+
+class AuthMessageOut(CamelModel):
+    message: str
+
+
+class UserProfileOut(CamelModel):
+    id: str
+    email: str
+    full_name: str
+    mobile_number: str
+
+
+class AuthSessionOut(CamelModel):
+    user: UserProfileOut | None = None

@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models import RSVPRecord
 from app.schemas import RSVPCreate, RSVPOut, RSVPPublicOut
-from app.security import require_admin
+from app.security import get_current_user, require_admin
 
-router = APIRouter(prefix="/api/rsvps", tags=["rsvps"])
+router = APIRouter(prefix="/api/rsvps", tags=["rsvps"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("", response_model=RSVPOut)

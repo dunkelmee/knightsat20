@@ -8,9 +8,13 @@ from app.database import get_db
 from app.models import RSVPRecord, SurveyResponse
 from app.pledge import parse_pledge_amount
 from app.schemas import PaymentStatusUpdate, SurveyResponseCreate, SurveyResponseOut
-from app.security import require_admin
+from app.security import get_current_user, require_admin
 
-router = APIRouter(prefix="/api/survey-responses", tags=["survey-responses"])
+router = APIRouter(
+    prefix="/api/survey-responses",
+    tags=["survey-responses"],
+    dependencies=[Depends(get_current_user)],
+)
 
 _ATTENDING_TRIGGERS = {"Yes, definitely!", "Most likely, but still confirming"}
 

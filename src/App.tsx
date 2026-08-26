@@ -26,13 +26,17 @@ import {
   AdminPortal
 } from './components/admin/AdminPortal';
 import {
+  AuthGate
+} from './components/auth/AuthGate';
+import {
   SurveyResponse,
   PlannedExpense,
   Announcement,
   RSVPRecord,
   PublicRSVP,
   EventDetails,
-  DashboardStats
+  DashboardStats,
+  UserProfile
 } from './types';
 import * as api from './api/client';
 import {
@@ -66,6 +70,11 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isBootstrapped, setIsBootstrapped] = useState(false);
 
+  // Site-wide login — the whole app is gated behind this (see AuthGate).
+  // Admin-portal access is a separate, additional passcode unlocked from
+  // inside the app once logged in.
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+
   // Public data, backed by the FastAPI + Postgres API (see backend/)
   const [eventDetails, setEventDetails] = useState<EventDetails>(DEFAULT_EVENT_DETAILS);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -78,27 +87,55 @@ export default function App() {
   const [adminResponses, setAdminResponses] = useState<SurveyResponse[]>([]);
   const [adminRsvps, setAdminRsvps] = useState<RSVPRecord[]>([]);
 
-  // Initial bootstrap: load public data + restore admin session (if the
-  // browser already has a valid session cookie from a previous visit).
+  // Fetches everything the logged-in app needs; only ever called once a user
+  // session exists, since every one of these endpoints now requires login.
+  const loadAppData = async () => {
+    const [details, anns, exps, dashStats, rsvpList, session] = await Promise.all([
+      api.fetchEventDetails(),
+      api.fetchAnnouncements(),
+      api.fetchExpenses(),
+      api.fetchDashboardStats(),
+      api.fetchPublicRsvps(),
+      api.adminSession(),
+    ]);
+    setEventDetails(details);
+    setAnnouncements(anns);
+    setExpenses(exps);
+    setStats(dashStats);
+    setPublicRsvps(rsvpList);
+    setIsAdmin(session.isAdmin);
+  };
+
+  // Initial bootstrap: check for an existing login session (cookie from a
+  // previous visit) before fetching anything else — every other endpoint
+  // requires login, so there's nothing to fetch until we know who's asking.
   useEffect(() => {
     (async () => {
-      const [details, anns, exps, dashStats, rsvpList, session] = await Promise.all([
-        api.fetchEventDetails(),
-        api.fetchAnnouncements(),
-        api.fetchExpenses(),
-        api.fetchDashboardStats(),
-        api.fetchPublicRsvps(),
-        api.adminSession(),
-      ]);
-      setEventDetails(details);
-      setAnnouncements(anns);
-      setExpenses(exps);
-      setStats(dashStats);
-      setPublicRsvps(rsvpList);
-      setIsAdmin(session.isAdmin);
+      const { user } = await api.fetchAuthSession();
+      if (user) {
+        setCurrentUser(user);
+        await loadAppData();
+      }
       setIsBootstrapped(true);
     })();
   }, []);
+
+  // Handler: called by AuthGate once login/registration + OTP verification succeed.
+  const handleAuthenticated = async (user: UserProfile) => {
+    await loadAppData();
+    setCurrentUser(user);
+  };
+
+  // Handler: full site logout — clears the server-side session (which also
+  // drops any admin unlock) and all locally-held data.
+  const handleLogout = async () => {
+    await api.authLogout().catch(() => {});
+    setCurrentUser(null);
+    setIsAdmin(false);
+    setAdminResponses([]);
+    setAdminRsvps([]);
+    setActiveTab('survey');
+  };
 
   // Load / clear admin-only data whenever admin status changes.
   useEffect(() => {
@@ -295,6 +332,12 @@ export default function App() {
     );
   }
 
+  // The entire site is gated behind login — no announcements, dashboard, or
+  // survey are reachable without an account.
+  if (!currentUser) {
+    return <AuthGate onAuthenticated={handleAuthenticated} />;
+  }
+
   return (
     <div className="min-h-screen bg-background text-on-background flex flex-col font-sans selection:bg-primary-container selection:text-on-primary-container">
 
@@ -312,6 +355,8 @@ export default function App() {
         setIsAdmin={handleSetIsAdmin}
         responseCount={stats.totalSurveys}
         totalPledges={stats.totalPledges}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
 
       {/* Prominent Pending Date & Venue Banner */}

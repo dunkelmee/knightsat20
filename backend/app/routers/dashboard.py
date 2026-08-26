@@ -7,8 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models import PlannedExpense, SurveyResponse
 from app.schemas import DashboardStatsOut
+from app.security import get_current_user
 
-router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
+router = APIRouter(
+    prefix="/api/dashboard", tags=["dashboard"], dependencies=[Depends(get_current_user)]
+)
 
 _ATTENDANCE_BUCKETS = {
     "Yes, definitely!": "attending",

@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models import PlannedExpense
 from app.schemas import PlannedExpenseCreate, PlannedExpenseOut
-from app.security import require_admin
+from app.security import get_current_user, require_admin
 
-router = APIRouter(prefix="/api/expenses", tags=["expenses"])
+router = APIRouter(prefix="/api/expenses", tags=["expenses"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("", response_model=list[PlannedExpenseOut])

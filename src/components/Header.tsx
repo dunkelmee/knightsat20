@@ -1,5 +1,6 @@
 import React from 'react';
-import { Sparkles, ShieldCheck, ClipboardList, Send, Bell, BarChart3, KeyRound, Lock, Unlock, GraduationCap, Users } from 'lucide-react';
+import { Sparkles, ShieldCheck, ClipboardList, Send, Bell, BarChart3, KeyRound, Lock, Unlock, GraduationCap, Users, LogOut } from 'lucide-react';
+import { UserProfile } from '../types';
 
 interface HeaderProps {
   activeTab: string;
@@ -8,6 +9,8 @@ interface HeaderProps {
   setIsAdmin: (val: boolean) => void;
   responseCount: number;
   totalPledges: number;
+  currentUser: UserProfile | null;
+  onLogout: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -16,6 +19,8 @@ export const Header: React.FC<HeaderProps> = ({
   isAdmin,
   setIsAdmin,
   responseCount,
+  currentUser,
+  onLogout,
 }) => {
   return (
     <header id="header-main" className="sticky top-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 text-on-surface shadow-soft">
@@ -64,6 +69,23 @@ export const Header: React.FC<HeaderProps> = ({
                 </>
               )}
             </button>
+
+            {currentUser && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-on-surface-variant text-xs hidden md:inline">
+                  {currentUser.fullName}
+                </span>
+                <button
+                  id="btn-logout"
+                  type="button"
+                  onClick={onLogout}
+                  title="Log out"
+                  className="p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-lowest transition-colors"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

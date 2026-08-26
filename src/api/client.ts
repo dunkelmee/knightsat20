@@ -6,6 +6,7 @@ import {
   PublicRSVP,
   RSVPRecord,
   SurveyResponse,
+  UserProfile,
 } from '../types';
 
 export class ApiError extends Error {}
@@ -89,3 +90,14 @@ export const adminLogin = (passcode: string) =>
 export const adminLogout = () => post<{ isAdmin: boolean }>('/admin/logout');
 export const adminSession = () => apiFetch<{ isAdmin: boolean }>('/admin/session');
 export const resetDemoData = () => post<void>('/admin/reset-demo-data');
+
+// --- User auth (email OTP) --------------------------------------------------------
+
+export const registerAccount = (payload: { email: string; fullName: string; mobileNumber: string }) =>
+  post<{ message: string }>('/auth/register', payload);
+export const requestLogin = (email: string) =>
+  post<{ message: string }>('/auth/login', { email });
+export const verifyOtp = (email: string, code: string) =>
+  post<{ user: UserProfile }>('/auth/verify', { email, code });
+export const fetchAuthSession = () => apiFetch<{ user: UserProfile | null }>('/auth/session');
+export const authLogout = () => post<{ user: UserProfile | null }>('/auth/logout');

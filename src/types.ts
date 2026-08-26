@@ -127,3 +127,12 @@ export type PublicRSVP = Pick<
   RSVPRecord,
   'id' | 'submittedAt' | 'fullName' | 'status' | 'bringingPlusOne' | 'kidsCount' | 'messageToBatch'
 >;
+
+// A logged-in alumnus's account — separate from admin-portal access, which is
+// still a shared passcode unlocked from inside the app once logged in.
+export interface UserProfile {
+  id: string;
+  email: string;
+  fullName: string;
+  mobileNumber: string;
+}

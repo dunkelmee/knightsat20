@@ -3,10 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.schemas import AdminLoginRequest, AdminSessionOut
-from app.security import SESSION_ADMIN_KEY, check_passcode, is_admin, require_admin
+from app.security import SESSION_ADMIN_KEY, check_passcode, get_current_user, is_admin, require_admin
 from app.seed import reset_demo_data
 
-router = APIRouter(prefix="/api/admin", tags=["admin"])
+router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("/login", response_model=AdminSessionOut)

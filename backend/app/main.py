@@ -8,6 +8,7 @@ from app.config import get_settings
 from app.routers import (
     admin_auth,
     announcements,
+    auth,
     dashboard,
     event_details,
     expenses,
@@ -22,7 +23,7 @@ app = FastAPI(title="Knightsat20 Reunion Hub API")
 app.add_middleware(
     SessionMiddleware,
     secret_key=settings.session_secret,
-    session_cookie="knightsat_admin_session",
+    session_cookie="knightsat_session",
     same_site="lax",
     https_only=settings.is_production,
 )
@@ -36,6 +37,7 @@ async def health_check():
 
 
 app.include_router(health_router)
+app.include_router(auth.router)
 app.include_router(admin_auth.router)
 app.include_router(survey_responses.router)
 app.include_router(rsvps.router)

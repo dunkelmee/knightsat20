@@ -6,9 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models import EventDetails
 from app.schemas import EventDetailsOut, EventDetailsUpdate
-from app.security import require_admin
+from app.security import get_current_user, require_admin
 
-router = APIRouter(prefix="/api/event-details", tags=["event-details"])
+router = APIRouter(
+    prefix="/api/event-details", tags=["event-details"], dependencies=[Depends(get_current_user)]
+)
 
 
 async def _get_or_create(db: AsyncSession) -> EventDetails:
