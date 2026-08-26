@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ShieldCheck, ClipboardList, Send, Bell, BarChart3, KeyRound, Lock, Unlock, GraduationCap, Users, LogOut } from 'lucide-react';
+import { Sparkles, ShieldCheck, ClipboardList, Send, Bell, BarChart3, KeyRound, Lock, Unlock, GraduationCap, Users, LogOut, LayoutGrid } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface HeaderProps {
@@ -134,31 +134,17 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
-              id="nav-tab-rsvp"
+              id="nav-tab-board"
               type="button"
-              onClick={() => setActiveTab('rsvp')}
+              onClick={() => setActiveTab('board')}
               className={`px-3 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === 'rsvp'
+                activeTab === 'board'
                   ? 'bg-primary text-on-primary shadow-soft'
                   : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
               }`}
             >
-              <Users className="w-3.5 h-3.5" />
-              <span>Attendee Roster</span>
-            </button>
-
-            <button
-              id="nav-tab-announcements"
-              type="button"
-              onClick={() => setActiveTab('announcements')}
-              className={`px-3 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === 'announcements'
-                  ? 'bg-primary text-on-primary shadow-soft'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
-              }`}
-            >
-              <Bell className="w-3.5 h-3.5" />
-              <span>Updates</span>
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Batch Board</span>
             </button>
 
             <button

@@ -14,11 +14,8 @@ import {
   SurveySection
 } from './components/SurveySection';
 import {
-  RsvpSection
-} from './components/RsvpSection';
-import {
-  AnnouncementsSection
-} from './components/AnnouncementsSection';
+  BatchBoardSection
+} from './components/BatchBoardSection';
 import {
   PublicDashboardSection
 } from './components/PublicDashboardSection';
@@ -112,12 +109,13 @@ export default function App() {
   };
 
   // Enters the main app for an already-onboarded user: loads app data and
-  // picks the landing tab — the Attendee Roster if they've already answered
-  // the survey (on this or an earlier login), otherwise the Survey.
+  // picks the landing tab — the Batch Board (announcements + roster) if
+  // they've already answered the survey (on this or an earlier login),
+  // otherwise the Survey.
   const enterApp = async (user: UserProfile, submitted: boolean) => {
     await loadAppData();
     setHasSubmittedSurvey(submitted);
-    setActiveTab(submitted ? 'rsvp' : 'survey');
+    setActiveTab(submitted ? 'board' : 'survey');
     setCurrentUser(user);
   };
 
@@ -418,25 +416,19 @@ export default function App() {
           <SurveySection
             submitterName={currentUser.fullName}
             onSurveySubmitted={handleSurveySubmitted}
-            onNavigateToRsvp={() => setActiveTab('rsvp')}
+            onNavigateToRsvp={() => setActiveTab('board')}
           />
         )}
 
-        {/* Tab 2: RSVP Section */}
-        {activeTab === 'rsvp' && (
-          <RsvpSection
-            rsvps={publicRsvps}
-            onRsvpSubmitted={handleRsvpSubmitted}
-            onNavigateToSurvey={() => setActiveTab('survey')}
-          />
-        )}
-
-        {/* Tab 3: Announcements & Bulletin */}
-        {activeTab === 'announcements' && (
-          <AnnouncementsSection
+        {/* Tab 2: Batch Board — Announcements + Attendee Roster, combined */}
+        {activeTab === 'board' && (
+          <BatchBoardSection
             announcements={announcements}
             onLikeAnnouncement={handleLikeAnnouncement}
             onOpenAdminToPost={() => setActiveTab('admin')}
+            rsvps={publicRsvps}
+            onRsvpSubmitted={handleRsvpSubmitted}
+            onNavigateToSurvey={() => setActiveTab('survey')}
           />
         )}
 
@@ -505,18 +497,10 @@ export default function App() {
             <span>•</span>
             <button
               type="button"
-              onClick={() => { setActiveTab('rsvp'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              onClick={() => { setActiveTab('board'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               className="hover:text-primary transition-colors"
             >
-              Quick RSVP
-            </button>
-            <span>•</span>
-            <button
-              type="button"
-              onClick={() => { setActiveTab('announcements'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="hover:text-primary transition-colors"
-            >
-              Announcements
+              Batch Board
             </button>
             <span>•</span>
             <button

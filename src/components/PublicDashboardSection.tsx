@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   HeartHandshake, Receipt, Scale, TrendingUp,
-  Calendar, MapPin, Sparkles, ShieldCheck, CheckCircle2, Clock
+  Calendar, MapPin, Sparkles, ShieldCheck, CheckCircle2, Clock, PiggyBank, Vote
 } from 'lucide-react';
 import { PlannedExpense, DashboardStats, EventDetails } from '../types';
 import { formatPHP } from '../utils/pledgeParser';
@@ -150,6 +150,17 @@ export const PublicDashboardSection: React.FC<PublicDashboardSectionProps> = ({
             </span>
           </div>
 
+          {expenses.length === 0 ? (
+            <div className="text-center py-10 px-4 space-y-2.5">
+              <div className="w-10 h-10 rounded-full bg-primary-container/20 text-on-primary-container flex items-center justify-center mx-auto border border-primary-container/50">
+                <PiggyBank className="w-5 h-5" />
+              </div>
+              <h4 className="text-sm font-semibold text-on-surface">No budget line-items yet</h4>
+              <p className="text-xs text-on-surface-variant max-w-sm mx-auto">
+                The committee hasn&apos;t logged any planned expenses yet. Once budget items are added, they&apos;ll show up here.
+              </p>
+            </div>
+          ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
@@ -188,6 +199,7 @@ export const PublicDashboardSection: React.FC<PublicDashboardSectionProps> = ({
               </tbody>
             </table>
           </div>
+          )}
         </div>
 
         {/* Right: Survey Voting Insights */}
@@ -200,25 +212,34 @@ export const PublicDashboardSection: React.FC<PublicDashboardSectionProps> = ({
               <span>Preferred Months (Survey Q3)</span>
             </h3>
 
-            <div className="space-y-2">
-              {sortedMonths.map(([month, count]) => {
-                const pct = stats.totalSurveys > 0 ? Math.round((count / stats.totalSurveys) * 100) : 0;
-                return (
-                  <div key={month} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs font-medium">
-                      <span className="text-on-surface">{month}</span>
-                      <span className="text-on-surface-variant">{count} votes ({pct}%)</span>
+            {sortedMonths.length === 0 ? (
+              <div className="text-center py-4 space-y-1">
+                <Vote className="w-4 h-4 text-outline mx-auto" />
+                <p className="text-[11px] text-on-surface-variant">
+                  No votes yet — month preferences will appear once alumni start answering the survey.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {sortedMonths.map(([month, count]) => {
+                  const pct = stats.totalSurveys > 0 ? Math.round((count / stats.totalSurveys) * 100) : 0;
+                  return (
+                    <div key={month} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs font-medium">
+                        <span className="text-on-surface">{month}</span>
+                        <span className="text-on-surface-variant">{count} votes ({pct}%)</span>
+                      </div>
+                      <div className="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary rounded-full"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full h-2 bg-surface-container rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Top Preferred Venue Styles */}
@@ -228,25 +249,34 @@ export const PublicDashboardSection: React.FC<PublicDashboardSectionProps> = ({
               <span>Preferred Venue Types (Survey Q4)</span>
             </h3>
 
-            <div className="space-y-2">
-              {sortedVenues.map(([venue, count]) => {
-                const pct = stats.totalSurveys > 0 ? Math.round((count / stats.totalSurveys) * 100) : 0;
-                return (
-                  <div key={venue} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs font-medium">
-                      <span className="text-on-surface">{venue}</span>
-                      <span className="text-on-surface-variant">{count} votes ({pct}%)</span>
+            {sortedVenues.length === 0 ? (
+              <div className="text-center py-4 space-y-1">
+                <Vote className="w-4 h-4 text-outline mx-auto" />
+                <p className="text-[11px] text-on-surface-variant">
+                  No votes yet — venue preferences will appear once alumni start answering the survey.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {sortedVenues.map(([venue, count]) => {
+                  const pct = stats.totalSurveys > 0 ? Math.round((count / stats.totalSurveys) * 100) : 0;
+                  return (
+                    <div key={venue} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs font-medium">
+                        <span className="text-on-surface">{venue}</span>
+                        <span className="text-on-surface-variant">{count} votes ({pct}%)</span>
+                      </div>
+                      <div className="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-secondary rounded-full"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full h-2 bg-surface-container rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-secondary rounded-full"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Official Schedule & Venue Status Card */}
