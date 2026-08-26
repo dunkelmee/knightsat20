@@ -1,30 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import {
   CheckCircle2, Send, ChevronRight, ChevronLeft,
-  User, Phone, Mail, Sparkles, HeartHandshake,
+  Sparkles, HeartHandshake,
   Minus, Plus
 } from 'lucide-react';
-import { SurveyResponse } from '../types';
+import { SurveyResponse, SurveyResponseCreate } from '../types';
 import { parsePledgeAmount, parseRawAmountString, formatPHP } from '../utils/pledgeParser';
 
 interface SurveySectionProps {
-  onSurveySubmitted: (response: SurveyResponse) => void;
+  submitterName: string;
+  onSurveySubmitted: (response: SurveyResponseCreate) => void;
   onNavigateToRsvp: () => void;
 }
 
 export const SurveySection: React.FC<SurveySectionProps> = ({
+  submitterName,
   onSurveySubmitted,
   onNavigateToRsvp,
 }) => {
   // Step navigation (1, 2, 3)
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
-  const [submittedName, setSubmittedName] = useState<string>('');
 
-  // Step 1: Info & Dates & Attendance
-  const [fullName, setFullName] = useState<string>('');
-  const [contactNumber, setContactNumber] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
+  // Step 1: Dates & Attendance
   const [attendance, setAttendance] = useState<SurveyResponse['attendance']>('Yes, definitely!');
   const [attendanceReason, setAttendanceReason] = useState<string>('');
   const [preferredMonths, setPreferredMonths] = useState<string[]>(['April', 'December']);
@@ -51,7 +49,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
   const [otherSuggestions, setOtherSuggestions] = useState<string>('');
 
   // Form validation errors
-  const [errors, setErrors] = useState<{ fullName?: string; contactNumber?: string; pledge?: string }>({});
+  const [errors, setErrors] = useState<{ pledge?: string }>({});
 
   const monthsList = [
     'April',
@@ -134,19 +132,9 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
     }
   };
 
-  const validateStep1 = () => {
-    const errs: { fullName?: string; contactNumber?: string } = {};
-    if (!fullName.trim()) errs.fullName = 'Please enter your name';
-    if (!contactNumber.trim()) errs.contactNumber = 'Please enter your mobile or WhatsApp';
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
   const handleGoToStep2 = () => {
-    if (validateStep1()) {
-      setCurrentStep(2);
-      window.scrollTo({ top: 80, behavior: 'smooth' });
-    }
+    setCurrentStep(2);
+    window.scrollTo({ top: 80, behavior: 'smooth' });
   };
 
   const handleGoToStep3 = () => {
@@ -156,10 +144,6 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateStep1()) {
-      setCurrentStep(1);
-      return;
-    }
 
     if (pledgeOption === 'Custom Amount' || pledgeOption === 'Other') {
       const customNum = parseRawAmountString(customPledgeAmount);
@@ -173,12 +157,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
     const finalSponsorships = otherSponsorships.map(s => s === 'Other' && otherSponsorshipsOtherText ? `Other: ${otherSponsorshipsOtherText}` : s);
     const finalVenueType = preferredVenueType === 'Other' && venueTypeOther ? `Other: ${venueTypeOther}` : preferredVenueType;
 
-    const newResponse: SurveyResponse = {
-      id: `survey-${Date.now()}`,
-      submittedAt: new Date().toISOString(),
-      fullName: fullName.trim(),
-      contactNumber: contactNumber.trim(),
-      email: email.trim() || undefined,
+    const newResponse: SurveyResponseCreate = {
       attendance,
       attendanceReason: attendance === 'Not sure yet' ? attendanceReason : undefined,
       preferredMonths: preferredMonths.length ? preferredMonths : ['April', 'December'],
@@ -191,8 +170,6 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
       nominatedOrganizer: nominatedOrganizer.trim() || undefined,
       pledgeOption,
       customPledgeAmount: customPledgeAmount.trim() || undefined,
-      computedPledgeAmount: Math.max(2000, computedPledge),
-      pledgePaidStatus: 'Unpaid / Pledged',
       otherSponsorships: finalSponsorships,
       otherSponsorshipDetails: otherSponsorshipDetails.trim() || undefined,
       bringingPlusOne: plusOnesCount > 0 ? (plusOnesCount === 1 ? 'Yes, 1 +1' : `Yes, ${plusOnesCount} guests`) : 'No +1',
@@ -202,16 +179,12 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
     };
 
     onSurveySubmitted(newResponse);
-    setSubmittedName(fullName);
     setIsSubmitted(true);
     window.scrollTo({ top: 40, behavior: 'smooth' });
   };
 
   const handleResetForm = () => {
     setIsSubmitted(false);
-    setFullName('');
-    setContactNumber('');
-    setEmail('');
     setAttendance('Yes, definitely!');
     setAttendanceReason('');
     setPreferredMonths(['April', 'December']);
@@ -245,7 +218,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
           </div>
 
           <h2 className="text-xl font-serif font-semibold text-on-surface">
-            Thank you, {submittedName}!
+            Thank you, {submitterName}!
           </h2>
 
           <p className="text-xs text-on-surface-variant max-w-md mx-auto leading-relaxed">
@@ -311,14 +284,12 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
           <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
             currentStep === 1 ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant'
           }`}>1</span>
-          <span>Info & Dates</span>
+          <span>Attendance & Dates</span>
         </button>
 
         <button
           type="button"
-          onClick={() => {
-            if (validateStep1()) setCurrentStep(2);
-          }}
+          onClick={() => setCurrentStep(2)}
           className={`py-2 px-2.5 rounded text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
             currentStep === 2
               ? 'bg-surface-container-lowest text-primary shadow-soft border border-outline-variant/30'
@@ -333,9 +304,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
 
         <button
           type="button"
-          onClick={() => {
-            if (validateStep1()) setCurrentStep(3);
-          }}
+          onClick={() => setCurrentStep(3)}
           className={`py-2 px-2.5 rounded text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
             currentStep === 3
               ? 'bg-surface-container-lowest text-primary shadow-soft border border-outline-variant/30'
@@ -351,93 +320,15 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
 
       <form onSubmit={handleSubmit} className="space-y-4">
 
-        {/* STEP 1: INFO & DATES */}
+        {/* STEP 1: ATTENDANCE & DATES */}
         {currentStep === 1 && (
           <div className="space-y-4">
 
-            {/* 1. Basic Info */}
-            <div id="q1-basic-info-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
-              <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                1. Contact Details
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div id="field-fullName" className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">
-                    Full Name <span className="text-error">*</span>
-                  </label>
-                  <div className="relative">
-                    <User className="w-3.5 h-3.5 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      id="input-fullName"
-                      type="text"
-                      required
-                      placeholder="e.g. Juan dela Cruz"
-                      value={fullName}
-                      onChange={(e) => {
-                        setFullName(e.target.value);
-                        if (errors.fullName) setErrors({ ...errors, fullName: undefined });
-                      }}
-                      className={`w-full pl-9 pr-3 py-2 rounded border ${
-                        errors.fullName ? 'border-error bg-error-container/30' : 'border-secondary/30'
-                      } focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs`}
-                    />
-                  </div>
-                  {errors.fullName && (
-                    <p className="text-[11px] text-error mt-1">{errors.fullName}</p>
-                  )}
-                </div>
-
-                <div id="field-contactNumber" className="sm:col-span-1">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">
-                    Mobile / WhatsApp <span className="text-error">*</span>
-                  </label>
-                  <div className="relative">
-                    <Phone className="w-3.5 h-3.5 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      id="input-contactNumber"
-                      type="tel"
-                      required
-                      placeholder="0917 123 4567"
-                      value={contactNumber}
-                      onChange={(e) => {
-                        setContactNumber(e.target.value);
-                        if (errors.contactNumber) setErrors({ ...errors, contactNumber: undefined });
-                      }}
-                      className={`w-full pl-9 pr-3 py-2 rounded border ${
-                        errors.contactNumber ? 'border-error bg-error-container/30' : 'border-secondary/30'
-                      } focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs`}
-                    />
-                  </div>
-                  {errors.contactNumber && (
-                    <p className="text-[11px] text-error mt-1">{errors.contactNumber}</p>
-                  )}
-                </div>
-
-                <div className="sm:col-span-1">
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="w-3.5 h-3.5 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      id="input-email"
-                      type="email"
-                      placeholder="juan@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 rounded border border-secondary/30 focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 2. Attendance */}
+            {/* 1. Attendance */}
             <div id="q2-attendance-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                  2. Can you attend? <span className="text-error">*</span>
+                  1. Can you attend? <span className="text-error">*</span>
                 </h3>
                 <span className="text-[10px] text-on-primary-container bg-primary-container/20 px-2 py-0.5 rounded border border-primary-container/50 font-semibold">
                   Auto-adds to Roster
@@ -496,7 +387,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                    3. Preferred Month (2027)
+                    2. Preferred Month (2027)
                   </h3>
                   <span className="text-[10px] text-on-primary-container bg-primary-container/20 px-2 py-0.5 rounded border border-primary-container/50 font-semibold">
                     2027 Planning
@@ -546,7 +437,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
             {/* 4. Venue */}
             <div id="q4-venue-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
               <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                4. Venue & Vibe
+                3. Venue & Vibe
               </h3>
 
               <div>
@@ -623,7 +514,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
             {/* Willingness to help */}
             <div id="q-willingness-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
               <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                5. Volunteer & Organizing
+                4. Volunteer & Organizing
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -657,7 +548,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
             {/* Skills & Services */}
             <div id="q6-skills-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
               <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                6. Skills to Share
+                5. Skills to Share
               </h3>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
@@ -713,7 +604,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                    7. Recommend an Event Organizer / Coordination Company
+                    6. Recommend an Event Organizer / Coordination Company
                   </h3>
                   <span className="text-[10px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded border border-outline-variant/30 font-medium">
                     Optional
@@ -772,7 +663,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
               <div className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
                 <div>
                   <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                    8. Financial Pledge
+                    7. Financial Pledge
                   </h3>
                   <p className="text-[11px] text-on-surface-variant mt-0.5">
                     Minimum contribution is <strong>₱2,000</strong>.
@@ -928,7 +819,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
             {/* Guests & Kids: Steppers (0 if none) */}
             <div id="q8-guests-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
               <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                9. Companions (0 if none)
+                8. Companions (0 if none)
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1005,7 +896,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
             {/* Other Suggestions */}
             <div id="q9-suggestions-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-2">
               <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                10. Ideas or Suggestions
+                9. Ideas or Suggestions
               </h3>
 
               <div>

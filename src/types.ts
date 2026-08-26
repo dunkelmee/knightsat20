@@ -50,6 +50,14 @@ export interface SurveyResponse {
   adminNotes?: string;
 }
 
+// The survey form's submission payload — identity (name/contact/email) comes
+// from the logged-in account server-side, not re-entered in the form, and
+// computedPledgeAmount/pledgePaidStatus/adminNotes are server-assigned.
+export type SurveyResponseCreate = Omit<
+  SurveyResponse,
+  'id' | 'submittedAt' | 'fullName' | 'contactNumber' | 'email' | 'computedPledgeAmount' | 'pledgePaidStatus' | 'adminNotes'
+>;
+
 export interface RSVPRecord {
   id: string;
   submittedAt: string;
@@ -135,4 +143,7 @@ export interface UserProfile {
   email: string;
   fullName: string;
   mobileNumber: string;
+  thenPhotoUrl?: string | null;
+  nowPhotoUrl?: string | null;
+  onboardingCompleted: boolean;
 }

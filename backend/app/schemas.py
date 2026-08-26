@@ -18,9 +18,9 @@ class CamelModel(BaseModel):
 
 
 class SurveyResponseCreate(CamelModel):
-    full_name: str
-    contact_number: str
-    email: str | None = None
+    # Identity (full_name/contact_number/email) is intentionally absent here —
+    # it's populated server-side from the logged-in account, never re-entered
+    # in the form (see routers/survey_responses.py).
     section2007: str | None = None
 
     attendance: str
@@ -55,6 +55,9 @@ class SurveyResponseCreate(CamelModel):
 class SurveyResponseOut(SurveyResponseCreate):
     id: str
     submitted_at: datetime
+    full_name: str
+    contact_number: str
+    email: str | None = None
     computed_pledge_amount: int
     pledge_paid_status: str | None = None
     admin_notes: str | None = None
@@ -219,7 +222,24 @@ class UserProfileOut(CamelModel):
     email: str
     full_name: str
     mobile_number: str
+    then_photo_url: str | None = None
+    now_photo_url: str | None = None
+    onboarding_completed: bool
 
 
 class AuthSessionOut(CamelModel):
     user: UserProfileOut | None = None
+    has_submitted_survey: bool = False
+
+
+# Base64 data-URI photos, capped generously above the 4MB client-side limit
+# (see ProfileSetup.tsx) to reject oversized payloads outright rather than
+# relying solely on the frontend check.
+_MAX_PHOTO_DATA_URI_LENGTH = 7_000_000
+
+
+class ProfileUpdateRequest(CamelModel):
+    full_name: str = Field(min_length=1, max_length=200)
+    mobile_number: str = Field(min_length=1, max_length=50)
+    then_photo_url: str | None = Field(default=None, max_length=_MAX_PHOTO_DATA_URI_LENGTH)
+    now_photo_url: str | None = Field(default=None, max_length=_MAX_PHOTO_DATA_URI_LENGTH)

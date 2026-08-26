@@ -6,6 +6,7 @@ import {
   PublicRSVP,
   RSVPRecord,
   SurveyResponse,
+  SurveyResponseCreate,
   UserProfile,
 } from '../types';
 
@@ -41,7 +42,7 @@ const del = (path: string) => apiFetch<void>(path, { method: 'DELETE' });
 
 // --- Survey responses -------------------------------------------------------
 
-export const createSurveyResponse = (payload: SurveyResponse) =>
+export const createSurveyResponse = (payload: SurveyResponseCreate) =>
   post<SurveyResponse>('/survey-responses', payload);
 export const fetchSurveyResponses = () => apiFetch<SurveyResponse[]>('/survey-responses');
 export const deleteSurveyResponse = (id: string) => del(`/survey-responses/${id}`);
@@ -98,6 +99,13 @@ export const registerAccount = (payload: { email: string; fullName: string; mobi
 export const requestLogin = (email: string) =>
   post<{ message: string }>('/auth/login', { email });
 export const verifyOtp = (email: string, code: string) =>
-  post<{ user: UserProfile }>('/auth/verify', { email, code });
-export const fetchAuthSession = () => apiFetch<{ user: UserProfile | null }>('/auth/session');
+  post<{ user: UserProfile; hasSubmittedSurvey: boolean }>('/auth/verify', { email, code });
+export const fetchAuthSession = () =>
+  apiFetch<{ user: UserProfile | null; hasSubmittedSurvey: boolean }>('/auth/session');
 export const authLogout = () => post<{ user: UserProfile | null }>('/auth/logout');
+export const updateProfile = (payload: {
+  fullName: string;
+  mobileNumber: string;
+  thenPhotoUrl?: string | null;
+  nowPhotoUrl?: string | null;
+}) => put<{ user: UserProfile; hasSubmittedSurvey: boolean }>('/auth/profile', payload);

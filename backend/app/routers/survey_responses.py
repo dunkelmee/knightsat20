@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import RSVPRecord, SurveyResponse
+from app.models import RSVPRecord, SurveyResponse, User
 from app.pledge import parse_pledge_amount
 from app.schemas import PaymentStatusUpdate, SurveyResponseCreate, SurveyResponseOut
 from app.security import get_current_user, require_admin
@@ -64,9 +64,20 @@ async def _sync_rsvp_from_survey(db: AsyncSession, response: SurveyResponse) -> 
 
 
 @router.post("", response_model=SurveyResponseOut)
-async def create_survey_response(payload: SurveyResponseCreate, db: AsyncSession = Depends(get_db)):
+async def create_survey_response(
+    payload: SurveyResponseCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     computed_pledge_amount = parse_pledge_amount(payload.pledge_option, payload.custom_pledge_amount)
-    response = SurveyResponse(**payload.model_dump(), computed_pledge_amount=computed_pledge_amount)
+    response = SurveyResponse(
+        **payload.model_dump(),
+        user_id=current_user.id,
+        full_name=current_user.full_name,
+        contact_number=current_user.mobile_number,
+        email=current_user.email,
+        computed_pledge_amount=computed_pledge_amount,
+    )
     db.add(response)
     await db.flush()
     await _sync_rsvp_from_survey(db, response)

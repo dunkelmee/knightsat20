@@ -23,6 +23,13 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     full_name: Mapped[str] = mapped_column(String, nullable=False)
     mobile_number: Mapped[str] = mapped_column(String, nullable=False)
+    then_photo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    now_photo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Set once the one-time post-registration profile step (name/mobile
+    # confirmation + Then & Now photos) is completed; gates entry to the app.
+    onboarding_completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
@@ -45,6 +52,14 @@ class SurveyResponse(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
     submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
+    # Nullable so historical/demo-seeded rows without an account still work;
+    # real submissions always set this (see routers/survey_responses.py).
+    user_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("users.id"), nullable=True, index=True
+    )
+
+    # Denormalized snapshot of the submitter's identity at submission time —
+    # populated server-side from the logged-in account, never client-input.
     full_name: Mapped[str] = mapped_column(String, nullable=False)
     contact_number: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str | None] = mapped_column(String, nullable=True)

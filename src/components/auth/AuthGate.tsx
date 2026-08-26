@@ -4,7 +4,7 @@ import { UserProfile } from '../../types';
 import { ApiError, registerAccount, requestLogin, verifyOtp } from '../../api/client';
 
 interface AuthGateProps {
-  onAuthenticated: (user: UserProfile) => Promise<void> | void;
+  onAuthenticated: (user: UserProfile, hasSubmittedSurvey: boolean) => Promise<void> | void;
 }
 
 type Mode = 'login' | 'register' | 'verify';
@@ -133,8 +133,8 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
     setError('');
     setIsSubmitting(true);
     try {
-      const { user } = await verifyOtp(pendingEmail, code);
-      await onAuthenticated(user);
+      const { user, hasSubmittedSurvey } = await verifyOtp(pendingEmail, code);
+      await onAuthenticated(user, hasSubmittedSurvey);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.');
       setOtp(Array(OTP_LENGTH).fill(''));

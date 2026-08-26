@@ -1,14 +1,17 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import User
+from app.models import SurveyResponse, User
 from app.otp import create_and_send_otp, verify_code
 from app.schemas import (
     AuthMessageOut,
     AuthSessionOut,
     LoginRequest,
+    ProfileUpdateRequest,
     RegisterRequest,
     UserProfileOut,
     VerifyOtpRequest,
@@ -29,6 +32,27 @@ async def _get_user_by_email(db: AsyncSession, email: str) -> User | None:
     normalized = email.strip().lower()
     result = await db.execute(select(User).where(User.email == normalized))
     return result.scalars().first()
+
+
+def _to_profile_out(user: User) -> UserProfileOut:
+    return UserProfileOut(
+        id=user.id,
+        email=user.email,
+        full_name=user.full_name,
+        mobile_number=user.mobile_number,
+        then_photo_url=user.then_photo_url,
+        now_photo_url=user.now_photo_url,
+        onboarding_completed=user.onboarding_completed_at is not None,
+    )
+
+
+async def _has_submitted_survey(db: AsyncSession, user_id: str) -> bool:
+    count = (
+        await db.execute(
+            select(func.count()).select_from(SurveyResponse).where(SurveyResponse.user_id == user_id)
+        )
+    ).scalar_one()
+    return count > 0
 
 
 @router.post("/register", response_model=AuthMessageOut)
@@ -73,7 +97,9 @@ async def verify(payload: VerifyOtpRequest, request: Request, db: AsyncSession =
     await verify_code(db, user, payload.code)
 
     request.session[SESSION_USER_ID_KEY] = user.id
-    return AuthSessionOut(user=UserProfileOut.model_validate(user))
+    return AuthSessionOut(
+        user=_to_profile_out(user), has_submitted_survey=await _has_submitted_survey(db, user.id)
+    )
 
 
 @router.post("/logout", response_model=AuthSessionOut)
@@ -91,4 +117,27 @@ async def session_status(request: Request, db: AsyncSession = Depends(get_db)):
     user = await db.get(User, user_id)
     if not user:
         return AuthSessionOut(user=None)
-    return AuthSessionOut(user=UserProfileOut.model_validate(user))
+    return AuthSessionOut(
+        user=_to_profile_out(user), has_submitted_survey=await _has_submitted_survey(db, user.id)
+    )
+
+
+@router.put("/profile", response_model=AuthSessionOut)
+async def update_profile(
+    payload: ProfileUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    current_user.full_name = payload.full_name.strip()
+    current_user.mobile_number = payload.mobile_number.strip()
+    current_user.then_photo_url = payload.then_photo_url
+    current_user.now_photo_url = payload.now_photo_url
+    if current_user.onboarding_completed_at is None:
+        current_user.onboarding_completed_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(current_user)
+
+    return AuthSessionOut(
+        user=_to_profile_out(current_user),
+        has_submitted_survey=await _has_submitted_survey(db, current_user.id),
+    )

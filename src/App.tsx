@@ -29,7 +29,11 @@ import {
   AuthGate
 } from './components/auth/AuthGate';
 import {
+  ProfileSetup
+} from './components/auth/ProfileSetup';
+import {
   SurveyResponse,
+  SurveyResponseCreate,
   PlannedExpense,
   Announcement,
   RSVPRecord,
@@ -74,6 +78,7 @@ export default function App() {
   // Admin-portal access is a separate, additional passcode unlocked from
   // inside the app once logged in.
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [hasSubmittedSurvey, setHasSubmittedSurvey] = useState(false);
 
   // Public data, backed by the FastAPI + Postgres API (see backend/)
   const [eventDetails, setEventDetails] = useState<EventDetails>(DEFAULT_EVENT_DETAILS);
@@ -106,24 +111,50 @@ export default function App() {
     setIsAdmin(session.isAdmin);
   };
 
+  // Enters the main app for an already-onboarded user: loads app data and
+  // picks the landing tab — the Attendee Roster if they've already answered
+  // the survey (on this or an earlier login), otherwise the Survey.
+  const enterApp = async (user: UserProfile, submitted: boolean) => {
+    await loadAppData();
+    setHasSubmittedSurvey(submitted);
+    setActiveTab(submitted ? 'rsvp' : 'survey');
+    setCurrentUser(user);
+  };
+
   // Initial bootstrap: check for an existing login session (cookie from a
   // previous visit) before fetching anything else — every other endpoint
   // requires login, so there's nothing to fetch until we know who's asking.
   useEffect(() => {
     (async () => {
-      const { user } = await api.fetchAuthSession();
+      const { user, hasSubmittedSurvey: submitted } = await api.fetchAuthSession();
       if (user) {
-        setCurrentUser(user);
-        await loadAppData();
+        if (user.onboardingCompleted) {
+          await enterApp(user, submitted);
+        } else {
+          // First login after registration — profile setup hasn't been
+          // completed yet, so there's nothing else to fetch until it is.
+          setHasSubmittedSurvey(submitted);
+          setCurrentUser(user);
+        }
       }
       setIsBootstrapped(true);
     })();
   }, []);
 
   // Handler: called by AuthGate once login/registration + OTP verification succeed.
-  const handleAuthenticated = async (user: UserProfile) => {
-    await loadAppData();
-    setCurrentUser(user);
+  const handleAuthenticated = async (user: UserProfile, submitted: boolean) => {
+    if (user.onboardingCompleted) {
+      await enterApp(user, submitted);
+    } else {
+      setHasSubmittedSurvey(submitted);
+      setCurrentUser(user);
+    }
+  };
+
+  // Handler: called by ProfileSetup once the one-time profile (name, mobile,
+  // then/now photos) is saved — proceeds straight into the app.
+  const handleProfileSaved = async (user: UserProfile, submitted: boolean) => {
+    await enterApp(user, submitted);
   };
 
   // Handler: full site logout — clears the server-side session (which also
@@ -131,6 +162,7 @@ export default function App() {
   const handleLogout = async () => {
     await api.authLogout().catch(() => {});
     setCurrentUser(null);
+    setHasSubmittedSurvey(false);
     setIsAdmin(false);
     setAdminResponses([]);
     setAdminRsvps([]);
@@ -177,8 +209,9 @@ export default function App() {
   };
 
   // Handler: Survey Submitted
-  const handleSurveySubmitted = async (newResponse: SurveyResponse) => {
+  const handleSurveySubmitted = async (newResponse: SurveyResponseCreate) => {
     const created = await api.createSurveyResponse(newResponse);
+    setHasSubmittedSurvey(true);
     if (isAdmin) setAdminResponses(prev => [created, ...prev]);
 
     // The backend may have auto-created/updated an RSVP from this submission
@@ -338,6 +371,12 @@ export default function App() {
     return <AuthGate onAuthenticated={handleAuthenticated} />;
   }
 
+  // One-time profile setup (name/mobile confirmation + Then & Now photos)
+  // right after the very first login, before anything else is reachable.
+  if (!currentUser.onboardingCompleted) {
+    return <ProfileSetup currentUser={currentUser} onSaved={handleProfileSaved} />;
+  }
+
   return (
     <div className="min-h-screen bg-background text-on-background flex flex-col font-sans selection:bg-primary-container selection:text-on-primary-container">
 
@@ -377,6 +416,7 @@ export default function App() {
         {/* Tab 1: Survey Form (Highlighted as #1 Priority) */}
         {activeTab === 'survey' && (
           <SurveySection
+            submitterName={currentUser.fullName}
             onSurveySubmitted={handleSurveySubmitted}
             onNavigateToRsvp={() => setActiveTab('rsvp')}
           />
