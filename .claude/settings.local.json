@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Bash(find:*)",
+      "Bash(dir:*)",
+      "Bash(grep -r CurrentParticipantBooking /c/Users/ccatacata/Documents/Ims.ClassroomManager --include=*.cs)",
+       "Bash(cd *)",
+      "Bash(cat *)"
+    ]
+  }
+}

@@ -1,0 +1,112 @@
+export interface SurveyResponse {
+  id: string;
+  submittedAt: string; // ISO timestamp
+  
+  // Q1: Basic Information
+  fullName: string;
+  contactNumber: string;
+  email?: string;
+  section2007?: string; // Optional class section (e.g. Newton, Einstein, Curie)
+
+  // Q2: Attendance
+  attendance: 'Yes, definitely!' | 'Most likely, but still confirming' | 'Not sure yet' | 'Unfortunately, I won’t be able to attend';
+  attendanceReason?: string; // If "Not sure yet", what would help you decide?
+
+  // Q3: Preferred Date
+  preferredMonths: string[]; // April, December
+  specificDateNotes?: string; // Custom dates, specific holidays, or other month notes
+
+  // Q4: Venue
+  venueSuggestion?: string; // Venue name and location
+  preferredVenueType: 'Restaurant / private dining' | 'Hotel / function room' | 'Resort / outdoor venue' | 'School / campus' | 'Private house / events place' | 'Other' | string;
+  venueTypeOther?: string;
+
+  // Q5: Contributions & Sponsorship
+  pledgeOption: '₱2,000' | '₱3,000' | '₱5,000' | '₱10,000+' | 'Custom Amount' | 'Other' | string;
+  customPledgeAmount?: string; // For "Custom Amount" (min ₱2,000)
+  computedPledgeAmount: number; // Parsed numeric amount in PHP (min ₱2,000)
+  otherSponsorships: string[]; // Food, Venue, Drinks, Prizes, etc.
+  otherSponsorshipDetails?: string;
+
+  // Q6: Skills & Services
+  skillsOffered: string[]; // Event planning, Hosting, Program, Music/DJ, etc.
+  skillsDetails?: string;
+
+  // Q7: Event Organizer Suggestion
+  nominatedOrganizer?: string; // Recommended professional event organizer or coordination company
+  willingToOrganize: 'Yes, I’d be happy to help!' | 'Maybe, depending on what’s needed' | 'I can help occasionally' | 'I’d prefer not to be involved in organizing';
+
+  // Q8: Guests
+  plusOnesCount?: number;
+  kidsCount?: number;
+  bringingPlusOne?: 'No' | 'Yes, 1 +1' | 'Not sure yet' | string;
+  bringingKids?: 'No' | 'Yes' | 'Not sure yet' | string;
+
+  // Q9: Other Suggestions
+  otherSuggestions?: string;
+  
+  // Admin tracking
+  pledgePaidStatus?: 'Unpaid / Pledged' | 'Partially Paid' | 'Fully Paid';
+  adminNotes?: string;
+}
+
+export interface RSVPRecord {
+  id: string;
+  submittedAt: string;
+  fullName: string;
+  contactNumber?: string;
+  email?: string;
+  status: 'Attending' | 'Maybe' | 'Decline';
+  bringingPlusOne: boolean;
+  kidsCount: number;
+  dietaryRestrictions?: string;
+  messageToBatch?: string;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  caption: string;
+  imageUrl?: string;
+  tag: 'Important' | 'Survey' | 'Venue' | 'Finance' | 'General' | 'Volunteer';
+  author: string;
+  date: string;
+  isPinned?: boolean;
+  likesCount: number;
+}
+
+export interface PlannedExpense {
+  id: string;
+  name: string;
+  category: 'Venue & Banquet' | 'Audio Visual & Lights' | 'Souvenirs & T-Shirts' | 'Photo & Video' | 'Prizes & Tokens' | 'Decorations & Program' | 'Administrative & Misc';
+  amount: number;
+  targetDate?: string;
+  status: 'Estimated' | 'Quoted' | 'Approved' | 'Paid';
+  notes?: string;
+  updatedAt: string;
+}
+
+export interface EventDetails {
+  status: 'Pending' | 'Finalized';
+  date: string;
+  time?: string;
+  venue: string;
+  venueAddress?: string;
+  mapLink?: string;
+  dressCode?: string;
+  theme?: string;
+  notes?: string;
+  updatedAt?: string;
+}
+
+export interface BatchStats {
+  totalSurveys: number;
+  totalPledges: number;
+  totalExpenses: number;
+  runningBalance: number;
+  attendingCount: number;
+  likelyCount: number;
+  undecidedCount: number;
+  declinedCount: number;
+  estimatedHeadcount: number;
+}

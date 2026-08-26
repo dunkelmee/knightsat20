@@ -1,0 +1,6 @@
+{
+  "name": "MSHS Batch 2007 Reunion Hub",
+  "description": "Planning and community portal for Makati Science High School (MSHS) Batch 2007 Reunion with planning surveys, RSVPs, bulletin announcements, and admin fund tracker.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

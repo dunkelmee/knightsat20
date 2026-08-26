@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep *)",
+      "Bash(sed *)",
+      "Bash(ls *)",
+      "Bash(cd *)",
+      "Bash(cat *)",
+      "Bash(xargs grep -l \"notification\\\\|toast\\\\|snackbar\\\\|alert\")",
+      "Bash(xargs grep:*)",
+      "Bash(grep -rn ParticipantBookings /c/Users/ccatacata/Documents/Ims.ClassroomManager --include=*.cs)",
+      "Bash(grep -v \"//\")",
+      "Bash(grep -r \"moment.*tz\\\\|timezone\\\\|offset\\\\|UTC\" /c/Users/ccatacata/Documents/Ims.ClassroomManager --include=*.js --include=*.ts --include=*.html)",
+      "WebSearch",
+      "Bash(grep -r \"antiforgery\\\\|AntiForgery\" c:/Users/ccatacata/Documents/Ims.ClassroomManager/Ims.ClassroomManager.Core --include=*.cs)",
+      "Bash(grep -A 5 \"case ''StartDate''\" \"c:\\\\Users\\\\ccatacata\\\\Documents\\\\Ims.ClassroomManager\\\\Ims.ClassroomManager\\\\src\\\\client\\\\widgets\\\\course-catalog\\\\course-catalog.vue\")"
+    ]
+  }
+}
