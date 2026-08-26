@@ -116,6 +116,7 @@ export interface BatchStats {
 // public dashboard renders, computed server-side so raw survey PII never
 // needs to leave the backend for an unauthenticated visitor.
 export interface DashboardStats extends BatchStats {
+  pledgingCount: number;
   monthTally: Record<string, number>;
   venueTally: Record<string, number>;
 }

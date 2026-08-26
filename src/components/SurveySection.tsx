@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  CheckCircle2, Send, ChevronRight, ChevronLeft, 
+import {
+  CheckCircle2, Send, ChevronRight, ChevronLeft,
   User, Phone, Mail, Sparkles, HeartHandshake,
   Minus, Plus
 } from 'lucide-react';
@@ -239,23 +239,23 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
   if (isSubmitted) {
     return (
       <div id="survey-success-container" className="max-w-xl mx-auto py-12 px-4 text-center">
-        <div className="bg-white rounded-2xl p-8 border border-stone-200 shadow-xs space-y-4">
-          <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto border border-emerald-200">
+        <div className="bg-surface-container-lowest rounded p-8 border border-outline-variant/30 shadow-soft space-y-4">
+          <div className="w-12 h-12 rounded-full bg-success-container text-on-success-container flex items-center justify-center mx-auto border border-success-container">
             <CheckCircle2 className="w-6 h-6" />
           </div>
 
-          <h2 className="text-xl font-semibold text-stone-900">
+          <h2 className="text-xl font-serif font-semibold text-on-surface">
             Thank you, {submittedName}!
           </h2>
 
-          <p className="text-xs text-stone-600 max-w-md mx-auto leading-relaxed">
+          <p className="text-xs text-on-surface-variant max-w-md mx-auto leading-relaxed">
             Your survey responses and pledge have been recorded. You have also been automatically registered on the public <strong>Attendee Roster</strong>!
           </p>
 
           {computedPledge > 0 && (
-            <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200 inline-block text-xs text-stone-800">
+            <div className="p-3 bg-primary-container/20 rounded border border-primary-container/50 inline-block text-xs text-on-surface">
               <span>Pledged Batch Fund: </span>
-              <strong className="text-amber-800 font-semibold">{formatPHP(computedPledge)}</strong>
+              <strong className="text-primary font-semibold">{formatPHP(computedPledge)}</strong>
             </div>
           )}
 
@@ -264,7 +264,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
               id="btn-survey-submitted-rsvp"
               type="button"
               onClick={onNavigateToRsvp}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-semibold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5"
+              className="w-full sm:w-auto px-5 py-2.5 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft transition-all flex items-center justify-center gap-1.5"
             >
               <span>View Attendee Roster</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -274,7 +274,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
               id="btn-survey-submit-another"
               type="button"
               onClick={handleResetForm}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs transition-all border border-stone-200"
+              className="w-full sm:w-auto px-4 py-2.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-semibold text-xs transition-all border border-outline-variant/30"
             >
               Fill Again
             </button>
@@ -286,30 +286,30 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
 
   return (
     <div id="survey-form-container" className="max-w-2xl mx-auto py-6 px-4">
-      
+
       {/* Sleek Minimal Intro */}
-      <div className="mb-4 bg-white text-stone-900 rounded-xl p-4 sm:p-5 border border-stone-200">
-        <h2 className="text-base sm:text-lg font-semibold text-stone-900">
+      <div className="mb-4 bg-surface-container-lowest text-on-surface rounded p-4 sm:p-5 border border-outline-variant/30">
+        <h2 className="text-base sm:text-lg font-serif font-semibold text-on-surface">
           Reunion Planning Survey
         </h2>
-        <p className="text-xs text-stone-600 mt-0.5">
+        <p className="text-xs text-on-surface-variant mt-0.5">
           Help us choose the best date, venue style, and batch fund target.
         </p>
       </div>
 
       {/* 3-Step Sleek Navigation Bar */}
-      <div id="survey-step-tabs" className="mb-5 bg-[#f4efe6] p-1 rounded-xl border border-stone-200 grid grid-cols-3 gap-1">
+      <div id="survey-step-tabs" className="mb-5 bg-surface-container-low p-1 rounded border border-outline-variant/30 grid grid-cols-3 gap-1">
         <button
           type="button"
           onClick={() => setCurrentStep(1)}
-          className={`py-2 px-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+          className={`py-2 px-2.5 rounded text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
             currentStep === 1
-              ? 'bg-white text-amber-900 shadow-xs border border-stone-200'
-              : 'text-stone-600 hover:text-stone-900'
+              ? 'bg-surface-container-lowest text-primary shadow-soft border border-outline-variant/30'
+              : 'text-on-surface-variant hover:text-on-surface'
           }`}
         >
           <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
-            currentStep === 1 ? 'bg-amber-700 text-white' : 'bg-stone-200 text-stone-700'
+            currentStep === 1 ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant'
           }`}>1</span>
           <span>Info & Dates</span>
         </button>
@@ -319,14 +319,14 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
           onClick={() => {
             if (validateStep1()) setCurrentStep(2);
           }}
-          className={`py-2 px-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+          className={`py-2 px-2.5 rounded text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
             currentStep === 2
-              ? 'bg-white text-amber-900 shadow-xs border border-stone-200'
-              : 'text-stone-600 hover:text-stone-900'
+              ? 'bg-surface-container-lowest text-primary shadow-soft border border-outline-variant/30'
+              : 'text-on-surface-variant hover:text-on-surface'
           }`}
         >
           <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
-            currentStep === 2 ? 'bg-amber-700 text-white' : 'bg-stone-200 text-stone-700'
+            currentStep === 2 ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant'
           }`}>2</span>
           <span>Help & Skills</span>
         </button>
@@ -336,38 +336,38 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
           onClick={() => {
             if (validateStep1()) setCurrentStep(3);
           }}
-          className={`py-2 px-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+          className={`py-2 px-2.5 rounded text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
             currentStep === 3
-              ? 'bg-white text-amber-900 shadow-xs border border-stone-200'
-              : 'text-stone-600 hover:text-stone-900'
+              ? 'bg-surface-container-lowest text-primary shadow-soft border border-outline-variant/30'
+              : 'text-on-surface-variant hover:text-on-surface'
           }`}
         >
           <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
-            currentStep === 3 ? 'bg-amber-700 text-white' : 'bg-stone-200 text-stone-700'
+            currentStep === 3 ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant'
           }`}>3</span>
           <span>Pledges & Guests</span>
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        
+
         {/* STEP 1: INFO & DATES */}
         {currentStep === 1 && (
           <div className="space-y-4">
-            
+
             {/* 1. Basic Info */}
-            <div id="q1-basic-info-card" className="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 space-y-3">
-              <h3 className="text-sm sm:text-base font-semibold text-stone-900">
+            <div id="q1-basic-info-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
+              <h3 className="text-sm sm:text-base font-semibold text-on-surface">
                 1. Contact Details
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div id="field-fullName" className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Full Name <span className="text-red-500">*</span>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                    Full Name <span className="text-error">*</span>
                   </label>
                   <div className="relative">
-                    <User className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <User className="w-3.5 h-3.5 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       id="input-fullName"
                       type="text"
@@ -378,22 +378,22 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                         setFullName(e.target.value);
                         if (errors.fullName) setErrors({ ...errors, fullName: undefined });
                       }}
-                      className={`w-full pl-9 pr-3 py-2 rounded-lg border ${
-                        errors.fullName ? 'border-red-500 bg-red-50/40' : 'border-stone-300'
-                      } focus:outline-none focus:ring-1 focus:ring-amber-600 text-stone-900 text-xs`}
+                      className={`w-full pl-9 pr-3 py-2 rounded border ${
+                        errors.fullName ? 'border-error bg-error-container/30' : 'border-secondary/30'
+                      } focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs`}
                     />
                   </div>
                   {errors.fullName && (
-                    <p className="text-[11px] text-red-600 mt-1">{errors.fullName}</p>
+                    <p className="text-[11px] text-error mt-1">{errors.fullName}</p>
                   )}
                 </div>
 
                 <div id="field-contactNumber" className="sm:col-span-1">
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Mobile / WhatsApp <span className="text-red-500">*</span>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                    Mobile / WhatsApp <span className="text-error">*</span>
                   </label>
                   <div className="relative">
-                    <Phone className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Phone className="w-3.5 h-3.5 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       id="input-contactNumber"
                       type="tel"
@@ -404,29 +404,29 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                         setContactNumber(e.target.value);
                         if (errors.contactNumber) setErrors({ ...errors, contactNumber: undefined });
                       }}
-                      className={`w-full pl-9 pr-3 py-2 rounded-lg border ${
-                        errors.contactNumber ? 'border-red-500 bg-red-50/40' : 'border-stone-300'
-                      } focus:outline-none focus:ring-1 focus:ring-amber-600 text-stone-900 text-xs`}
+                      className={`w-full pl-9 pr-3 py-2 rounded border ${
+                        errors.contactNumber ? 'border-error bg-error-container/30' : 'border-secondary/30'
+                      } focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs`}
                     />
                   </div>
                   {errors.contactNumber && (
-                    <p className="text-[11px] text-red-600 mt-1">{errors.contactNumber}</p>
+                    <p className="text-[11px] text-error mt-1">{errors.contactNumber}</p>
                   )}
                 </div>
 
                 <div className="sm:col-span-1">
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-3.5 h-3.5 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       id="input-email"
                       type="email"
                       placeholder="juan@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-amber-600 text-stone-900 text-xs"
+                      className="w-full pl-9 pr-3 py-2 rounded border border-secondary/30 focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs"
                     />
                   </div>
                 </div>
@@ -434,12 +434,12 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
             </div>
 
             {/* 2. Attendance */}
-            <div id="q2-attendance-card" className="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 space-y-3">
+            <div id="q2-attendance-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm sm:text-base font-semibold text-stone-900">
-                  2. Can you attend? <span className="text-red-500">*</span>
+                <h3 className="text-sm sm:text-base font-semibold text-on-surface">
+                  2. Can you attend? <span className="text-error">*</span>
                 </h3>
-                <span className="text-[10px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-semibold">
+                <span className="text-[10px] text-on-primary-container bg-primary-container/20 px-2 py-0.5 rounded border border-primary-container/50 font-semibold">
                   Auto-adds to Roster
                 </span>
               </div>
@@ -453,10 +453,10 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                 ].map((opt) => (
                   <label
                     key={opt.label}
-                    className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
+                    className={`flex items-center justify-between p-3 rounded border cursor-pointer transition-all ${
                       attendance === opt.label
-                        ? 'border-amber-700 bg-amber-50/60 ring-1 ring-amber-700 text-stone-900 font-semibold'
-                        : 'border-stone-200 hover:border-stone-300 bg-white text-stone-700'
+                        ? 'border-primary bg-primary-container/15 ring-1 ring-primary text-on-surface font-semibold'
+                        : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -465,7 +465,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                         name="attendance"
                         checked={attendance === opt.label}
                         onChange={() => setAttendance(opt.label as any)}
-                        className="w-3.5 h-3.5 text-amber-700 focus:ring-amber-500"
+                        className="w-3.5 h-3.5 text-primary focus:ring-primary"
                       />
                       <span className="text-sm">{opt.icon}</span>
                       <span className="text-xs font-medium">{opt.label}</span>
@@ -476,7 +476,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
 
               {attendance === 'Not sure yet' && (
                 <div className="pt-2 space-y-1">
-                  <label className="block text-xs font-semibold text-stone-700">
+                  <label className="block text-xs font-semibold text-on-surface-variant">
                     What would help you decide?
                   </label>
                   <input
@@ -485,24 +485,24 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                     placeholder="e.g. final date, exact budget, venue location"
                     value={attendanceReason}
                     onChange={(e) => setAttendanceReason(e.target.value)}
-                    className="w-full p-2 rounded-lg border border-stone-300 text-stone-900 text-xs focus:outline-none focus:ring-1 focus:ring-amber-600"
+                    className="w-full p-2 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
               )}
             </div>
 
             {/* 3. Dates */}
-            <div id="q3-date-card" className="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 space-y-3">
+            <div id="q3-date-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm sm:text-base font-semibold text-stone-900">
+                  <h3 className="text-sm sm:text-base font-semibold text-on-surface">
                     3. Preferred Month (2027)
                   </h3>
-                  <span className="text-[10px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-semibold">
+                  <span className="text-[10px] text-on-primary-container bg-primary-container/20 px-2 py-0.5 rounded border border-primary-container/50 font-semibold">
                     2027 Planning
                   </span>
                 </div>
-                <p className="text-[11px] text-stone-500">
+                <p className="text-[11px] text-on-surface-variant">
                   Select your preferred month(s), or suggest specific dates or other options in the custom field.
                 </p>
               </div>
@@ -515,21 +515,21 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                       key={month}
                       type="button"
                       onClick={() => handleMonthToggle(month)}
-                      className={`p-3 rounded-xl border text-sm font-semibold transition-all flex items-center justify-between ${
+                      className={`p-3 rounded border text-sm font-semibold transition-all flex items-center justify-between ${
                         isSelected
-                          ? 'border-amber-700 bg-amber-50 text-amber-950 ring-1 ring-amber-600 shadow-xs'
-                          : 'border-stone-200 hover:border-stone-300 bg-white text-stone-700'
+                          ? 'border-primary bg-primary-container/15 text-on-primary-container ring-1 ring-primary shadow-soft'
+                          : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
                       }`}
                     >
                       <span>{month}</span>
-                      {isSelected && <CheckCircle2 className="w-4 h-4 text-amber-700 flex-shrink-0 ml-2" />}
+                      {isSelected && <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 ml-2" />}
                     </button>
                   );
                 })}
               </div>
 
               <div className="pt-1">
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
                   Other month / specific date suggestions:
                 </label>
                 <input
@@ -538,14 +538,14 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                   placeholder="e.g. Easter week in April, Christmas holidays in December, or another month..."
                   value={specificDateNotes}
                   onChange={(e) => setSpecificDateNotes(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-amber-600 text-stone-900 text-xs"
+                  className="w-full px-3 py-2 rounded border border-secondary/30 focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs"
                 />
               </div>
             </div>
 
             {/* 4. Venue */}
-            <div id="q4-venue-card" className="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 space-y-3">
-              <h3 className="text-sm sm:text-base font-semibold text-stone-900">
+            <div id="q4-venue-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
+              <h3 className="text-sm sm:text-base font-semibold text-on-surface">
                 4. Venue & Vibe
               </h3>
 
@@ -554,10 +554,10 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                   {venueTypeOptions.map((type) => (
                     <label
                       key={type}
-                      className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all ${
+                      className={`flex items-center gap-2 p-2.5 rounded border cursor-pointer transition-all ${
                         preferredVenueType === type
-                          ? 'border-amber-700 bg-amber-50 text-stone-900 font-semibold ring-1 ring-amber-700'
-                          : 'border-stone-200 hover:border-stone-300 bg-white text-stone-700'
+                          ? 'border-primary bg-primary-container/15 text-on-surface font-semibold ring-1 ring-primary'
+                          : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
                       }`}
                     >
                       <input
@@ -565,7 +565,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                         name="venueType"
                         checked={preferredVenueType === type}
                         onChange={() => setPreferredVenueType(type)}
-                        className="w-3.5 h-3.5 text-amber-700 focus:ring-amber-500"
+                        className="w-3.5 h-3.5 text-primary focus:ring-primary"
                       />
                       <span className="text-xs font-medium">{type}</span>
                     </label>
@@ -580,14 +580,14 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                       placeholder="Specify venue type..."
                       value={venueTypeOther}
                       onChange={(e) => setVenueTypeOther(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg border border-amber-300 focus:outline-none focus:ring-1 focus:ring-amber-600 text-stone-900 text-xs"
+                      className="w-full px-3 py-1.5 rounded border border-primary-container focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs"
                     />
                   </div>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
                   Venue suggestions:
                 </label>
                 <input
@@ -596,7 +596,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                   placeholder="e.g. Hotel in Makati / BGC, private events place"
                   value={venueSuggestion}
                   onChange={(e) => setVenueSuggestion(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-amber-600 text-stone-900 text-xs"
+                  className="w-full px-3 py-2 rounded border border-secondary/30 focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs"
                 />
               </div>
             </div>
@@ -606,7 +606,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
               <button
                 type="button"
                 onClick={handleGoToStep2}
-                className="px-6 py-2.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-semibold text-xs shadow-xs flex items-center gap-1.5 transition-all"
+                className="px-6 py-2.5 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft flex items-center gap-1.5 transition-all"
               >
                 <span>Next</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -621,8 +621,8 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
           <div className="space-y-4">
 
             {/* Willingness to help */}
-            <div id="q-willingness-card" className="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 space-y-3">
-              <h3 className="text-sm sm:text-base font-semibold text-stone-900">
+            <div id="q-willingness-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
+              <h3 className="text-sm sm:text-base font-semibold text-on-surface">
                 5. Volunteer & Organizing
               </h3>
 
@@ -635,10 +635,10 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                 ].map((opt) => (
                   <label
                     key={opt}
-                    className={`p-2.5 rounded-lg border cursor-pointer transition-all flex items-center gap-2 ${
+                    className={`p-2.5 rounded border cursor-pointer transition-all flex items-center gap-2 ${
                       willingToOrganize === opt
-                        ? 'border-amber-700 bg-amber-50 text-stone-900 font-semibold ring-1 ring-amber-700'
-                        : 'border-stone-200 hover:border-stone-300 bg-white text-stone-700'
+                        ? 'border-primary bg-primary-container/15 text-on-surface font-semibold ring-1 ring-primary'
+                        : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
                     }`}
                   >
                     <input
@@ -646,7 +646,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                       name="willingToOrganize"
                       checked={willingToOrganize === opt}
                       onChange={() => setWillingToOrganize(opt as any)}
-                      className="w-3.5 h-3.5 text-amber-700 focus:ring-amber-500"
+                      className="w-3.5 h-3.5 text-primary focus:ring-primary"
                     />
                     <span className="text-xs font-medium">{opt}</span>
                   </label>
@@ -655,8 +655,8 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
             </div>
 
             {/* Skills & Services */}
-            <div id="q6-skills-card" className="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 space-y-3">
-              <h3 className="text-sm sm:text-base font-semibold text-stone-900">
+            <div id="q6-skills-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
+              <h3 className="text-sm sm:text-base font-semibold text-on-surface">
                 6. Skills to Share
               </h3>
 
@@ -668,14 +668,14 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                       key={skill}
                       type="button"
                       onClick={() => handleSkillToggle(skill)}
-                      className={`p-2 rounded-lg border text-xs text-left flex items-center justify-between transition-all font-medium ${
+                      className={`p-2 rounded border text-xs text-left flex items-center justify-between transition-all font-medium ${
                         isSelected
-                          ? 'border-amber-700 bg-amber-50 text-amber-950 font-semibold ring-1 ring-amber-700'
-                          : 'border-stone-200 hover:border-stone-300 bg-white text-stone-700'
-                      } ${skill.includes('Prefer to just attend') ? 'col-span-2 sm:col-span-3 text-center justify-center bg-stone-50' : ''}`}
+                          ? 'border-primary bg-primary-container/15 text-on-primary-container font-semibold ring-1 ring-primary'
+                          : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
+                      } ${skill.includes('Prefer to just attend') ? 'col-span-2 sm:col-span-3 text-center justify-center bg-surface-container-low' : ''}`}
                     >
                       <span>{skill}</span>
-                      {isSelected && <CheckCircle2 className="w-3 h-3 text-amber-700 flex-shrink-0" />}
+                      {isSelected && <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />}
                     </button>
                   );
                 })}
@@ -688,13 +688,13 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                     placeholder="Specify other skill..."
                     value={skillsOtherText}
                     onChange={(e) => setSkillsOtherText(e.target.value)}
-                    className="w-full px-3 py-1.5 rounded-lg border border-amber-300 text-xs text-stone-900"
+                    className="w-full px-3 py-1.5 rounded border border-primary-container text-xs text-on-surface"
                   />
                 </div>
               )}
 
               <div className="pt-1">
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
                   Notes on what you can help with:
                 </label>
                 <textarea
@@ -703,23 +703,23 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                   placeholder="e.g. photography, logo design, catering contacts..."
                   value={skillsDetails}
                   onChange={(e) => setSkillsDetails(e.target.value)}
-                  className="w-full p-2 rounded-lg border border-stone-300 text-stone-900 text-xs focus:outline-none focus:ring-1 focus:ring-amber-600"
+                  className="w-full p-2 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
 
             {/* Event Organizer / Coordination Company Recommendation */}
-            <div id="q7-organization-card" className="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 space-y-3">
+            <div id="q7-organization-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm sm:text-base font-semibold text-stone-900">
+                  <h3 className="text-sm sm:text-base font-semibold text-on-surface">
                     7. Recommend an Event Organizer / Coordination Company
                   </h3>
-                  <span className="text-[10px] text-stone-600 bg-stone-100 px-2 py-0.5 rounded border border-stone-200 font-medium">
+                  <span className="text-[10px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded border border-outline-variant/30 font-medium">
                     Optional
                   </span>
                 </div>
-                <p className="text-[11px] text-stone-500">
+                <p className="text-[11px] text-on-surface-variant">
                   Suggest a professional event organizer or coordination agency (outside the batch) that we can hire to manage the program, styling, and supplier logistics.
                 </p>
               </div>
@@ -731,7 +731,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                   placeholder="e.g. Events by [Company Name], Wedding & Events Planner contact, etc."
                   value={nominatedOrganizer}
                   onChange={(e) => setNominatedOrganizer(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-amber-600 text-stone-900 text-xs"
+                  className="w-full px-3 py-2 rounded border border-secondary/30 focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs"
                 />
               </div>
             </div>
@@ -744,7 +744,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                   setCurrentStep(1);
                   window.scrollTo({ top: 80, behavior: 'smooth' });
                 }}
-                className="px-4 py-2 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs border border-stone-200 flex items-center gap-1"
+                className="px-4 py-2 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-semibold text-xs border border-outline-variant/30 flex items-center gap-1"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
                 <span>Back</span>
@@ -753,7 +753,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
               <button
                 type="button"
                 onClick={handleGoToStep3}
-                className="px-6 py-2.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-semibold text-xs shadow-xs flex items-center gap-1.5 transition-all"
+                className="px-6 py-2.5 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft flex items-center gap-1.5 transition-all"
               >
                 <span>Next</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -768,17 +768,17 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
           <div className="space-y-4">
 
             {/* Financial Pledge */}
-            <div id="q5-contributions-card" className="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 space-y-3">
-              <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+            <div id="q5-contributions-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
+              <div className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
                 <div>
-                  <h3 className="text-sm sm:text-base font-semibold text-stone-900">
+                  <h3 className="text-sm sm:text-base font-semibold text-on-surface">
                     8. Financial Pledge
                   </h3>
-                  <p className="text-[11px] text-stone-500 mt-0.5">
+                  <p className="text-[11px] text-on-surface-variant mt-0.5">
                     Minimum contribution is <strong>₱2,000</strong>.
                   </p>
                 </div>
-                <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                <span className="text-[11px] font-semibold text-on-primary-container bg-primary-container/20 px-2 py-0.5 rounded border border-primary-container/50">
                   Operating Fund
                 </span>
               </div>
@@ -794,10 +794,10 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                   ].map((tier) => (
                     <label
                       key={tier.val}
-                      className={`p-2.5 rounded-lg border cursor-pointer transition-all flex flex-col justify-between ${
+                      className={`p-2.5 rounded border cursor-pointer transition-all flex flex-col justify-between ${
                         pledgeOption === tier.val
-                          ? 'border-amber-700 bg-amber-50/60 ring-1 ring-amber-700 text-stone-900 font-semibold'
-                          : 'border-stone-200 hover:border-stone-300 bg-white text-stone-700'
+                          ? 'border-primary bg-primary-container/15 ring-1 ring-primary text-on-surface font-semibold'
+                          : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
                       }`}
                     >
                       <div className="flex items-center gap-1.5">
@@ -809,25 +809,25 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                             setPledgeOption(tier.val as any);
                             setErrors(prev => ({ ...prev, pledge: undefined }));
                           }}
-                          className="w-3 h-3 text-amber-700 focus:ring-amber-500"
+                          className="w-3 h-3 text-primary focus:ring-primary"
                         />
                         <span className="text-xs font-semibold">{tier.label}</span>
                       </div>
-                      <span className="text-[10px] text-stone-500 pl-4 mt-0.5">{tier.subtitle}</span>
+                      <span className="text-[10px] text-on-surface-variant pl-4 mt-0.5">{tier.subtitle}</span>
                     </label>
                   ))}
                 </div>
 
                 {(pledgeOption === 'Custom Amount' || pledgeOption === 'Other' || pledgeOption === '₱10,000+') && (
-                  <div className="mt-2 p-3 bg-amber-50/60 rounded-xl border border-amber-200 space-y-1.5">
+                  <div className="mt-2 p-3 bg-primary-container/15 rounded border border-primary-container/50 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <label className="block text-xs font-semibold text-stone-800">
+                      <label className="block text-xs font-semibold text-on-surface">
                         Enter Custom Amount (₱):
                       </label>
-                      <span className="text-[10px] text-stone-500 font-medium">Min. ₱2,000</span>
+                      <span className="text-[10px] text-on-surface-variant font-medium">Min. ₱2,000</span>
                     </div>
                     <div className="relative max-w-xs">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 font-semibold text-stone-600 text-xs">₱</span>
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 font-semibold text-on-surface-variant text-xs">₱</span>
                       <input
                         id="input-customPledgeAmount"
                         type="text"
@@ -837,27 +837,27 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                           setCustomPledgeAmount(e.target.value);
                           setErrors(prev => ({ ...prev, pledge: undefined }));
                         }}
-                        className={`w-full pl-6 pr-3 py-1.5 rounded-md border bg-white text-stone-900 font-semibold text-xs focus:outline-none focus:ring-1 ${
+                        className={`w-full pl-6 pr-3 py-1.5 rounded border bg-surface-container-lowest text-on-surface font-semibold text-xs focus:outline-none focus:ring-1 ${
                           errors.pledge || (customPledgeAmount.trim() && parseRawAmountString(customPledgeAmount) < 2000)
-                            ? 'border-rose-400 focus:ring-rose-500'
-                            : 'border-amber-300 focus:ring-amber-600'
+                            ? 'border-error focus:ring-error'
+                            : 'border-primary-container focus:ring-primary'
                         }`}
                       />
                     </div>
 
                     {/* Validation warnings */}
                     {customPledgeAmount.trim() && parseRawAmountString(customPledgeAmount) < 2000 && (
-                      <p className="text-[11px] text-rose-600 font-semibold">
+                      <p className="text-[11px] text-error font-semibold">
                         ⚠️ The minimum pledge amount is ₱2,000. Please enter ₱2,000 or higher.
                       </p>
                     )}
                     {errors.pledge && (
-                      <p className="text-[11px] text-rose-600 font-semibold">
+                      <p className="text-[11px] text-error font-semibold">
                         {errors.pledge}
                       </p>
                     )}
                     {customPledgeAmount.trim() && parseRawAmountString(customPledgeAmount) >= 2000 && (
-                      <p className="text-[11px] text-emerald-700 font-medium">
+                      <p className="text-[11px] text-success font-medium">
                         ✓ Valid pledge: {formatPHP(parseRawAmountString(customPledgeAmount))}
                       </p>
                     )}
@@ -865,17 +865,17 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                 )}
 
                 {/* Computed Display */}
-                <div className="mt-2 flex items-center justify-between p-2.5 rounded-lg bg-stone-900 text-white text-xs">
-                  <span className="text-stone-300">Total pledge recorded:</span>
-                  <span className="font-semibold text-amber-400 text-sm">
+                <div className="mt-2 flex items-center justify-between p-2.5 rounded bg-inverse-surface text-inverse-on-surface text-xs">
+                  <span className="text-inverse-on-surface/70">Total pledge recorded:</span>
+                  <span className="font-semibold text-primary-container text-sm">
                     {formatPHP(Math.max(2000, computedPledge))}
                   </span>
                 </div>
               </div>
 
               {/* In-Kind Sponsorship */}
-              <div className="pt-3 border-t border-stone-100">
-                <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+              <div className="pt-3 border-t border-outline-variant/20">
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1.5">
                   In-Kind Sponsorships:
                 </label>
 
@@ -887,14 +887,14 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                         key={item}
                         type="button"
                         onClick={() => handleSponsorshipToggle(item)}
-                        className={`p-1.5 rounded-lg border text-xs text-left flex items-center justify-between transition-all font-medium ${
+                        className={`p-1.5 rounded border text-xs text-left flex items-center justify-between transition-all font-medium ${
                           isSelected
-                            ? 'border-amber-700 bg-amber-50 text-amber-950 font-semibold ring-1 ring-amber-700'
-                            : 'border-stone-200 hover:border-stone-300 bg-white text-stone-700'
-                        } ${item === 'None for now' ? 'col-span-2 sm:col-span-3 text-center justify-center bg-stone-50' : ''}`}
+                            ? 'border-primary bg-primary-container/15 text-on-primary-container font-semibold ring-1 ring-primary'
+                            : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
+                        } ${item === 'None for now' ? 'col-span-2 sm:col-span-3 text-center justify-center bg-surface-container-low' : ''}`}
                       >
                         <span>{item}</span>
-                        {isSelected && <CheckCircle2 className="w-3 h-3 text-amber-700 flex-shrink-0" />}
+                        {isSelected && <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />}
                       </button>
                     );
                   })}
@@ -907,7 +907,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                       placeholder="Specify sponsorship..."
                       value={otherSponsorshipsOtherText}
                       onChange={(e) => setOtherSponsorshipsOtherText(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg border border-amber-300 text-xs text-stone-900"
+                      className="w-full px-3 py-1.5 rounded border border-primary-container text-xs text-on-surface"
                     />
                   </div>
                 )}
@@ -919,46 +919,46 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                     placeholder="Details on food, drinks, prizes, or services..."
                     value={otherSponsorshipDetails}
                     onChange={(e) => setOtherSponsorshipDetails(e.target.value)}
-                    className="w-full p-2 rounded-lg border border-stone-300 text-stone-900 text-xs focus:outline-none focus:ring-1 focus:ring-amber-600"
+                    className="w-full p-2 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
               </div>
             </div>
 
             {/* Guests & Kids: Steppers (0 if none) */}
-            <div id="q8-guests-card" className="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 space-y-3">
-              <h3 className="text-sm sm:text-base font-semibold text-stone-900">
+            <div id="q8-guests-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
+              <h3 className="text-sm sm:text-base font-semibold text-on-surface">
                 9. Companions (0 if none)
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Plus-Ones Number Stepper */}
-                <div className="p-3 rounded-lg bg-stone-50 border border-stone-200 space-y-2">
-                  <div className="text-xs font-semibold text-stone-900">Adult Guests (+1s)</div>
-                  
+                <div className="p-3 rounded bg-surface-container-low border border-outline-variant/30 space-y-2">
+                  <div className="text-xs font-semibold text-on-surface">Adult Guests (+1s)</div>
+
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setPlusOnesCount(Math.max(0, plusOnesCount - 1))}
-                      className="w-7 h-7 rounded-lg bg-white border border-stone-300 font-semibold text-stone-700 flex items-center justify-center hover:bg-stone-100 active:scale-95 transition-all shadow-xs"
+                      className="w-7 h-7 rounded bg-surface-container-lowest border border-secondary/30 font-semibold text-on-surface-variant flex items-center justify-center hover:bg-surface-container active:scale-95 transition-all shadow-soft"
                       aria-label="Decrease adult guests"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
-                    
+
                     <input
                       type="number"
                       min="0"
                       max="10"
                       value={plusOnesCount}
                       onChange={(e) => setPlusOnesCount(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                      className="w-14 py-1 text-center font-semibold text-sm rounded-lg border border-stone-300 bg-white text-stone-900"
+                      className="w-14 py-1 text-center font-semibold text-sm rounded border border-secondary/30 bg-surface-container-lowest text-on-surface"
                     />
 
                     <button
                       type="button"
                       onClick={() => setPlusOnesCount(plusOnesCount + 1)}
-                      className="w-7 h-7 rounded-lg bg-white border border-stone-300 font-semibold text-stone-700 flex items-center justify-center hover:bg-stone-100 active:scale-95 transition-all shadow-xs"
+                      className="w-7 h-7 rounded bg-surface-container-lowest border border-secondary/30 font-semibold text-on-surface-variant flex items-center justify-center hover:bg-surface-container active:scale-95 transition-all shadow-soft"
                       aria-label="Increase adult guests"
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -967,32 +967,32 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                 </div>
 
                 {/* Kids Number Stepper */}
-                <div className="p-3 rounded-lg bg-stone-50 border border-stone-200 space-y-2">
-                  <div className="text-xs font-semibold text-stone-900">Kids</div>
-                  
+                <div className="p-3 rounded bg-surface-container-low border border-outline-variant/30 space-y-2">
+                  <div className="text-xs font-semibold text-on-surface">Kids</div>
+
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setKidsCount(Math.max(0, kidsCount - 1))}
-                      className="w-7 h-7 rounded-lg bg-white border border-stone-300 font-semibold text-stone-700 flex items-center justify-center hover:bg-stone-100 active:scale-95 transition-all shadow-xs"
+                      className="w-7 h-7 rounded bg-surface-container-lowest border border-secondary/30 font-semibold text-on-surface-variant flex items-center justify-center hover:bg-surface-container active:scale-95 transition-all shadow-soft"
                       aria-label="Decrease kids count"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
-                    
+
                     <input
                       type="number"
                       min="0"
                       max="10"
                       value={kidsCount}
                       onChange={(e) => setKidsCount(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                      className="w-14 py-1 text-center font-semibold text-sm rounded-lg border border-stone-300 bg-white text-stone-900"
+                      className="w-14 py-1 text-center font-semibold text-sm rounded border border-secondary/30 bg-surface-container-lowest text-on-surface"
                     />
 
                     <button
                       type="button"
                       onClick={() => setKidsCount(kidsCount + 1)}
-                      className="w-7 h-7 rounded-lg bg-white border border-stone-300 font-semibold text-stone-700 flex items-center justify-center hover:bg-stone-100 active:scale-95 transition-all shadow-xs"
+                      className="w-7 h-7 rounded bg-surface-container-lowest border border-secondary/30 font-semibold text-on-surface-variant flex items-center justify-center hover:bg-surface-container active:scale-95 transition-all shadow-soft"
                       aria-label="Increase kids count"
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -1003,8 +1003,8 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
             </div>
 
             {/* Other Suggestions */}
-            <div id="q9-suggestions-card" className="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 space-y-2">
-              <h3 className="text-sm sm:text-base font-semibold text-stone-900">
+            <div id="q9-suggestions-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-2">
+              <h3 className="text-sm sm:text-base font-semibold text-on-surface">
                 10. Ideas or Suggestions
               </h3>
 
@@ -1015,16 +1015,16 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                   placeholder="e.g. invite teachers, 2000s playlist, livestream..."
                   value={otherSuggestions}
                   onChange={(e) => setOtherSuggestions(e.target.value)}
-                  className="w-full p-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-amber-600 text-stone-900 text-xs"
+                  className="w-full p-2.5 rounded border border-secondary/30 focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs"
                 />
               </div>
             </div>
 
             {/* Submission Bar */}
-            <div className="bg-[#f5efe6] text-stone-900 rounded-xl p-3.5 flex items-center justify-between gap-3 border border-stone-200">
-              <div className="text-xs text-stone-700">
+            <div className="bg-surface-container-low text-on-surface rounded p-3.5 flex items-center justify-between gap-3 border border-outline-variant/30">
+              <div className="text-xs text-on-surface-variant">
                 <span>Pledge: </span>
-                <strong className="text-amber-800 font-semibold">{formatPHP(computedPledge)}</strong>
+                <strong className="text-primary font-semibold">{formatPHP(computedPledge)}</strong>
               </div>
 
               <div className="flex items-center gap-2">
@@ -1034,7 +1034,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                     setCurrentStep(2);
                     window.scrollTo({ top: 80, behavior: 'smooth' });
                   }}
-                  className="px-3.5 py-1.5 rounded-lg bg-white hover:bg-stone-100 text-stone-700 font-semibold text-xs border border-stone-300"
+                  className="px-3.5 py-1.5 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface-variant font-semibold text-xs border border-secondary/30"
                 >
                   Back
                 </button>
@@ -1042,7 +1042,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                 <button
                   id="btn-submit-survey-main"
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all"
+                  className="px-5 py-2 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft flex items-center justify-center gap-1.5 transition-all"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>Submit Survey</span>

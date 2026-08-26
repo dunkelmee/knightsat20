@@ -3,263 +3,304 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
-import { 
-  Header 
+import React, { useEffect, useState } from 'react';
+import {
+  Header
 } from './components/Header';
-import { 
-  PendingBanner 
+import {
+  PendingBanner
 } from './components/PendingBanner';
-import { 
-  SurveySection 
+import {
+  SurveySection
 } from './components/SurveySection';
-import { 
-  RsvpSection 
+import {
+  RsvpSection
 } from './components/RsvpSection';
-import { 
-  AnnouncementsSection 
+import {
+  AnnouncementsSection
 } from './components/AnnouncementsSection';
-import { 
-  PublicDashboardSection 
+import {
+  PublicDashboardSection
 } from './components/PublicDashboardSection';
-import { 
-  AdminPortal 
+import {
+  AdminPortal
 } from './components/admin/AdminPortal';
-import { 
-  SurveyResponse, 
-  PlannedExpense, 
-  Announcement, 
+import {
+  SurveyResponse,
+  PlannedExpense,
+  Announcement,
   RSVPRecord,
-  EventDetails
+  PublicRSVP,
+  EventDetails,
+  DashboardStats
 } from './types';
-import { 
-  INITIAL_SURVEY_RESPONSES, 
-  INITIAL_EXPENSES, 
-  INITIAL_ANNOUNCEMENTS, 
-  INITIAL_RSVPS,
-  INITIAL_EVENT_DETAILS
-} from './data/initialData';
-import { 
-  ClipboardList, 
-  Send, 
-  Bell, 
-  BarChart3, 
-  ShieldCheck, 
-  Sparkles, 
-  Heart, 
-  GraduationCap 
+import * as api from './api/client';
+import {
+  GraduationCap
 } from 'lucide-react';
 
-const STORAGE_KEYS = {
-  SURVEYS: 'mshs_2007_surveys_v1',
-  EXPENSES: 'mshs_2007_expenses_v1',
-  ANNOUNCEMENTS: 'mshs_2007_announcements_v1',
-  RSVPS: 'mshs_2007_rsvps_v1',
-  EVENT_DETAILS: 'mshs_2007_event_details_v1',
+const DEFAULT_EVENT_DETAILS: EventDetails = {
+  status: 'Pending',
+  date: 'Pending / For finalization',
+  venue: 'Pending / For finalization',
+};
+
+const DEFAULT_STATS: DashboardStats = {
+  totalSurveys: 0,
+  totalPledges: 0,
+  totalExpenses: 0,
+  runningBalance: 0,
+  attendingCount: 0,
+  likelyCount: 0,
+  undecidedCount: 0,
+  declinedCount: 0,
+  estimatedHeadcount: 0,
+  pledgingCount: 0,
+  monthTally: {},
+  venueTally: {},
 };
 
 export default function App() {
   // Navigation & Admin State
   const [activeTab, setActiveTab] = useState<string>('survey'); // Emphasis on survey first!
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isBootstrapped, setIsBootstrapped] = useState(false);
 
-  // Event Details State
-  const [eventDetails, setEventDetails] = useState<EventDetails>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.EVENT_DETAILS);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return INITIAL_EVENT_DETAILS;
-  });
+  // Public data, backed by the FastAPI + Postgres API (see backend/)
+  const [eventDetails, setEventDetails] = useState<EventDetails>(DEFAULT_EVENT_DETAILS);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [expenses, setExpenses] = useState<PlannedExpense[]>([]);
+  const [stats, setStats] = useState<DashboardStats>(DEFAULT_STATS);
+  const [publicRsvps, setPublicRsvps] = useState<PublicRSVP[]>([]);
 
-  // Core Data with LocalStorage persistence & fallbacks
-  const [responses, setResponses] = useState<SurveyResponse[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.SURVEYS);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return INITIAL_SURVEY_RESPONSES;
-  });
+  // Admin-only data (contains contact info) — only ever fetched once isAdmin
+  // is true, so PII never reaches a signed-out browser.
+  const [adminResponses, setAdminResponses] = useState<SurveyResponse[]>([]);
+  const [adminRsvps, setAdminRsvps] = useState<RSVPRecord[]>([]);
 
-  const [expenses, setExpenses] = useState<PlannedExpense[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.EXPENSES);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return INITIAL_EXPENSES;
-  });
-
-  const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.ANNOUNCEMENTS);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return INITIAL_ANNOUNCEMENTS;
-  });
-
-  const [rsvps, setRsvps] = useState<RSVPRecord[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.RSVPS);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return INITIAL_RSVPS;
-  });
-
-  // Sync to LocalStorage
+  // Initial bootstrap: load public data + restore admin session (if the
+  // browser already has a valid session cookie from a previous visit).
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.SURVEYS, JSON.stringify(responses));
-    } catch {}
-  }, [responses]);
+    (async () => {
+      const [details, anns, exps, dashStats, rsvpList, session] = await Promise.all([
+        api.fetchEventDetails(),
+        api.fetchAnnouncements(),
+        api.fetchExpenses(),
+        api.fetchDashboardStats(),
+        api.fetchPublicRsvps(),
+        api.adminSession(),
+      ]);
+      setEventDetails(details);
+      setAnnouncements(anns);
+      setExpenses(exps);
+      setStats(dashStats);
+      setPublicRsvps(rsvpList);
+      setIsAdmin(session.isAdmin);
+      setIsBootstrapped(true);
+    })();
+  }, []);
 
+  // Load / clear admin-only data whenever admin status changes.
   useEffect(() => {
+    if (!isAdmin) {
+      setAdminResponses([]);
+      setAdminRsvps([]);
+      return;
+    }
+    (async () => {
+      const [responses, rsvps] = await Promise.all([
+        api.fetchSurveyResponses(),
+        api.fetchAdminRsvps(),
+      ]);
+      setAdminResponses(responses);
+      setAdminRsvps(rsvps);
+    })();
+  }, [isAdmin]);
+
+  // Handler: real admin login — validated server-side, session cookie set on success.
+  const handleAdminLogin = async (passcode: string): Promise<boolean> => {
     try {
-      localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(expenses));
-    } catch {}
-  }, [expenses]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.ANNOUNCEMENTS, JSON.stringify(announcements));
-    } catch {}
-  }, [announcements]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.RSVPS, JSON.stringify(rsvps));
-    } catch {}
-  }, [rsvps]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.EVENT_DETAILS, JSON.stringify(eventDetails));
-    } catch {}
-  }, [eventDetails]);
-
-  // Overall Financial Metric: Total Pledges
-  const totalPledges = responses.reduce((acc, r) => acc + (r.computedPledgeAmount || 0), 0);
-
-  // Handler: Save Event Details
-  const handleSaveEventDetails = (newDetails: EventDetails) => {
-    setEventDetails(newDetails);
-  };
-
-  // Handler: Survey Submitted
-  const handleSurveySubmitted = (newResponse: SurveyResponse) => {
-    setResponses(prev => [newResponse, ...prev]);
-
-    // Auto-update RSVP if they responded with attendance intent
-    if (newResponse.attendance === 'Yes, definitely!' || newResponse.attendance === 'Most likely, but still confirming') {
-      const existingRsvpIndex = rsvps.findIndex(r => r.contactNumber === newResponse.contactNumber || r.fullName.toLowerCase() === newResponse.fullName.toLowerCase());
-      
-      const newRsvp: RSVPRecord = {
-        id: existingRsvpIndex >= 0 ? rsvps[existingRsvpIndex].id : `rsvp-${Date.now()}`,
-        submittedAt: new Date().toISOString(),
-        fullName: newResponse.fullName,
-        contactNumber: newResponse.contactNumber,
-        email: newResponse.email,
-        status: newResponse.attendance === 'Yes, definitely!' ? 'Attending' : 'Maybe',
-        bringingPlusOne: newResponse.bringingPlusOne === 'Yes, 1 +1',
-        kidsCount: newResponse.bringingKids === 'Yes' && typeof newResponse.kidsCount === 'number' ? newResponse.kidsCount : 0,
-        messageToBatch: newResponse.otherSuggestions ? newResponse.otherSuggestions.slice(0, 100) : undefined,
-      };
-
-      if (existingRsvpIndex >= 0) {
-        const updated = [...rsvps];
-        updated[existingRsvpIndex] = newRsvp;
-        setRsvps(updated);
-      } else {
-        setRsvps(prev => [newRsvp, ...prev]);
-      }
+      await api.adminLogin(passcode);
+      setIsAdmin(true);
+      return true;
+    } catch {
+      return false;
     }
   };
 
+  // Handler: log out — clears both local state and the server-side session.
+  const handleSetIsAdmin = (val: boolean) => {
+    setIsAdmin(val);
+    if (!val) api.adminLogout().catch(() => {});
+  };
+
+  // Handler: Save Event Details
+  const handleSaveEventDetails = async (newDetails: EventDetails) => {
+    setEventDetails(await api.updateEventDetails(newDetails));
+  };
+
+  // Handler: Survey Submitted
+  const handleSurveySubmitted = async (newResponse: SurveyResponse) => {
+    const created = await api.createSurveyResponse(newResponse);
+    if (isAdmin) setAdminResponses(prev => [created, ...prev]);
+
+    // The backend may have auto-created/updated an RSVP from this submission
+    // (see POST /api/survey-responses) — refresh the aggregates that depend on it.
+    const [newStats, newPublicRsvps] = await Promise.all([
+      api.fetchDashboardStats(),
+      api.fetchPublicRsvps(),
+    ]);
+    setStats(newStats);
+    setPublicRsvps(newPublicRsvps);
+    if (isAdmin) setAdminRsvps(await api.fetchAdminRsvps());
+  };
+
   // Handler: Direct RSVP Submitted
-  const handleRsvpSubmitted = (newRsvp: RSVPRecord) => {
-    setRsvps(prev => {
-      const idx = prev.findIndex(r => r.id === newRsvp.id || r.contactNumber === newRsvp.contactNumber);
+  const handleRsvpSubmitted = async (newRsvp: RSVPRecord) => {
+    const saved = await api.createOrUpdateRsvp(newRsvp);
+    const publicVersion: PublicRSVP = {
+      id: saved.id,
+      submittedAt: saved.submittedAt,
+      fullName: saved.fullName,
+      status: saved.status,
+      bringingPlusOne: saved.bringingPlusOne,
+      kidsCount: saved.kidsCount,
+      messageToBatch: saved.messageToBatch,
+    };
+    setPublicRsvps(prev => {
+      const idx = prev.findIndex(r => r.id === publicVersion.id);
       if (idx >= 0) {
         const updated = [...prev];
-        updated[idx] = newRsvp;
+        updated[idx] = publicVersion;
         return updated;
       }
-      return [newRsvp, ...prev];
+      return [publicVersion, ...prev];
     });
+    if (isAdmin) {
+      setAdminRsvps(prev => {
+        const idx = prev.findIndex(r => r.id === saved.id);
+        if (idx >= 0) {
+          const updated = [...prev];
+          updated[idx] = saved;
+          return updated;
+        }
+        return [saved, ...prev];
+      });
+    }
   };
 
   // Handler: Delete Survey Response
-  const handleDeleteResponse = (id: string) => {
-    setResponses(prev => prev.filter(r => r.id !== id));
+  const handleDeleteResponse = async (id: string) => {
+    await api.deleteSurveyResponse(id);
+    setAdminResponses(prev => prev.filter(r => r.id !== id));
+    setStats(await api.fetchDashboardStats());
   };
 
   // Handler: Update Payment Status
-  const handleUpdatePaymentStatus = (id: string, status: SurveyResponse['pledgePaidStatus']) => {
-    setResponses(prev => prev.map(r => r.id === id ? { ...r, pledgePaidStatus: status } : r));
+  const handleUpdatePaymentStatus = async (id: string, status: SurveyResponse['pledgePaidStatus']) => {
+    const updated = await api.updatePaymentStatus(id, status);
+    setAdminResponses(prev => prev.map(r => r.id === id ? updated : r));
   };
 
   // Handler: Save / Edit Expense
-  const handleSaveExpense = (expense: PlannedExpense) => {
+  const handleSaveExpense = async (expense: PlannedExpense) => {
+    const exists = expenses.some(e => e.id === expense.id);
+    const saved = exists
+      ? await api.updateExpense(expense.id, expense)
+      : await api.createExpense(expense);
     setExpenses(prev => {
-      const idx = prev.findIndex(e => e.id === expense.id);
+      const idx = prev.findIndex(e => e.id === saved.id);
       if (idx >= 0) {
         const updated = [...prev];
-        updated[idx] = expense;
+        updated[idx] = saved;
         return updated;
       }
-      return [expense, ...prev];
+      return [saved, ...prev];
     });
+    setStats(await api.fetchDashboardStats());
   };
 
   // Handler: Delete Expense
-  const handleDeleteExpense = (id: string) => {
+  const handleDeleteExpense = async (id: string) => {
+    await api.deleteExpense(id);
     setExpenses(prev => prev.filter(e => e.id !== id));
+    setStats(await api.fetchDashboardStats());
   };
 
   // Handler: Save / Edit Announcement
-  const handleSaveAnnouncement = (ann: Announcement) => {
+  const handleSaveAnnouncement = async (ann: Announcement) => {
+    const exists = announcements.some(a => a.id === ann.id);
+    const saved = exists
+      ? await api.updateAnnouncement(ann.id, ann)
+      : await api.createAnnouncement(ann);
     setAnnouncements(prev => {
-      const idx = prev.findIndex(a => a.id === ann.id);
+      const idx = prev.findIndex(a => a.id === saved.id);
       if (idx >= 0) {
         const updated = [...prev];
-        updated[idx] = ann;
+        updated[idx] = saved;
         return updated;
       }
-      return [ann, ...prev];
+      return [saved, ...prev];
     });
   };
 
   // Handler: Delete Announcement
-  const handleDeleteAnnouncement = (id: string) => {
+  const handleDeleteAnnouncement = async (id: string) => {
+    await api.deleteAnnouncement(id);
     setAnnouncements(prev => prev.filter(a => a.id !== id));
   };
 
   // Handler: Toggle Pin Announcement
-  const handleTogglePinAnnouncement = (id: string) => {
-    setAnnouncements(prev => prev.map(a => a.id === id ? { ...a, isPinned: !a.isPinned } : a));
+  const handleTogglePinAnnouncement = async (id: string) => {
+    const updated = await api.togglePinAnnouncement(id);
+    setAnnouncements(prev => prev.map(a => a.id === id ? updated : a));
   };
 
   // Handler: Like Announcement
-  const handleLikeAnnouncement = (id: string) => {
-    setAnnouncements(prev => prev.map(a => a.id === id ? { ...a, likesCount: a.likesCount + 1 } : a));
+  const handleLikeAnnouncement = async (id: string) => {
+    const updated = await api.likeAnnouncement(id);
+    setAnnouncements(prev => prev.map(a => a.id === id ? updated : a));
   };
 
   // Handler: Reset to Demo Data
-  const handleResetDemoData = () => {
-    setResponses(INITIAL_SURVEY_RESPONSES);
-    setExpenses(INITIAL_EXPENSES);
-    setAnnouncements(INITIAL_ANNOUNCEMENTS);
-    setRsvps(INITIAL_RSVPS);
-    setEventDetails(INITIAL_EVENT_DETAILS);
-    localStorage.removeItem(STORAGE_KEYS.SURVEYS);
-    localStorage.removeItem(STORAGE_KEYS.EXPENSES);
-    localStorage.removeItem(STORAGE_KEYS.ANNOUNCEMENTS);
-    localStorage.removeItem(STORAGE_KEYS.RSVPS);
-    localStorage.removeItem(STORAGE_KEYS.EVENT_DETAILS);
+  const handleResetDemoData = async () => {
+    await api.resetDemoData();
+    const [details, anns, exps, dashStats, rsvpList] = await Promise.all([
+      api.fetchEventDetails(),
+      api.fetchAnnouncements(),
+      api.fetchExpenses(),
+      api.fetchDashboardStats(),
+      api.fetchPublicRsvps(),
+    ]);
+    setEventDetails(details);
+    setAnnouncements(anns);
+    setExpenses(exps);
+    setStats(dashStats);
+    setPublicRsvps(rsvpList);
+    if (isAdmin) {
+      const [responses, rsvps] = await Promise.all([
+        api.fetchSurveyResponses(),
+        api.fetchAdminRsvps(),
+      ]);
+      setAdminResponses(responses);
+      setAdminRsvps(rsvps);
+    }
   };
 
+  if (!isBootstrapped) {
+    return (
+      <div className="min-h-screen bg-background text-on-background flex items-center justify-center font-sans">
+        <div className="text-sm text-on-surface-variant">Loading Batch 2007 Reunion Hub…</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans selection:bg-amber-400 selection:text-slate-950">
-      
+    <div className="min-h-screen bg-background text-on-background flex flex-col font-sans selection:bg-primary-container selection:text-on-primary-container">
+
+      {/* Paper-grain texture overlay */}
+      <div className="paper-grain" aria-hidden="true" />
+
       {/* Header */}
       <Header
         activeTab={activeTab}
@@ -268,15 +309,15 @@ export default function App() {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         isAdmin={isAdmin}
-        setIsAdmin={setIsAdmin}
-        responseCount={responses.length}
-        totalPledges={totalPledges}
+        setIsAdmin={handleSetIsAdmin}
+        responseCount={stats.totalSurveys}
+        totalPledges={stats.totalPledges}
       />
 
       {/* Prominent Pending Date & Venue Banner */}
       <PendingBanner
-        totalSurveys={responses.length}
-        totalPledges={totalPledges}
+        totalSurveys={stats.totalSurveys}
+        totalPledges={stats.totalPledges}
         eventDetails={eventDetails}
         onTakeSurveyClick={() => {
           setActiveTab('survey');
@@ -287,7 +328,7 @@ export default function App() {
 
       {/* Main Content Body */}
       <main className="flex-1 pb-16">
-        
+
         {/* Tab 1: Survey Form (Highlighted as #1 Priority) */}
         {activeTab === 'survey' && (
           <SurveySection
@@ -299,7 +340,7 @@ export default function App() {
         {/* Tab 2: RSVP Section */}
         {activeTab === 'rsvp' && (
           <RsvpSection
-            rsvps={rsvps}
+            rsvps={publicRsvps}
             onRsvpSubmitted={handleRsvpSubmitted}
             onNavigateToSurvey={() => setActiveTab('survey')}
           />
@@ -310,24 +351,17 @@ export default function App() {
           <AnnouncementsSection
             announcements={announcements}
             onLikeAnnouncement={handleLikeAnnouncement}
-            onOpenAdminToPost={() => {
-              setIsAdmin(true);
-              setActiveTab('admin');
-            }}
+            onOpenAdminToPost={() => setActiveTab('admin')}
           />
         )}
 
         {/* Tab 4: Public Dashboard & Funds Transparency */}
         {activeTab === 'dashboard' && (
           <PublicDashboardSection
-            responses={responses}
+            stats={stats}
             expenses={expenses}
-            rsvps={rsvps}
             eventDetails={eventDetails}
-            onOpenAdmin={() => {
-              setIsAdmin(true);
-              setActiveTab('admin');
-            }}
+            onOpenAdmin={() => setActiveTab('admin')}
             onTakeSurvey={() => setActiveTab('survey')}
           />
         )}
@@ -336,11 +370,12 @@ export default function App() {
         {activeTab === 'admin' && (
           <AdminPortal
             isAdmin={isAdmin}
-            setIsAdmin={setIsAdmin}
-            responses={responses}
+            setIsAdmin={handleSetIsAdmin}
+            onLogin={handleAdminLogin}
+            responses={adminResponses}
             expenses={expenses}
             announcements={announcements}
-            rsvps={rsvps}
+            rsvps={adminRsvps}
             eventDetails={eventDetails}
             onSaveEventDetails={handleSaveEventDetails}
             onDeleteResponse={handleDeleteResponse}
@@ -358,17 +393,17 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#f2ece1] text-stone-700 border-t border-stone-300 text-xs py-10 px-4 sm:px-6 mt-12">
+      <footer className="relative bg-surface-container text-on-surface-variant border-t border-outline-variant/40 text-xs py-10 px-4 sm:px-6 mt-12">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-700 text-white flex items-center justify-center font-bold shadow-sm">
-              <GraduationCap className="w-6 h-6 text-amber-100" />
+            <div className="w-10 h-10 rounded bg-primary text-on-primary flex items-center justify-center font-bold shadow-soft">
+              <GraduationCap className="w-6 h-6 text-on-primary" />
             </div>
             <div>
-              <div className="font-bold text-stone-900 text-base">
+              <div className="font-serif font-semibold text-on-surface text-base">
                 Makati Science High School • Batch 2007
               </div>
-              <div className="text-xs text-stone-500">
+              <div className="text-xs text-on-surface-variant">
                 Official Reunion Planning & Operating Funds Hub
               </div>
             </div>
@@ -378,7 +413,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => { setActiveTab('survey'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="hover:text-amber-800 transition-colors"
+              className="hover:text-primary transition-colors"
             >
               Planning Survey
             </button>
@@ -386,7 +421,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => { setActiveTab('rsvp'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="hover:text-amber-800 transition-colors"
+              className="hover:text-primary transition-colors"
             >
               Quick RSVP
             </button>
@@ -394,7 +429,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => { setActiveTab('announcements'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="hover:text-amber-800 transition-colors"
+              className="hover:text-primary transition-colors"
             >
               Announcements
             </button>
@@ -402,7 +437,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => { setActiveTab('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="hover:text-amber-800 transition-colors"
+              className="hover:text-primary transition-colors"
             >
               Operating Funds
             </button>
@@ -410,14 +445,14 @@ export default function App() {
             <button
               type="button"
               onClick={() => { setActiveTab('admin'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="hover:text-amber-900 transition-colors text-amber-800 font-bold"
+              className="hover:text-primary transition-colors text-primary font-bold"
             >
               Admin Portal
             </button>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto mt-6 pt-6 border-t border-stone-300 text-center text-xs text-stone-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="max-w-7xl mx-auto mt-6 pt-6 border-t border-outline-variant/40 text-center text-xs text-on-surface-variant flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>Excellence & Service • MakSci 2007 Forever</span>
           <span>Designed with care for the Makati Science High School Batch 2007 Reunion</span>
         </div>

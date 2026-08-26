@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  Bell, Pin, Calendar, User, Heart, 
-  Share2, Check 
+import {
+  Bell, Pin, Calendar, User, Heart,
+  Share2, Check
 } from 'lucide-react';
 import { Announcement } from '../types';
 
@@ -40,11 +40,11 @@ export const AnnouncementsSection: React.FC<AnnouncementsSectionProps> = ({
 
   return (
     <div id="announcements-container" className="max-w-4xl mx-auto py-5 px-4 space-y-5">
-      
+
       {/* Header & Filter */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200">
-        <h2 className="text-base sm:text-lg font-semibold text-stone-900 flex items-center gap-2">
-          <Bell className="w-4 h-4 text-amber-700" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-outline-variant/30">
+        <h2 className="text-base sm:text-lg font-serif font-semibold text-on-surface flex items-center gap-2">
+          <Bell className="w-4 h-4 text-primary" />
           <span>Announcements & Updates</span>
         </h2>
 
@@ -55,10 +55,10 @@ export const AnnouncementsSection: React.FC<AnnouncementsSectionProps> = ({
               key={tag}
               type="button"
               onClick={() => setSelectedTag(tag)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+              className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
                 selectedTag === tag
-                  ? 'bg-amber-700 text-white shadow-xs'
-                  : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200'
+                  ? 'bg-primary text-on-primary shadow-soft'
+                  : 'bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container border border-outline-variant/30'
               }`}
             >
               {tag}
@@ -73,14 +73,14 @@ export const AnnouncementsSection: React.FC<AnnouncementsSectionProps> = ({
           <article
             key={item.id}
             id={`announcement-card-${item.id}`}
-            className={`bg-white rounded-xl overflow-hidden border shadow-xs hover:shadow-sm transition-all flex flex-col justify-between ${
-              item.isPinned ? 'border-amber-300 ring-1 ring-amber-300/50' : 'border-stone-200'
+            className={`bg-surface-container-lowest rounded overflow-hidden border shadow-soft hover:shadow-soft transition-all flex flex-col justify-between ${
+              item.isPinned ? 'border-primary-container ring-1 ring-primary-container/50' : 'border-outline-variant/30'
             }`}
           >
             <div>
               {/* Cover Image if any */}
               {item.imageUrl && (
-                <div className="relative h-40 sm:h-44 w-full overflow-hidden bg-stone-100">
+                <div className="relative h-40 sm:h-44 w-full overflow-hidden bg-surface-container">
                   <img
                     src={item.imageUrl}
                     alt={item.title}
@@ -88,12 +88,12 @@ export const AnnouncementsSection: React.FC<AnnouncementsSectionProps> = ({
                     className="w-full h-full object-cover"
                   />
                   {item.isPinned && (
-                    <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-amber-500 text-stone-950 text-[10px] font-semibold flex items-center gap-1 shadow-xs">
+                    <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-primary text-on-primary text-[10px] font-semibold flex items-center gap-1 shadow-soft">
                       <Pin className="w-2.5 h-2.5" />
                       <span>PINNED</span>
                     </div>
                   )}
-                  <span className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-stone-900/80 backdrop-blur-xs text-amber-200 text-[10px] font-medium uppercase tracking-wider">
+                  <span className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-inverse-surface/80 backdrop-blur-xs text-inverse-on-surface text-[10px] font-medium uppercase tracking-wider">
                     {item.tag}
                   </span>
                 </div>
@@ -102,31 +102,31 @@ export const AnnouncementsSection: React.FC<AnnouncementsSectionProps> = ({
               <div className="p-4 space-y-2">
                 {!item.imageUrl && (
                   <div className="flex items-center justify-between gap-2">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-900 border border-amber-200 uppercase">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-tertiary-container/25 text-on-tertiary-container border border-tertiary-container/50 uppercase">
                       {item.tag}
                     </span>
                     {item.isPinned && (
-                      <span className="text-[11px] font-medium text-amber-700 flex items-center gap-1">
+                      <span className="text-[11px] font-medium text-primary flex items-center gap-1">
                         <Pin className="w-3 h-3" /> Pinned
                       </span>
                     )}
                   </div>
                 )}
 
-                <h3 className="text-sm sm:text-base font-semibold text-stone-900 leading-snug">
+                <h3 className="text-sm sm:text-base font-serif font-semibold text-on-surface leading-snug">
                   {item.title}
                 </h3>
 
-                <p className="text-stone-700 text-xs leading-relaxed whitespace-pre-line">
+                <p className="text-on-surface-variant text-xs leading-relaxed whitespace-pre-line">
                   {item.caption}
                 </p>
               </div>
             </div>
 
-            <div className="px-4 pb-4 pt-1.5 flex items-center justify-between border-t border-stone-100 text-[11px] text-stone-500">
+            <div className="px-4 pb-4 pt-1.5 flex items-center justify-between border-t border-outline-variant/20 text-[11px] text-on-surface-variant">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-stone-700 flex items-center gap-1">
-                  <User className="w-3 h-3 text-stone-400" />
+                <span className="font-medium text-on-surface-variant flex items-center gap-1">
+                  <User className="w-3 h-3 text-outline" />
                   {item.author}
                 </span>
                 <span>•</span>
@@ -137,20 +137,20 @@ export const AnnouncementsSection: React.FC<AnnouncementsSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => onLikeAnnouncement(item.id)}
-                  className="flex items-center gap-1 px-2 py-1 rounded hover:bg-rose-50 text-stone-600 hover:text-rose-600 transition-colors font-medium text-xs"
+                  className="flex items-center gap-1 px-2 py-1 rounded hover:bg-error-container/40 text-on-surface-variant hover:text-error transition-colors font-medium text-xs"
                 >
-                  <Heart className="w-3.5 h-3.5 text-rose-500" />
+                  <Heart className="w-3.5 h-3.5 text-error" />
                   <span>{item.likesCount || 0}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleShare(item.id)}
-                  className="p-1 rounded hover:bg-stone-100 text-stone-500 hover:text-stone-800 transition-colors"
+                  className="p-1 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors"
                   title="Share announcement link"
                 >
                   {copiedId === item.id ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <Check className="w-3.5 h-3.5 text-success" />
                   ) : (
                     <Share2 className="w-3.5 h-3.5" />
                   )}

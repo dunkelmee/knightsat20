@@ -172,6 +172,7 @@ class DashboardStatsOut(CamelModel):
     undecided_count: int
     declined_count: int
     estimated_headcount: int
+    pledging_count: int
     month_tally: dict[str, int]
     venue_tally: dict[str, int]
 

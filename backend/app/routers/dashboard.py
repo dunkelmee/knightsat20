@@ -45,6 +45,7 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
         undecided_count=counts.get("undecided", 0),
         declined_count=counts.get("declined", 0),
         estimated_headcount=counts.get("attending", 0) + counts.get("likely", 0),
+        pledging_count=sum(1 for r in responses if (r.computed_pledge_amount or 0) > 0),
         month_tally=dict(month_tally),
         venue_tally=dict(venue_tally),
     )

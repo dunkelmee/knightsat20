@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
-import { 
-  Send, Users, CheckCircle2, MessageSquare, 
+import {
+  Send, Users, CheckCircle2, MessageSquare,
   UserPlus, Check, Clock, Plus, Minus, Search,
   ClipboardList, ChevronDown, ChevronUp, Sparkles, Filter
 } from 'lucide-react';
-import { RSVPRecord } from '../types';
+import { PublicRSVP, RSVPRecord } from '../types';
 
 interface RsvpSectionProps {
-  rsvps: RSVPRecord[];
+  rsvps: PublicRSVP[];
   onRsvpSubmitted: (rsvp: RSVPRecord) => void;
   onNavigateToSurvey: () => void;
 }
@@ -87,20 +87,20 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
 
   return (
     <div id="rsvp-section-container" className="max-w-5xl mx-auto py-5 px-4 space-y-5">
-      
+
       {/* Informative Survey vs Roster Clarification Banner */}
-      <div className="bg-[#f5efe6] rounded-xl p-4 sm:p-5 border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-surface-container-low rounded p-4 sm:p-5 border border-outline-variant/30 shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-300">
+            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-primary-container/20 text-on-primary-container border border-primary-container/50">
               Unified Headcount
             </span>
-            <h2 className="text-sm sm:text-base font-semibold text-stone-900">
+            <h2 className="text-sm sm:text-base font-serif font-semibold text-on-surface">
               Batch 2007 Attendee Roster & Guest List
             </h2>
           </div>
-          <p className="text-xs text-stone-600 max-w-xl">
-            <strong className="text-stone-900 font-semibold">Completing the Reunion Survey automatically adds you to this roster</strong> and records your venue/date votes. If you already filled out the survey, you are already counted below!
+          <p className="text-xs text-on-surface-variant max-w-xl">
+            <strong className="text-on-surface font-semibold">Completing the Reunion Survey automatically adds you to this roster</strong> and records your venue/date votes. If you already filled out the survey, you are already counted below!
           </p>
         </div>
 
@@ -108,7 +108,7 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
           <button
             type="button"
             onClick={onNavigateToSurvey}
-            className="px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-semibold text-xs shadow-xs flex items-center gap-1.5 transition-all"
+            className="px-4 py-2 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft flex items-center gap-1.5 transition-all"
           >
             <ClipboardList className="w-3.5 h-3.5" />
             <span>Answer Full Survey</span>
@@ -118,83 +118,83 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
 
       {/* Sleek Minimalist Headcount Strip */}
       <div id="rsvp-headcount-cards" className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div className="bg-white rounded-xl p-3.5 border border-stone-200 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-stone-600 font-medium mb-0.5">
+        <div className="bg-surface-container-lowest rounded p-3.5 border border-outline-variant/30 shadow-soft">
+          <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium mb-0.5">
             <span>Attending Alumni</span>
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-success" />
           </div>
-          <div className="text-2xl font-semibold text-stone-900">
+          <div className="text-2xl font-semibold text-on-surface">
             {attendingList.length}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-3.5 border border-stone-200 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-stone-600 font-medium mb-0.5">
+        <div className="bg-surface-container-lowest rounded p-3.5 border border-outline-variant/30 shadow-soft">
+          <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium mb-0.5">
             <span>Plus-Ones & Kids</span>
-            <UserPlus className="w-3.5 h-3.5 text-amber-700" />
+            <UserPlus className="w-3.5 h-3.5 text-primary" />
           </div>
-          <div className="text-2xl font-semibold text-stone-900">
+          <div className="text-2xl font-semibold text-on-surface">
             +{plusOnesTotal + kidsTotal}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-3.5 border border-stone-200 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-stone-600 font-medium mb-0.5">
+        <div className="bg-surface-container-lowest rounded p-3.5 border border-outline-variant/30 shadow-soft">
+          <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium mb-0.5">
             <span>Total Headcount</span>
-            <Users className="w-3.5 h-3.5 text-stone-500" />
+            <Users className="w-3.5 h-3.5 text-on-surface-variant" />
           </div>
-          <div className="text-2xl font-semibold text-stone-900">
+          <div className="text-2xl font-semibold text-on-surface">
             {totalHeadcount}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-3.5 border border-stone-200 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-stone-600 font-medium mb-0.5">
+        <div className="bg-surface-container-lowest rounded p-3.5 border border-outline-variant/30 shadow-soft">
+          <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium mb-0.5">
             <span>Tentative (Maybe)</span>
-            <Clock className="w-3.5 h-3.5 text-amber-700" />
+            <Clock className="w-3.5 h-3.5 text-primary" />
           </div>
-          <div className="text-2xl font-semibold text-stone-900">
+          <div className="text-2xl font-semibold text-on-surface">
             {maybeList.length}
           </div>
         </div>
       </div>
 
       {/* Express Status Update / Message Accordion */}
-      <div className="bg-white rounded-xl border border-stone-200 shadow-xs overflow-hidden">
+      <div className="bg-surface-container-lowest rounded border border-outline-variant/30 shadow-soft overflow-hidden">
         <button
           type="button"
           onClick={() => setShowExpressForm(!showExpressForm)}
-          className="w-full p-4 flex items-center justify-between hover:bg-stone-50 transition-colors text-left"
+          className="w-full p-4 flex items-center justify-between hover:bg-surface-container-low transition-colors text-left"
         >
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-800 flex items-center justify-center border border-amber-200">
+            <div className="w-7 h-7 rounded bg-primary-container/20 text-on-primary-container flex items-center justify-center border border-primary-container/50">
               <Sparkles className="w-3.5 h-3.5" />
             </div>
             <div>
-              <div className="text-xs font-semibold text-stone-900">
+              <div className="text-xs font-semibold text-on-surface">
                 Post a Quick Shoutout / Message (Quick Form)
               </div>
-              <div className="text-[11px] text-stone-500">
+              <div className="text-[11px] text-on-surface-variant">
                 Want to leave a quick message or shoutout for the batch without the 10-question survey? Click here.
               </div>
             </div>
           </div>
-          <div className="text-stone-400">
+          <div className="text-outline">
             {showExpressForm ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </div>
         </button>
 
         {showExpressForm && (
-          <div className="p-4 sm:p-5 border-t border-stone-100 bg-[#fdfcf9]">
+          <div className="p-4 sm:p-5 border-t border-outline-variant/20 bg-surface-container-low">
             {isSubmitted ? (
               <div className="text-center py-5 space-y-2.5">
-                <div className="w-9 h-9 bg-emerald-50 text-emerald-700 rounded-full flex items-center justify-center mx-auto border border-emerald-200">
+                <div className="w-9 h-9 bg-success-container text-on-success-container rounded-full flex items-center justify-center mx-auto border border-success-container">
                   <Check className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-semibold text-stone-900">
+                <h3 className="text-sm font-semibold text-on-surface">
                   Thanks, {fullName}!
                 </h3>
-                <p className="text-xs text-stone-600">
+                <p className="text-xs text-on-surface-variant">
                   Your shoutout and status have been posted to the board below.
                 </p>
                 <button
@@ -208,7 +208,7 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                     setPlusOnesCount(0);
                     setKidsCount(0);
                   }}
-                  className="px-3.5 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold border border-stone-200"
+                  className="px-3.5 py-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-xs font-semibold border border-outline-variant/30"
                 >
                   Submit Another Message
                 </button>
@@ -216,15 +216,15 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
             ) : (
               <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-3">
                 {error && (
-                  <div className="p-2 rounded-lg bg-red-50 text-red-800 text-xs font-medium border border-red-200">
+                  <div className="p-2 rounded bg-error-container text-on-error-container text-xs font-medium border border-error-container">
                     {error}
                   </div>
                 )}
 
                 {/* Status Radio */}
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Attendance Status <span className="text-red-500">*</span>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                    Attendance Status <span className="text-error">*</span>
                   </label>
                   <div className="grid grid-cols-3 gap-1.5">
                     {[
@@ -234,10 +234,10 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                     ].map((s) => (
                       <label
                         key={s.val}
-                        className={`p-2 rounded-lg border text-center text-xs cursor-pointer transition-all ${
-                          status === s.val 
-                            ? 'border-amber-700 bg-amber-50 text-stone-900 font-semibold ring-1 ring-amber-700' 
-                            : 'border-stone-200 hover:border-stone-300 text-stone-700 bg-white'
+                        className={`p-2 rounded border text-center text-xs cursor-pointer transition-all ${
+                          status === s.val
+                            ? 'border-primary bg-primary-container/15 text-on-surface font-semibold ring-1 ring-primary'
+                            : 'border-outline-variant/30 hover:border-outline-variant text-on-surface-variant bg-surface-container-lowest'
                         }`}
                       >
                         <input
@@ -255,8 +255,8 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
 
                 {/* Name */}
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Your Name <span className="text-red-500">*</span>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                    Your Name <span className="text-error">*</span>
                   </label>
                   <input
                     id="input-rsvp-name"
@@ -265,24 +265,24 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                     placeholder="e.g. Juan dela Cruz (IV-Curie)"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-stone-900 text-xs focus:outline-none focus:ring-1 focus:ring-amber-600 bg-white"
+                    className="w-full px-3 py-1.5 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest"
                   />
                 </div>
 
                 {/* Companions */}
                 {status === 'Attending' && (
-                  <div className="p-3 bg-stone-50 rounded-lg border border-stone-200 space-y-2.5">
-                    <div className="text-xs font-semibold text-stone-700">Companions (0 if attending alone)</div>
-                    
+                  <div className="p-3 bg-surface-container-low rounded border border-outline-variant/30 space-y-2.5">
+                    <div className="text-xs font-semibold text-on-surface-variant">Companions (0 if attending alone)</div>
+
                     <div className="grid grid-cols-2 gap-2.5">
                       {/* Plus Ones */}
-                      <div className="bg-white p-2 rounded-lg border border-stone-200 flex items-center justify-between">
-                        <span className="text-xs font-medium text-stone-700">Adult (+1s)</span>
+                      <div className="bg-surface-container-lowest p-2 rounded border border-outline-variant/30 flex items-center justify-between">
+                        <span className="text-xs font-medium text-on-surface-variant">Adult (+1s)</span>
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
                             onClick={() => setPlusOnesCount(Math.max(0, plusOnesCount - 1))}
-                            className="w-6 h-6 rounded-md bg-stone-100 font-semibold text-xs hover:bg-stone-200 flex items-center justify-center"
+                            className="w-6 h-6 rounded bg-surface-container font-semibold text-xs hover:bg-surface-container-high flex items-center justify-center"
                           >
                             <Minus className="w-3 h-3" />
                           </button>
@@ -290,7 +290,7 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                           <button
                             type="button"
                             onClick={() => setPlusOnesCount(plusOnesCount + 1)}
-                            className="w-6 h-6 rounded-md bg-stone-100 font-semibold text-xs hover:bg-stone-200 flex items-center justify-center"
+                            className="w-6 h-6 rounded bg-surface-container font-semibold text-xs hover:bg-surface-container-high flex items-center justify-center"
                           >
                             <Plus className="w-3 h-3" />
                           </button>
@@ -298,13 +298,13 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                       </div>
 
                       {/* Kids */}
-                      <div className="bg-white p-2 rounded-lg border border-stone-200 flex items-center justify-between">
-                        <span className="text-xs font-medium text-stone-700">Kids</span>
+                      <div className="bg-surface-container-lowest p-2 rounded border border-outline-variant/30 flex items-center justify-between">
+                        <span className="text-xs font-medium text-on-surface-variant">Kids</span>
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
                             onClick={() => setKidsCount(Math.max(0, kidsCount - 1))}
-                            className="w-6 h-6 rounded-md bg-stone-100 font-semibold text-xs hover:bg-stone-200 flex items-center justify-center"
+                            className="w-6 h-6 rounded bg-surface-container font-semibold text-xs hover:bg-surface-container-high flex items-center justify-center"
                           >
                             <Minus className="w-3 h-3" />
                           </button>
@@ -312,7 +312,7 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                           <button
                             type="button"
                             onClick={() => setKidsCount(kidsCount + 1)}
-                            className="w-6 h-6 rounded-md bg-stone-100 font-semibold text-xs hover:bg-stone-200 flex items-center justify-center"
+                            className="w-6 h-6 rounded bg-surface-container font-semibold text-xs hover:bg-surface-container-high flex items-center justify-center"
                           >
                             <Plus className="w-3 h-3" />
                           </button>
@@ -323,7 +323,7 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                 )}
 
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">
                     Message / Shoutout for Batch 2007:
                   </label>
                   <textarea
@@ -332,7 +332,7 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                     placeholder="Leave a short greeting or message for batchmates..."
                     value={messageToBatch}
                     onChange={(e) => setMessageToBatch(e.target.value)}
-                    className="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-amber-600 bg-white"
+                    className="w-full px-3 py-1.5 rounded border border-secondary/30 text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest"
                   />
                 </div>
 
@@ -340,14 +340,14 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowExpressForm(false)}
-                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:bg-stone-100"
+                    className="px-3.5 py-1.5 rounded text-xs font-semibold text-on-surface-variant hover:bg-surface-container"
                   >
                     Cancel
                   </button>
                   <button
                     id="btn-submit-rsvp"
                     type="submit"
-                    className="px-5 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-semibold text-xs shadow-xs transition-all flex items-center gap-1.5"
+                    className="px-5 py-2 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft transition-all flex items-center gap-1.5"
                   >
                     <Send className="w-3.5 h-3.5" />
                     <span>Save to Roster</span>
@@ -360,13 +360,13 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
       </div>
 
       {/* Main Attendee Roster & Shoutouts Card */}
-      <div className="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 space-y-4 shadow-xs">
-        
+      <div className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-4 shadow-soft">
+
         {/* Search & Filter Toolbar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-outline-variant/20">
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-amber-800" />
-            <h3 className="text-sm sm:text-base font-semibold text-stone-900">
+            <Users className="w-4 h-4 text-primary" />
+            <h3 className="text-sm sm:text-base font-serif font-semibold text-on-surface">
               Live Roster ({filteredRsvps.length})
             </h3>
           </div>
@@ -374,13 +374,13 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
           <div className="flex flex-wrap items-center gap-2">
             {/* Search Input */}
             <div className="relative flex-1 sm:w-56">
-              <Search className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-outline absolute left-2.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search batchmate..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-stone-300 text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-amber-600 bg-stone-50"
+                className="w-full pl-8 pr-3 py-1.5 rounded border border-secondary/30 text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-low"
               />
             </div>
 
@@ -391,10 +391,10 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                   key={filter}
                   type="button"
                   onClick={() => setStatusFilter(filter)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${
                     statusFilter === filter
-                      ? 'bg-amber-700 text-white shadow-xs'
-                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                      ? 'bg-primary text-on-primary shadow-soft'
+                      : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
                   }`}
                 >
                   {filter}
@@ -406,25 +406,25 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
 
         {/* Roster Grid */}
         {filteredRsvps.length === 0 ? (
-          <div className="text-center py-8 text-xs text-stone-500">
+          <div className="text-center py-8 text-xs text-on-surface-variant">
             No batchmates found matching "{searchQuery}".
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin">
             {filteredRsvps.map((r) => (
-              <div 
+              <div
                 key={r.id}
-                className="p-3.5 rounded-xl bg-stone-50/70 hover:bg-stone-50 border border-stone-200/90 transition-all flex flex-col justify-between gap-2.5"
+                className="p-3.5 rounded bg-surface-container-low/70 hover:bg-surface-container-low border border-outline-variant/30 transition-all flex flex-col justify-between gap-2.5"
               >
                 <div className="space-y-1.5">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="font-semibold text-xs text-stone-900">
+                      <div className="font-serif font-semibold text-xs text-on-surface">
                         {r.fullName}
                       </div>
                       {(r.bringingPlusOne || (r.kidsCount && r.kidsCount > 0)) && (
-                        <div className="text-[11px] text-stone-500 flex items-center gap-1.5 mt-0.5">
-                          <UserPlus className="w-3 h-3 text-stone-400" />
+                        <div className="text-[11px] text-on-surface-variant flex items-center gap-1.5 mt-0.5">
+                          <UserPlus className="w-3 h-3 text-outline" />
                           <span>
                             {r.bringingPlusOne ? '+1 Adult Guest' : ''}
                             {r.bringingPlusOne && r.kidsCount ? ' • ' : ''}
@@ -434,17 +434,17 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                       )}
                     </div>
 
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md flex-shrink-0 ${
-                      r.status === 'Attending' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
-                      r.status === 'Maybe' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-stone-200 text-stone-700'
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded flex-shrink-0 ${
+                      r.status === 'Attending' ? 'bg-success-container text-on-success-container border border-success-container' :
+                      r.status === 'Maybe' ? 'bg-primary-container/20 text-on-primary-container border border-primary-container/50' : 'bg-surface-container-high text-on-surface-variant'
                     }`}>
                       {r.status === 'Attending' ? '✓ Attending' : r.status === 'Maybe' ? '⏳ Maybe' : 'Can’t Join'}
                     </span>
                   </div>
 
                   {r.messageToBatch && (
-                    <div className="text-xs text-stone-700 bg-white p-2.5 rounded-lg border border-stone-200/80 shadow-2xs flex items-start gap-1.5">
-                      <MessageSquare className="w-3.5 h-3.5 text-amber-700 mt-0.5 flex-shrink-0" />
+                    <div className="text-xs text-on-surface-variant bg-surface-container-lowest p-2.5 rounded border border-outline-variant/20 shadow-soft flex items-start gap-1.5">
+                      <MessageSquare className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />
                       <p className="italic text-[11px] leading-relaxed">
                         &quot;{r.messageToBatch}&quot;
                       </p>
@@ -452,7 +452,7 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                   )}
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] text-stone-400 pt-1 border-t border-stone-200/50">
+                <div className="flex items-center justify-between text-[10px] text-outline pt-1 border-t border-outline-variant/20">
                   <span>MakSci Batch 2007</span>
                   <span>{new Date(r.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                 </div>

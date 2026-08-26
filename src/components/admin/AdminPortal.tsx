@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { 
-  ShieldCheck, Lock, Unlock, ClipboardList, Receipt, 
+import {
+  ShieldCheck, Lock, Unlock, ClipboardList, Receipt,
   Bell, Users, RefreshCw, Sparkles, Calendar
 } from 'lucide-react';
 import { SurveyResponse, PlannedExpense, Announcement, RSVPRecord, EventDetails } from '../../types';
@@ -13,6 +13,7 @@ import { EventDetailsManagerTab } from './EventDetailsManagerTab';
 interface AdminPortalProps {
   isAdmin: boolean;
   setIsAdmin: (val: boolean) => void;
+  onLogin: (passcode: string) => Promise<boolean>;
   responses: SurveyResponse[];
   expenses: PlannedExpense[];
   announcements: Announcement[];
@@ -33,6 +34,7 @@ interface AdminPortalProps {
 export const AdminPortal: React.FC<AdminPortalProps> = ({
   isAdmin,
   setIsAdmin,
+  onLogin,
   responses,
   expenses,
   announcements,
@@ -53,30 +55,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [passcodeError, setPasscodeError] = useState(false);
   const [adminTab, setAdminTab] = useState<'event' | 'responses' | 'funds' | 'announcements' | 'rsvp'>('event');
 
-  const handleUnlock = (e: React.FormEvent) => {
+  const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passcode.trim() === 'admin2007') {
-      setIsAdmin(true);
-      setPasscodeError(false);
-    } else {
-      setPasscodeError(true);
-    }
+    const success = await onLogin(passcode.trim());
+    setPasscodeError(!success);
   };
 
   // Lock Screen if not authorized yet
   if (!isAdmin) {
     return (
       <div id="admin-lock-screen" className="max-w-sm mx-auto py-10 px-4">
-        <div className="bg-white rounded-2xl p-6 border border-stone-200 text-center space-y-4 shadow-xs">
-          <div className="w-12 h-12 rounded-xl bg-amber-700 text-white flex items-center justify-center mx-auto shadow-xs">
-            <Lock className="w-6 h-6 text-amber-100" />
+        <div className="bg-surface-container-lowest rounded p-6 border border-outline-variant/30 text-center space-y-4 shadow-soft">
+          <div className="w-12 h-12 rounded bg-primary text-on-primary flex items-center justify-center mx-auto shadow-soft">
+            <Lock className="w-6 h-6 text-on-primary" />
           </div>
 
           <div>
-            <h2 className="text-base sm:text-lg font-semibold text-stone-900">
+            <h2 className="text-base sm:text-lg font-serif font-semibold text-on-surface">
               Treasury & Admin
             </h2>
-            <p className="text-xs text-stone-500 mt-0.5">
+            <p className="text-xs text-on-surface-variant mt-0.5">
               Makati Science Batch 2007 Committee
             </p>
           </div>
@@ -92,28 +90,28 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   setPasscode(e.target.value);
                   if (passcodeError) setPasscodeError(false);
                 }}
-                className="w-full text-center px-3 py-2 rounded-lg border border-stone-300 text-stone-900 font-semibold tracking-wider text-sm focus:outline-none focus:ring-1 focus:ring-amber-600"
+                className="w-full text-center px-3 py-2 rounded border border-secondary/30 text-on-surface font-semibold tracking-wider text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               />
               {passcodeError && (
-                <p className="text-[11px] text-red-600 mt-1">Incorrect passcode. Please try again.</p>
+                <p className="text-[11px] text-error mt-1">Incorrect passcode. Please try again.</p>
               )}
             </div>
 
             <button
               id="btn-unlock-admin"
               type="submit"
-              className="w-full py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-semibold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5"
+              className="w-full py-2 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft transition-all flex items-center justify-center gap-1.5"
             >
               <Unlock className="w-3.5 h-3.5" />
               <span>Unlock Admin</span>
             </button>
           </form>
 
-          <div className="pt-2 border-t border-stone-100">
+          <div className="pt-2 border-t border-outline-variant/20">
             <button
               type="button"
               onClick={onExitAdmin}
-              className="text-xs text-stone-500 hover:text-stone-800 underline"
+              className="text-xs text-on-surface-variant hover:text-on-surface underline"
             >
               Back to Site
             </button>
@@ -125,23 +123,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   return (
     <div id="admin-portal-container" className="max-w-5xl mx-auto py-5 px-4 space-y-4">
-      
+
       {/* Top Admin Header Bar */}
-      <div className="bg-white text-stone-900 rounded-xl p-4 border border-stone-200 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
+      <div className="bg-surface-container-lowest text-on-surface rounded p-4 border border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-soft">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-amber-700 text-white flex items-center justify-center font-bold flex-shrink-0">
-            <ShieldCheck className="w-5 h-5 text-amber-100" />
+          <div className="w-10 h-10 rounded bg-primary text-on-primary flex items-center justify-center font-bold flex-shrink-0">
+            <ShieldCheck className="w-5 h-5 text-on-primary" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold text-stone-900">
+              <h2 className="text-base font-serif font-semibold text-on-surface">
                 Makati Science Batch 2007 Admin
               </h2>
-              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-900 border border-amber-200">
+              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-primary-container/20 text-on-primary-container border border-primary-container/50">
                 Committee
               </span>
             </div>
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-on-surface-variant">
               Survey responses, operating ledger, announcements, and live RSVP roster.
             </p>
           </div>
@@ -156,7 +154,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               }
             }}
             title="Reset to fresh demo state"
-            className="px-3 py-1.5 rounded-lg bg-white hover:bg-stone-100 text-stone-700 text-xs font-semibold flex items-center gap-1 transition-colors border border-stone-300"
+            className="px-3 py-1.5 rounded bg-background hover:bg-surface-container text-on-surface-variant text-xs font-semibold flex items-center gap-1 transition-colors border border-secondary/30"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Reset Demo Data</span>
@@ -165,7 +163,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           <button
             type="button"
             onClick={() => setIsAdmin(false)}
-            className="px-3 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-100 font-semibold text-xs shadow-xs transition-all flex items-center gap-1"
+            className="px-3 py-1.5 rounded bg-secondary hover:opacity-90 text-on-secondary font-semibold text-xs shadow-soft transition-all flex items-center gap-1"
           >
             <Lock className="w-3.5 h-3.5" />
             <span>Lock</span>
@@ -174,14 +172,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       </div>
 
       {/* Admin Tab Switcher */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none border-b border-stone-200">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none border-b border-outline-variant/30">
         <button
           type="button"
           onClick={() => setAdminTab('event')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+          className={`px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
             adminTab === 'event'
-              ? 'bg-amber-700 text-white shadow-xs'
-              : 'text-stone-700 hover:bg-stone-100'
+              ? 'bg-primary text-on-primary shadow-soft'
+              : 'text-on-surface-variant hover:bg-surface-container'
           }`}
         >
           <Calendar className="w-3.5 h-3.5" />
@@ -191,10 +189,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         <button
           type="button"
           onClick={() => setAdminTab('responses')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+          className={`px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
             adminTab === 'responses'
-              ? 'bg-amber-700 text-white shadow-xs'
-              : 'text-stone-700 hover:bg-stone-100'
+              ? 'bg-primary text-on-primary shadow-soft'
+              : 'text-on-surface-variant hover:bg-surface-container'
           }`}
         >
           <ClipboardList className="w-3.5 h-3.5" />
@@ -204,10 +202,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         <button
           type="button"
           onClick={() => setAdminTab('funds')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+          className={`px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
             adminTab === 'funds'
-              ? 'bg-amber-700 text-white shadow-xs'
-              : 'text-stone-700 hover:bg-stone-100'
+              ? 'bg-primary text-on-primary shadow-soft'
+              : 'text-on-surface-variant hover:bg-surface-container'
           }`}
         >
           <Receipt className="w-3.5 h-3.5" />
@@ -217,10 +215,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         <button
           type="button"
           onClick={() => setAdminTab('announcements')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+          className={`px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
             adminTab === 'announcements'
-              ? 'bg-amber-700 text-white shadow-xs'
-              : 'text-stone-700 hover:bg-stone-100'
+              ? 'bg-primary text-on-primary shadow-soft'
+              : 'text-on-surface-variant hover:bg-surface-container'
           }`}
         >
           <Bell className="w-3.5 h-3.5" />
@@ -230,10 +228,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         <button
           type="button"
           onClick={() => setAdminTab('rsvp')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+          className={`px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
             adminTab === 'rsvp'
-              ? 'bg-amber-700 text-white shadow-xs'
-              : 'text-stone-700 hover:bg-stone-100'
+              ? 'bg-primary text-on-primary shadow-soft'
+              : 'text-on-surface-variant hover:bg-surface-container'
           }`}
         >
           <Users className="w-3.5 h-3.5" />

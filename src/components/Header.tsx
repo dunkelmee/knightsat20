@@ -18,20 +18,20 @@ export const Header: React.FC<HeaderProps> = ({
   responseCount,
 }) => {
   return (
-    <header id="header-main" className="sticky top-0 z-40 bg-[#fdfcf9]/95 backdrop-blur-md border-b border-stone-200 text-stone-900 shadow-sm">
+    <header id="header-main" className="sticky top-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 text-on-surface shadow-soft">
       {/* Top Announcement & Admin Bar */}
-      <div id="header-top-bar" className="bg-[#f5efe6] text-xs py-2 px-4 sm:px-6 text-stone-700 border-b border-stone-200">
+      <div id="header-top-bar" className="bg-surface-container-low text-xs py-2 px-4 sm:px-6 text-on-surface-variant border-b border-outline-variant/40">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 font-medium">
-            <span className="inline-flex items-center justify-center w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-            <span className="text-amber-800 font-bold tracking-wide">MSHS BATCH 2007</span>
-            <span className="hidden sm:inline text-stone-500">• Makati Science High School</span>
-            <span className="hidden md:inline text-stone-500">• Official Planning Portal</span>
+            <span className="inline-flex items-center justify-center w-2 h-2 rounded-full bg-success animate-pulse" />
+            <span className="text-primary font-bold tracking-wide">MSHS BATCH 2007</span>
+            <span className="hidden sm:inline text-on-surface-variant">• Makati Science High School</span>
+            <span className="hidden md:inline text-on-surface-variant">• Official Planning Portal</span>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-stone-600 text-xs hidden sm:inline">
-              <strong className="text-stone-900 font-bold">{responseCount}</strong> Survey Responses
+            <span className="text-on-surface-variant text-xs hidden sm:inline">
+              <strong className="text-on-surface font-bold">{responseCount}</strong> Survey Responses
             </span>
 
             {/* Standalone Distinct Admin Button */}
@@ -45,21 +45,21 @@ export const Header: React.FC<HeaderProps> = ({
                   setActiveTab('admin');
                 }
               }}
-              className={`text-xs px-3 py-1 rounded-md font-semibold transition-all flex items-center gap-1.5 shadow-sm border ${
+              className={`text-xs px-3 py-1 rounded font-semibold transition-all flex items-center gap-1.5 shadow-soft border ${
                 isAdmin
-                  ? 'bg-amber-600 text-white border-amber-700 hover:bg-amber-700'
-                  : 'bg-stone-900 text-amber-300 border-stone-800 hover:bg-stone-800'
+                  ? 'bg-primary text-on-primary border-primary hover:opacity-90'
+                  : 'bg-secondary text-on-secondary border-secondary hover:opacity-90'
               }`}
               title="Restricted committee management portal"
             >
               {isAdmin ? (
                 <>
-                  <Unlock className="w-3.5 h-3.5 text-amber-200" />
+                  <Unlock className="w-3.5 h-3.5 text-on-primary" />
                   <span>Admin Mode Active</span>
                 </>
               ) : (
                 <>
-                  <Lock className="w-3.5 h-3.5 text-amber-400" />
+                  <Lock className="w-3.5 h-3.5 text-on-secondary" />
                   <span>Admin Portal</span>
                 </>
               )}
@@ -72,24 +72,24 @@ export const Header: React.FC<HeaderProps> = ({
       <div id="header-nav-container" className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Logo & School Name */}
-          <div 
+          <div
             id="brand-logo-button"
             className="flex items-center gap-2.5 cursor-pointer group"
             onClick={() => setActiveTab('survey')}
           >
-            <div className="w-8 h-8 rounded-lg bg-amber-700 text-white flex items-center justify-center font-bold text-sm shadow-xs flex-shrink-0">
-              <GraduationCap className="w-4 h-4 text-amber-100" />
+            <div className="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center font-bold text-sm shadow-soft flex-shrink-0">
+              <GraduationCap className="w-4 h-4 text-on-primary" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-semibold text-base sm:text-lg text-stone-900 tracking-tight leading-none">
+                <h1 className="font-serif font-semibold text-base sm:text-lg text-on-surface tracking-tight leading-none">
                   Makati Science High School
                 </h1>
-                <span className="px-1.5 py-0.5 text-[11px] font-semibold rounded bg-amber-100 text-amber-900 border border-amber-200">
+                <span className="px-1.5 py-0.5 text-[11px] font-semibold rounded bg-primary-container text-on-primary-container border border-primary-container">
                   Batch 2007
                 </span>
               </div>
-              <p className="text-[11px] text-stone-500 mt-0.5">
+              <p className="text-[11px] text-on-surface-variant mt-0.5">
                 Reunion Hub
               </p>
             </div>
@@ -101,10 +101,10 @@ export const Header: React.FC<HeaderProps> = ({
               id="nav-tab-survey"
               type="button"
               onClick={() => setActiveTab('survey')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'survey'
-                  ? 'bg-amber-700 text-white shadow-xs'
-                  : 'text-stone-700 hover:text-stone-900 hover:bg-stone-100'
+                  ? 'bg-primary text-on-primary shadow-soft'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
               }`}
             >
               <ClipboardList className="w-3.5 h-3.5" />
@@ -115,10 +115,10 @@ export const Header: React.FC<HeaderProps> = ({
               id="nav-tab-rsvp"
               type="button"
               onClick={() => setActiveTab('rsvp')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'rsvp'
-                  ? 'bg-amber-700 text-white shadow-xs'
-                  : 'text-stone-700 hover:text-stone-900 hover:bg-stone-100'
+                  ? 'bg-primary text-on-primary shadow-soft'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
               }`}
             >
               <Users className="w-3.5 h-3.5" />
@@ -129,10 +129,10 @@ export const Header: React.FC<HeaderProps> = ({
               id="nav-tab-announcements"
               type="button"
               onClick={() => setActiveTab('announcements')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'announcements'
-                  ? 'bg-amber-700 text-white shadow-xs'
-                  : 'text-stone-700 hover:text-stone-900 hover:bg-stone-100'
+                  ? 'bg-primary text-on-primary shadow-soft'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
               }`}
             >
               <Bell className="w-3.5 h-3.5" />
@@ -143,10 +143,10 @@ export const Header: React.FC<HeaderProps> = ({
               id="nav-tab-dashboard"
               type="button"
               onClick={() => setActiveTab('dashboard')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'dashboard'
-                  ? 'bg-amber-700 text-white shadow-xs'
-                  : 'text-stone-700 hover:text-stone-900 hover:bg-stone-100'
+                  ? 'bg-primary text-on-primary shadow-soft'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
               }`}
             >
               <BarChart3 className="w-3.5 h-3.5" />

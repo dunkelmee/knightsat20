@@ -72,15 +72,15 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 my-8 max-h-[90vh] overflow-y-auto">
-        
-        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-inverse-surface/70 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-surface-container-lowest rounded-lg max-w-xl w-full p-6 sm:p-8 shadow-soft border border-outline-variant/30 space-y-6 my-8 max-h-[90vh] overflow-y-auto">
+
+        <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="text-lg font-serif font-bold text-on-surface">
               {existingAnnouncement ? 'Edit Announcement' : 'Create Batch Announcement'}
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-on-surface-variant">
               Broadcast updates to all MSHS Batch 2007 visitors
             </p>
           </div>
@@ -88,23 +88,23 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+            className="p-1.5 rounded text-outline hover:text-on-surface hover:bg-surface-container"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 text-red-700 text-xs font-medium rounded-xl border border-red-200">
+          <div className="p-3 bg-error-container text-on-error-container text-xs font-medium rounded border border-error-container">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          
+
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
-              Title <span className="text-red-500">*</span>
+            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+              Title <span className="text-error">*</span>
             </label>
             <input
               type="text"
@@ -112,19 +112,19 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
               placeholder="e.g. 📢 Save the Date: Venue Finalist Selection"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3.5 py-2.5 rounded border border-secondary/30 text-on-surface text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+              <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
                 Category Tag
               </label>
               <select
                 value={tag}
                 onChange={(e) => setTag(e.target.value as any)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-xs font-semibold focus:outline-none"
+                className="w-full px-3 py-2.5 rounded border border-secondary/30 text-on-surface text-xs font-semibold focus:outline-none"
               >
                 <option value="Important">Important</option>
                 <option value="Survey">Survey</option>
@@ -136,7 +136,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+              <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
                 Author / Department
               </label>
               <input
@@ -144,14 +144,14 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
                 placeholder="e.g. Logistics Team / Finance Comm"
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-xs focus:outline-none"
+                className="w-full px-3 py-2.5 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
-              Caption & Body Content <span className="text-red-500">*</span>
+            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+              Caption & Body Content <span className="text-error">*</span>
             </label>
             <textarea
               rows={4}
@@ -159,18 +159,18 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
               placeholder="Write the announcement description or update message here..."
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              className="w-full p-3 rounded-xl border border-slate-300 text-xs text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 rounded border border-secondary/30 text-xs text-on-surface leading-relaxed focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
           {/* Image Upload & Presets */}
-          <div className="space-y-2 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide">
+          <div className="space-y-2 p-4 bg-surface-container-low rounded border border-outline-variant/30">
+            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide">
               Cover Image (Upload or Pick Preset)
             </label>
 
             {imageUrl && (
-              <div className="relative h-32 w-full rounded-xl overflow-hidden mb-3 border border-slate-300">
+              <div className="relative h-32 w-full rounded overflow-hidden mb-3 border border-outline-variant/40">
                 <img
                   src={imageUrl}
                   alt="Preview"
@@ -180,7 +180,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setImageUrl('')}
-                  className="absolute top-2 right-2 p-1 rounded-full bg-slate-950/80 text-white hover:bg-red-600"
+                  className="absolute top-2 right-2 p-1 rounded-full bg-inverse-surface/80 text-inverse-on-surface hover:bg-error"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -198,9 +198,9 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+                className="px-3 py-2 rounded bg-surface-container-lowest border border-secondary/30 hover:bg-surface-container text-on-surface-variant text-xs font-semibold flex items-center gap-1.5 shadow-soft"
               >
-                <Upload className="w-3.5 h-3.5 text-blue-600" />
+                <Upload className="w-3.5 h-3.5 text-secondary" />
                 <span>Upload From Device</span>
               </button>
 
@@ -209,20 +209,20 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
                 placeholder="Or paste image URL..."
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                className="flex-1 min-w-[180px] px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-900 bg-white"
+                className="flex-1 min-w-[180px] px-3 py-2 rounded border border-secondary/30 text-xs text-on-surface bg-surface-container-lowest"
               />
             </div>
 
             {/* Quick presets */}
             <div className="pt-2">
-              <div className="text-[11px] text-slate-500 mb-1">Or pick a themed preset:</div>
+              <div className="text-[11px] text-on-surface-variant mb-1">Or pick a themed preset:</div>
               <div className="flex flex-wrap gap-1.5">
                 {presets.map(p => (
                   <button
                     key={p.label}
                     type="button"
                     onClick={() => setImageUrl(p.url)}
-                    className="text-[10px] px-2 py-1 bg-white border border-slate-300 hover:border-blue-400 rounded-md text-slate-700"
+                    className="text-[10px] px-2 py-1 bg-surface-container-lowest border border-outline-variant/40 hover:border-secondary rounded text-on-surface-variant"
                   >
                     {p.label}
                   </button>
@@ -232,30 +232,30 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
           </div>
 
           {/* Pin toggle */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-200">
+          <div className="flex items-center justify-between p-3 rounded bg-primary-container/15 border border-primary-container/40">
             <div className="flex items-center gap-2">
-              <Pin className="w-4 h-4 text-amber-700" />
-              <span className="text-xs font-bold text-amber-900">Pin Announcement to Top</span>
+              <Pin className="w-4 h-4 text-primary" />
+              <span className="text-xs font-bold text-on-primary-container">Pin Announcement to Top</span>
             </div>
             <input
               type="checkbox"
               checked={isPinned}
               onChange={(e) => setIsPinned(e.target.checked)}
-              className="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
+              className="w-4 h-4 text-primary rounded focus:ring-primary"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-outline-variant/30">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100"
+              className="px-4 py-2.5 rounded border border-secondary/30 text-on-surface-variant text-xs font-semibold hover:bg-surface-container"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md"
+              className="px-5 py-2.5 rounded bg-primary hover:opacity-90 text-on-primary text-xs font-bold shadow-soft"
             >
               {existingAnnouncement ? 'Save Announcement' : 'Publish Announcement'}
             </button>
