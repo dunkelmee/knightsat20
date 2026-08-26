@@ -1,0 +1,13 @@
+node_modules
+dist
+build
+coverage
+.git
+.env
+.env.*
+!.env.example
+backend/__pycache__
+backend/**/__pycache__
+backend/.venv
+**/*.pyc
+.claude

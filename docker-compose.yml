@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: knightsat
+      POSTGRES_PASSWORD: knightsat
+      POSTGRES_DB: knightsat
+    ports:
+      - "5545:5432"
+    volumes:
+      - knightsat_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U knightsat"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://knightsat:knightsat@postgres:5432/knightsat
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin2007}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-insecure-session-secret-change-me}
+      ENVIRONMENT: development
+      PORT: 8000
+    ports:
+      - "8123:8000"
+
+volumes:
+  knightsat_pgdata:

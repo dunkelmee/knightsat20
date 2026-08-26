@@ -110,3 +110,19 @@ export interface BatchStats {
   declinedCount: number;
   estimatedHeadcount: number;
 }
+
+// Server-computed aggregates for the public dashboard (GET /api/dashboard/stats).
+// A superset of BatchStats — adds the month/venue-type vote tallies the
+// public dashboard renders, computed server-side so raw survey PII never
+// needs to leave the backend for an unauthenticated visitor.
+export interface DashboardStats extends BatchStats {
+  monthTally: Record<string, number>;
+  venueTally: Record<string, number>;
+}
+
+// PII-free subset of RSVPRecord served to unauthenticated visitors on the
+// public roster (GET /api/rsvps) — contactNumber/email are admin-only.
+export type PublicRSVP = Pick<
+  RSVPRecord,
+  'id' | 'submittedAt' | 'fullName' | 'status' | 'bringingPlusOne' | 'kidsCount' | 'messageToBatch'
+>;
