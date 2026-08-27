@@ -26,7 +26,8 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql+asyncpg://knightsat:knightsat@postgres:5432/knightsat
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin2007}
+      SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL:-superadmin@example.com}
+      SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-admin2007}
       SESSION_SECRET: ${SESSION_SECRET:-dev-insecure-session-secret-change-me}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-MSHS Batch 2007 <onboarding@resend.dev>}

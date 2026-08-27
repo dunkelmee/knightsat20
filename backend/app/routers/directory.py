@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.audit import record_action
 from app.database import get_db
 from app.models import SurveyResponse, User
 from app.schemas import (
@@ -151,6 +152,10 @@ async def update_directory_profile(
     current_user.current_role = payload.current_role
     current_user.section_hs = payload.section_hs
     current_user.show_in_directory = payload.show_in_directory
+    record_action(
+        db, f"{current_user.full_name} updated their directory listing",
+        actor_name=current_user.full_name, actor_user_id=current_user.id,
+    )
     await db.commit()
     await db.refresh(current_user)
 

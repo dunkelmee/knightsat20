@@ -6,9 +6,9 @@ and a committee admin/treasury portal.
 
 The app is a React + Vite frontend backed by a FastAPI + PostgreSQL API, both shipped in a single
 Docker image. The whole site is gated behind a login: alumni register with their email, full name,
-and mobile/WhatsApp number, then log in with a 6-digit code emailed to them (no passwords). The
-admin/treasury portal is a separate, additional shared passcode unlocked from inside the app once
-logged in.
+and mobile/WhatsApp number, then log in with a 6-digit code emailed to them (no passwords).
+Organizer access to the admin/treasury portal is a permanent, per-account flag — every new account
+is a plain attendee, and only the superadmin can grant/revoke organizer access (see "Roles" below).
 
 ## Features
 
@@ -28,21 +28,32 @@ logged in.
   shown.
 - **Edit profile** anytime from the header, plus logout.
 
-### For the organizing committee
+### For organizers
 
-Unlocked with a separate admin passcode from inside the app (your alumni login stays active
-independently). The admin/treasury portal adds:
+Reachable once the superadmin has granted an account organizer access (see "Roles" below) — no
+separate passcode, it's just part of your normal alumni login from then on. The organizer portal
+adds:
 
-- **Date & Venue Settings** — update the event status, date, and venue shown to everyone.
+- **Event Planning** — update the event status, date, and venue shown to everyone, and maintain a
+  committee-internal scouted-venues shortlist (name, tentative date, address, quoted cost, notes).
 - **Surveys** — view every response including contact details, delete a response, and mark pledges
   as paid.
 - **Ledger & Expenses** — add, edit, and delete the planned expenses that feed the public funds
   dashboard.
 - **Announcements** — create, edit, delete, and pin/unpin posts on the Batch Board.
-- **RSVP Roster (admin view)** — the full roster including contact info, not just the public counts.
-- **Reset Demo Data** — restore surveys/expenses/announcements to the fictional demo fixtures, handy
-  for showing off the app before real responses come in.
-- **Lock** — end the admin session without logging out of the site.
+- **RSVP Roster (organizer view)** — the full roster including contact info, not just the public counts.
+- **Photo Wall moderation** — delete any album/photo, and toggle the "live on reunion day" album.
+
+### Roles
+
+- **Attendee** — every registered alumnus, by default.
+- **Organizer** — an attendee the superadmin has granted organizer access. Toggle it from the
+  header's account menu ("To organizer view" / "To attendee view") once granted.
+- **Superadmin** — a single, env-configured identity (`SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD`),
+  not an alumni account. Log in through the same login form — submitting the superadmin email swaps
+  the OTP step for a password prompt. From their own portal the superadmin can view survey
+  responses, see every registered user and when they signed up, grant/revoke organizer access, and
+  read a human-readable log of actions taken across the app.
 
 ## Run locally with Docker (recommended)
 
@@ -55,8 +66,9 @@ docker compose up --build
 This starts Postgres and the app (frontend + API in one container, migrations run automatically on
 boot). The app is served at http://localhost:8123.
 
-Set `ADMIN_PASSWORD` / `SESSION_SECRET` in a `.env` file (see `.env.example`) before running if you
-want something other than the defaults. Without `RESEND_API_KEY` set, login/registration codes are
+Set `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` / `SESSION_SECRET` in a `.env` file (see
+`.env.example`) before running if you want something other than the defaults. Without
+`RESEND_API_KEY` set, login/registration codes are
 logged to the app container's console instead of emailed — handy for local testing
 (`docker compose logs -f app`), but set a real key before anyone but you needs to log in.
 
@@ -87,8 +99,8 @@ http://localhost:3000.
    automatically (`railway.json` pins `builder: DOCKERFILE` and a `/api/health` healthcheck).
 2. Add a **Postgres** plugin to the project and let Railway inject `DATABASE_URL` into the app
    service.
-3. Set the app service's environment variables: `ADMIN_PASSWORD` (the committee's shared admin
-   passcode), `SESSION_SECRET` (a long random string — e.g.
+3. Set the app service's environment variables: `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` (the
+   single superadmin identity — see "Roles" above), `SESSION_SECRET` (a long random string — e.g.
    `python -c "import secrets; print(secrets.token_hex(32))"`), and `RESEND_API_KEY` (create an
    account at [resend.com](https://resend.com) and generate an API key — required for
    login/registration codes to actually reach alumni; verify a sending domain and set
@@ -97,9 +109,9 @@ http://localhost:3000.
 4. Deploy. The container runs `alembic upgrade head` on boot, then serves both the API and the
    built frontend from one process — no separate frontend service or CORS config needed.
 
-The database starts empty by default — real committee data only. The admin portal's
-"Reset Demo Data" button (or `POST /api/admin/reset-demo-data`) loads the fictional demo fixtures
-if you want to show the app populated before real responses come in.
+The database starts empty by default — real committee data only. The superadmin portal's
+"Reset Demo Data" button (or `POST /api/superadmin/reset-demo-data`) loads the fictional demo
+fixtures if you want to show the app populated before real responses come in.
 
 ## Project layout
 

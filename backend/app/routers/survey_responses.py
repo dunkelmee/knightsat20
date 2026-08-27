@@ -4,17 +4,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.audit import record_action
 from app.database import get_db
 from app.models import RSVPRecord, SurveyResponse, User
 from app.pledge import parse_pledge_amount
 from app.schemas import PaymentStatusUpdate, SurveyResponseCreate, SurveyResponseOut
-from app.security import get_current_user, require_admin
+from app.security import Actor, get_current_user, get_organizer_actor
 
-router = APIRouter(
-    prefix="/api/survey-responses",
-    tags=["survey-responses"],
-    dependencies=[Depends(get_current_user)],
-)
+router = APIRouter(prefix="/api/survey-responses", tags=["survey-responses"])
 
 _ATTENDING_TRIGGERS = {"Yes, definitely!", "Most likely, but still confirming"}
 
@@ -81,38 +78,64 @@ async def create_survey_response(
     db.add(response)
     await db.flush()
     await _sync_rsvp_from_survey(db, response)
+    record_action(
+        db,
+        f"{current_user.full_name} submitted the reunion survey",
+        actor_name=current_user.full_name,
+        actor_user_id=current_user.id,
+    )
     await db.commit()
     await db.refresh(response)
     return response
 
 
-@router.get("", response_model=list[SurveyResponseOut], dependencies=[Depends(require_admin)])
-async def list_survey_responses(db: AsyncSession = Depends(get_db)):
+# GET/DELETE/PATCH below are reachable by organizers and the superadmin alike
+# (see security.get_organizer_actor) — this is what makes "superadmin sees
+# survey responses similar to organizers" work off the same endpoint.
+
+
+@router.get("", response_model=list[SurveyResponseOut])
+async def list_survey_responses(
+    db: AsyncSession = Depends(get_db), actor: Actor = Depends(get_organizer_actor)
+):
     result = await db.execute(select(SurveyResponse).order_by(SurveyResponse.submitted_at.desc()))
     return result.scalars().all()
 
 
-@router.delete("/{response_id}", status_code=204, dependencies=[Depends(require_admin)])
-async def delete_survey_response(response_id: str, db: AsyncSession = Depends(get_db)):
+@router.delete("/{response_id}", status_code=204)
+async def delete_survey_response(
+    response_id: str, db: AsyncSession = Depends(get_db), actor: Actor = Depends(get_organizer_actor)
+):
     response = await db.get(SurveyResponse, response_id)
     if not response:
         raise HTTPException(status_code=404, detail="Survey response not found")
+    record_action(
+        db,
+        f"{actor.name} deleted {response.full_name}'s survey response",
+        actor_name=actor.name,
+        actor_user_id=actor.user_id,
+    )
     await db.delete(response)
     await db.commit()
 
 
-@router.patch(
-    "/{response_id}/payment-status",
-    response_model=SurveyResponseOut,
-    dependencies=[Depends(require_admin)],
-)
+@router.patch("/{response_id}/payment-status", response_model=SurveyResponseOut)
 async def update_payment_status(
-    response_id: str, payload: PaymentStatusUpdate, db: AsyncSession = Depends(get_db)
+    response_id: str,
+    payload: PaymentStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+    actor: Actor = Depends(get_organizer_actor),
 ):
     response = await db.get(SurveyResponse, response_id)
     if not response:
         raise HTTPException(status_code=404, detail="Survey response not found")
     response.pledge_paid_status = payload.status
+    record_action(
+        db,
+        f"{actor.name} marked {response.full_name}'s pledge as {payload.status}",
+        actor_name=actor.name,
+        actor_user_id=actor.user_id,
+    )
     await db.commit()
     await db.refresh(response)
     return response

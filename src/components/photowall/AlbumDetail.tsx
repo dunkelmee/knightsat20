@@ -8,11 +8,11 @@ import { Lightbox } from './Lightbox';
 interface AlbumDetailProps {
   albumId: string;
   currentUser: UserProfile;
-  isAdmin: boolean;
+  isOrganizer: boolean;
   onBack: () => void;
 }
 
-export const AlbumDetail: React.FC<AlbumDetailProps> = ({ albumId, currentUser, isAdmin, onBack }) => {
+export const AlbumDetail: React.FC<AlbumDetailProps> = ({ albumId, currentUser, isOrganizer, onBack }) => {
   const [album, setAlbum] = useState<AlbumDetailType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -156,7 +156,7 @@ export const AlbumDetail: React.FC<AlbumDetailProps> = ({ albumId, currentUser, 
       {lightboxPhoto && (
         <Lightbox
           photo={lightboxPhoto}
-          canDelete={isAdmin || lightboxPhoto.uploadedBy === currentUser.id}
+          canDelete={isOrganizer || lightboxPhoto.uploadedBy === currentUser.id}
           onClose={() => setLightboxPhoto(null)}
           onDelete={() => handleDeletePhoto(lightboxPhoto)}
         />

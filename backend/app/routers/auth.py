@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.audit import record_action
+from app.config import get_settings
 from app.database import get_db
 from app.models import SurveyResponse, User
 from app.otp import create_and_send_otp, verify_code
@@ -13,19 +15,35 @@ from app.schemas import (
     LoginRequest,
     ProfileUpdateRequest,
     RegisterRequest,
+    SuperadminLoginRequest,
+    SuperadminSessionOut,
     UserProfileOut,
     VerifyOtpRequest,
 )
-from app.security import SESSION_ADMIN_KEY, SESSION_USER_ID_KEY, get_current_user
+from app.security import (
+    SESSION_SUPERADMIN_KEY,
+    SESSION_USER_ID_KEY,
+    check_superadmin_password,
+    get_current_user,
+    is_superadmin,
+)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 _GENERIC_SENT_MESSAGE = "If that email has an account, we've sent a verification code."
 _GENERIC_REGISTER_MESSAGE = "Check your email for a verification code to finish setting up your account."
+_SUPERADMIN_PASSWORD_MESSAGE = "Enter the superadmin password."
 
 
 def _client_ip(request: Request) -> str | None:
     return request.client.host if request.client else None
+
+
+def _is_superadmin_email(email: str) -> bool:
+    settings = get_settings()
+    if not settings.superadmin_email:
+        return False
+    return email.strip().lower() == settings.superadmin_email.strip().lower()
 
 
 async def _get_user_by_email(db: AsyncSession, email: str) -> User | None:
@@ -47,6 +65,7 @@ def _to_profile_out(user: User) -> UserProfileOut:
         current_role=user.current_role,
         section_hs=user.section_hs,
         show_in_directory=user.show_in_directory,
+        is_organizer=user.is_organizer,
     )
 
 
@@ -62,6 +81,9 @@ async def _has_submitted_survey(db: AsyncSession, user_id: str) -> bool:
 @router.post("/register", response_model=AuthMessageOut)
 async def register(payload: RegisterRequest, request: Request, db: AsyncSession = Depends(get_db)):
     normalized_email = payload.email.strip().lower()
+    if _is_superadmin_email(normalized_email):
+        return AuthMessageOut(message=_SUPERADMIN_PASSWORD_MESSAGE, requires_superadmin_password=True)
+
     existing = await _get_user_by_email(db, normalized_email)
 
     if existing:
@@ -76,6 +98,8 @@ async def register(payload: RegisterRequest, request: Request, db: AsyncSession 
         mobile_number=payload.mobile_number.strip(),
     )
     db.add(user)
+    await db.flush()
+    record_action(db, f"{user.full_name} created an account", actor_name=user.full_name, actor_user_id=user.id)
     await db.commit()
     await db.refresh(user)
 
@@ -85,7 +109,11 @@ async def register(payload: RegisterRequest, request: Request, db: AsyncSession 
 
 @router.post("/login", response_model=AuthMessageOut)
 async def login(payload: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
-    user = await _get_user_by_email(db, payload.email)
+    normalized_email = payload.email.strip().lower()
+    if _is_superadmin_email(normalized_email):
+        return AuthMessageOut(message=_SUPERADMIN_PASSWORD_MESSAGE, requires_superadmin_password=True)
+
+    user = await _get_user_by_email(db, normalized_email)
     if user:
         await create_and_send_otp(db, user, _client_ip(request))
     # Identical response whether or not the account exists.
@@ -101,6 +129,9 @@ async def verify(payload: VerifyOtpRequest, request: Request, db: AsyncSession =
     await verify_code(db, user, payload.code)
 
     request.session[SESSION_USER_ID_KEY] = user.id
+    record_action(db, f"{user.full_name} logged in", actor_name=user.full_name, actor_user_id=user.id)
+    await db.commit()
+
     return AuthSessionOut(
         user=_to_profile_out(user), has_submitted_survey=await _has_submitted_survey(db, user.id)
     )
@@ -109,7 +140,7 @@ async def verify(payload: VerifyOtpRequest, request: Request, db: AsyncSession =
 @router.post("/logout", response_model=AuthSessionOut)
 async def logout(request: Request):
     request.session.pop(SESSION_USER_ID_KEY, None)
-    request.session.pop(SESSION_ADMIN_KEY, None)
+    request.session.pop(SESSION_SUPERADMIN_KEY, None)
     return AuthSessionOut(user=None)
 
 
@@ -138,6 +169,12 @@ async def update_profile(
     current_user.now_photo_url = payload.now_photo_url
     if current_user.onboarding_completed_at is None:
         current_user.onboarding_completed_at = datetime.now(timezone.utc)
+    record_action(
+        db,
+        f"{current_user.full_name} updated their profile",
+        actor_name=current_user.full_name,
+        actor_user_id=current_user.id,
+    )
     await db.commit()
     await db.refresh(current_user)
 
@@ -145,3 +182,27 @@ async def update_profile(
         user=_to_profile_out(current_user),
         has_submitted_survey=await _has_submitted_survey(db, current_user.id),
     )
+
+
+# ---------------------------------------------------------------------------
+# Superadmin — a single, env-configured identity, not a `users` row. Reached
+# via the same login form: submitting the superadmin email above short-
+# circuits to `requires_superadmin_password`, and the frontend swaps in the
+# password form that posts here.
+# ---------------------------------------------------------------------------
+
+
+@router.post("/superadmin-login", response_model=SuperadminSessionOut)
+async def superadmin_login(payload: SuperadminLoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    if not _is_superadmin_email(payload.email) or not check_superadmin_password(payload.password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password.")
+
+    request.session[SESSION_SUPERADMIN_KEY] = True
+    record_action(db, "Superadmin logged in", actor_name="Superadmin")
+    await db.commit()
+    return SuperadminSessionOut(is_superadmin=True)
+
+
+@router.get("/superadmin-session", response_model=SuperadminSessionOut)
+async def superadmin_session_status(request: Request):
+    return SuperadminSessionOut(is_superadmin=is_superadmin(request))

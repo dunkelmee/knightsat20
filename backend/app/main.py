@@ -6,7 +6,6 @@ from starlette.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.routers import (
-    admin_auth,
     albums,
     announcements,
     auth,
@@ -16,6 +15,7 @@ from app.routers import (
     expenses,
     rsvps,
     scouted_venues,
+    superadmin,
     survey_responses,
 )
 from app.storage import ensure_uploads_dir
@@ -42,7 +42,7 @@ async def health_check():
 
 app.include_router(health_router)
 app.include_router(auth.router)
-app.include_router(admin_auth.router)
+app.include_router(superadmin.router)
 app.include_router(survey_responses.router)
 app.include_router(rsvps.router)
 app.include_router(announcements.router)

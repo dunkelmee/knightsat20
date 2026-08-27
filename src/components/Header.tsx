@@ -8,6 +8,7 @@ interface HeaderProps {
   navActiveKey: string;
   onNavSelect: (key: string) => void;
   adminViewActive: boolean;
+  canAccessOrganizerView: boolean;
   onToggleAdminView: () => void;
   currentUser: UserProfile | null;
   onLogout: () => void;
@@ -28,6 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
   navActiveKey,
   onNavSelect,
   adminViewActive,
+  canAccessOrganizerView,
   onToggleAdminView,
   currentUser,
   onLogout,
@@ -127,18 +129,20 @@ export const Header: React.FC<HeaderProps> = ({
                     <span>Edit Profile</span>
                   </button>
 
-                  <button
-                    id="btn-toggle-admin-view"
-                    type="button"
-                    onClick={() => {
-                      onToggleAdminView();
-                      setMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
-                  >
-                    <ArrowLeftRight className="w-3.5 h-3.5" />
-                    <span>{adminViewActive ? 'To organizer view' : 'To attendee view'}</span>
-                  </button>
+                  {canAccessOrganizerView && (
+                    <button
+                      id="btn-toggle-admin-view"
+                      type="button"
+                      onClick={() => {
+                        onToggleAdminView();
+                        setMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
+                    >
+                      <ArrowLeftRight className="w-3.5 h-3.5" />
+                      <span>{adminViewActive ? 'To organizer view' : 'To attendee view'}</span>
+                    </button>
+                  )}
 
                   <button
                     id="btn-logout"

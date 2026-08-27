@@ -2,14 +2,15 @@ import base64
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.audit import record_action
 from app.database import get_db
 from app.models import Album, Photo, User
 from app.schemas import AlbumCreate, AlbumDetailOut, AlbumOut, AlbumUpdate, ContributorOut, PhotoOut
-from app.security import get_current_user, is_admin
+from app.security import get_current_user, is_organizer_or_superadmin
 from app.storage import delete_photo_files, resolve_url, save_photo_files
 from app.text_utils import initials
 
@@ -44,8 +45,8 @@ async def _get_album_or_404(db: AsyncSession, album_id: str) -> Album:
     return album
 
 
-def _can_moderate(request_is_admin: bool, owner_id: str, current_user: User) -> bool:
-    return request_is_admin or owner_id == current_user.id
+def _can_moderate(is_organizer: bool, owner_id: str, current_user: User) -> bool:
+    return is_organizer or owner_id == current_user.id
 
 
 async def _build_album_out(db: AsyncSession, album: Album) -> tuple[AlbumOut, datetime]:
@@ -118,6 +119,10 @@ async def create_album(
 ):
     album = Album(title=payload.title.strip(), description=payload.description, created_by=current_user.id)
     db.add(album)
+    record_action(
+        db, f"{current_user.full_name} created album \"{album.title}\"",
+        actor_name=current_user.full_name, actor_user_id=current_user.id,
+    )
     await db.commit()
     await db.refresh(album)
     album_out, _ = await _build_album_out(db, album)
@@ -181,27 +186,32 @@ async def get_album(
 async def update_album(
     album_id: str,
     payload: AlbumUpdate,
-    request_is_admin: bool = Depends(is_admin),
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     album = await _get_album_or_404(db, album_id)
-    if not _can_moderate(request_is_admin, album.created_by, current_user):
-        raise HTTPException(status_code=403, detail="Only the album creator or an admin can edit this album")
+    is_organizer = is_organizer_or_superadmin(request, current_user)
+    if not _can_moderate(is_organizer, album.created_by, current_user):
+        raise HTTPException(status_code=403, detail="Only the album creator or an organizer can edit this album")
 
     if payload.title is not None:
         album.title = payload.title.strip()
     if payload.description is not None:
         album.description = payload.description
     if payload.is_live_day is not None:
-        if not request_is_admin:
-            raise HTTPException(status_code=403, detail="Only an admin can change the live-day album")
+        if not is_organizer:
+            raise HTTPException(status_code=403, detail="Only an organizer can change the live-day album")
         if payload.is_live_day:
             await db.execute(
                 Album.__table__.update().where(Album.id != album_id).values(is_live_day=False)
             )
         album.is_live_day = payload.is_live_day
 
+    record_action(
+        db, f"{current_user.full_name} updated album \"{album.title}\"",
+        actor_name=current_user.full_name, actor_user_id=current_user.id,
+    )
     await db.commit()
     await db.refresh(album)
     album_out, _ = await _build_album_out(db, album)
@@ -211,18 +221,22 @@ async def update_album(
 @router.delete("/{album_id}", status_code=204)
 async def delete_album(
     album_id: str,
-    request_is_admin: bool = Depends(is_admin),
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     album = await _get_album_or_404(db, album_id)
-    if not _can_moderate(request_is_admin, album.created_by, current_user):
-        raise HTTPException(status_code=403, detail="Only the album creator or an admin can delete this album")
+    if not _can_moderate(is_organizer_or_superadmin(request, current_user), album.created_by, current_user):
+        raise HTTPException(status_code=403, detail="Only the album creator or an organizer can delete this album")
 
     photos = (await db.execute(select(Photo).where(Photo.album_id == album_id))).scalars().all()
     for photo in photos:
         delete_photo_files(photo.storage_key, photo.thumb_key)
 
+    record_action(
+        db, f"{current_user.full_name} deleted album \"{album.title}\"",
+        actor_name=current_user.full_name, actor_user_id=current_user.id,
+    )
     await db.delete(album)  # DB-level ON DELETE CASCADE removes the photo rows
     await db.commit()
 
@@ -235,7 +249,7 @@ async def upload_photos(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await _get_album_or_404(db, album_id)
+    album = await _get_album_or_404(db, album_id)
 
     if not full or len(full) != len(thumb):
         raise HTTPException(status_code=400, detail="Each photo needs a matching full + thumb pair")
@@ -263,6 +277,10 @@ async def upload_photos(
         db.add(photo)
         created.append(photo)
 
+    record_action(
+        db, f"{current_user.full_name} added {len(created)} photo(s) to album \"{album.title}\"",
+        actor_name=current_user.full_name, actor_user_id=current_user.id,
+    )
     await db.commit()
     for photo in created:
         await db.refresh(photo)
@@ -274,16 +292,20 @@ async def upload_photos(
 async def delete_photo(
     album_id: str,
     photo_id: str,
-    request_is_admin: bool = Depends(is_admin),
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     photo = await db.get(Photo, photo_id)
     if not photo or photo.album_id != album_id:
         raise HTTPException(status_code=404, detail="Photo not found")
-    if not _can_moderate(request_is_admin, photo.uploaded_by, current_user):
-        raise HTTPException(status_code=403, detail="Only the uploader or an admin can delete this photo")
+    if not _can_moderate(is_organizer_or_superadmin(request, current_user), photo.uploaded_by, current_user):
+        raise HTTPException(status_code=403, detail="Only the uploader or an organizer can delete this photo")
 
     delete_photo_files(photo.storage_key, photo.thumb_key)
+    record_action(
+        db, f"{current_user.full_name} deleted a photo from an album",
+        actor_name=current_user.full_name, actor_user_id=current_user.id,
+    )
     await db.delete(photo)
     await db.commit()

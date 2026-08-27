@@ -199,16 +199,37 @@ class DashboardStatsOut(CamelModel):
 
 
 # ---------------------------------------------------------------------------
-# Admin auth
+# Superadmin
 # ---------------------------------------------------------------------------
 
 
-class AdminLoginRequest(CamelModel):
-    passcode: str
+class SuperadminLoginRequest(CamelModel):
+    email: EmailStr
+    password: str
 
 
-class AdminSessionOut(CamelModel):
-    is_admin: bool
+class SuperadminSessionOut(CamelModel):
+    is_superadmin: bool
+
+
+class AdminUserOut(CamelModel):
+    id: str
+    full_name: str
+    email: str
+    created_at: datetime
+    is_organizer: bool
+    onboarding_completed: bool
+
+
+class OrganizerUpdateRequest(CamelModel):
+    is_organizer: bool
+
+
+class AuditLogOut(CamelModel):
+    id: str
+    actor_name: str
+    description: str
+    created_at: datetime
 
 
 # ---------------------------------------------------------------------------
@@ -233,6 +254,10 @@ class VerifyOtpRequest(CamelModel):
 
 class AuthMessageOut(CamelModel):
     message: str
+    # True when the submitted email is the configured superadmin email — the
+    # frontend swaps its OTP step for a password prompt instead; no OTP is
+    # sent and no `users` row is touched in that case.
+    requires_superadmin_password: bool = False
 
 
 class UserProfileOut(CamelModel):
@@ -247,6 +272,7 @@ class UserProfileOut(CamelModel):
     current_role: str | None = None
     section_hs: str | None = None
     show_in_directory: bool = True
+    is_organizer: bool = False
 
 
 class AuthSessionOut(CamelModel):

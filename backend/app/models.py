@@ -43,6 +43,24 @@ class User(Base):
     # wipe/recreate them without ever touching real registered accounts.
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    # Permanent, per-account organizer access — granted/revoked only by the
+    # superadmin (see routers/superadmin.py). Replaces the old shared
+    # passcode: every new account starts as a plain attendee.
+    is_organizer: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class AuditLog(Base):
+    """Human-readable action log, viewable only by the superadmin."""
+
+    __tablename__ = "audit_logs"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    actor_name: Mapped[str] = mapped_column(String, nullable=False)
+    # Null when the actor is the superadmin (not a `users` row).
+    actor_user_id: Mapped[str | None] = mapped_column(String, ForeignKey("users.id"), nullable=True)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)
+
 
 class OtpCode(Base):
     __tablename__ = "otp_codes"

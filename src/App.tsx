@@ -29,6 +29,9 @@ import {
   AdminPortal
 } from './components/admin/AdminPortal';
 import {
+  SuperadminPortal
+} from './components/superadmin/SuperadminPortal';
+import {
   ProfileEditModal
 } from './components/ProfileEditModal';
 import {
@@ -78,8 +81,13 @@ const DEFAULT_STATS: DashboardStats = {
 export default function App() {
   // Navigation & Admin State
   const [activeTab, setActiveTab] = useState<string>('survey'); // Emphasis on survey first!
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isBootstrapped, setIsBootstrapped] = useState(false);
+
+  // The superadmin is a wholly separate identity (env-configured email +
+  // password, not a `User` row) — see AuthGate's superadmin-password step.
+  // When true, the entire attendee/organizer app is bypassed in favor of
+  // SuperadminPortal.
+  const [isSuperadmin, setIsSuperadmin] = useState(false);
 
   // Admin view — activeTab === 'admin' is the signal that the admin view is
   // showing (in place of the attendee tabs, not alongside them); adminTab is
@@ -92,8 +100,8 @@ export default function App() {
   }, [activeTab]);
 
   // Site-wide login — the whole app is gated behind this (see AuthGate).
-  // Admin-portal access is a separate, additional passcode unlocked from
-  // inside the app once logged in.
+  // Organizer access now travels with the account (currentUser.isOrganizer,
+  // granted only by the superadmin) rather than a separate in-app unlock.
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [hasSubmittedSurvey, setHasSubmittedSurvey] = useState(false);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
@@ -105,8 +113,8 @@ export default function App() {
   const [stats, setStats] = useState<DashboardStats>(DEFAULT_STATS);
   const [publicRsvps, setPublicRsvps] = useState<PublicRSVP[]>([]);
 
-  // Admin-only data (contains contact info) — only ever fetched once isAdmin
-  // is true, so PII never reaches a signed-out browser.
+  // Organizer-only data (contains contact info) — only ever fetched once
+  // currentUser.isOrganizer is true, so PII never reaches a non-organizer.
   const [adminResponses, setAdminResponses] = useState<SurveyResponse[]>([]);
   const [adminRsvps, setAdminRsvps] = useState<RSVPRecord[]>([]);
   const [scoutedVenues, setScoutedVenues] = useState<ScoutedVenue[]>([]);
@@ -114,20 +122,18 @@ export default function App() {
   // Fetches everything the logged-in app needs; only ever called once a user
   // session exists, since every one of these endpoints now requires login.
   const loadAppData = async () => {
-    const [details, anns, exps, dashStats, rsvpList, session] = await Promise.all([
+    const [details, anns, exps, dashStats, rsvpList] = await Promise.all([
       api.fetchEventDetails(),
       api.fetchAnnouncements(),
       api.fetchExpenses(),
       api.fetchDashboardStats(),
       api.fetchPublicRsvps(),
-      api.adminSession(),
     ]);
     setEventDetails(details);
     setAnnouncements(anns);
     setExpenses(exps);
     setStats(dashStats);
     setPublicRsvps(rsvpList);
-    setIsAdmin(session.isAdmin);
   };
 
   // Enters the main app for an already-onboarded user: loads app data and
@@ -144,9 +150,20 @@ export default function App() {
   // Initial bootstrap: check for an existing login session (cookie from a
   // previous visit) before fetching anything else — every other endpoint
   // requires login, so there's nothing to fetch until we know who's asking.
+  // Checked alongside the (mutually exclusive) superadmin session, since
+  // that's a completely separate identity with no `users` row of its own.
   useEffect(() => {
     (async () => {
-      const { user, hasSubmittedSurvey: submitted } = await api.fetchAuthSession();
+      const [authSession, superadminSession] = await Promise.all([
+        api.fetchAuthSession(),
+        api.fetchSuperadminSession(),
+      ]);
+      if (superadminSession.isSuperadmin) {
+        setIsSuperadmin(true);
+        setIsBootstrapped(true);
+        return;
+      }
+      const { user, hasSubmittedSurvey: submitted } = authSession;
       if (user) {
         if (user.onboardingCompleted) {
           await enterApp(user, submitted);
@@ -171,19 +188,24 @@ export default function App() {
     }
   };
 
+  // Handler: called by AuthGate once the superadmin password step succeeds.
+  const handleSuperadminAuthenticated = async () => {
+    setIsSuperadmin(true);
+  };
+
   // Handler: called by ProfileSetup once the one-time profile (name, mobile,
   // then/now photos) is saved — proceeds straight into the app.
   const handleProfileSaved = async (user: UserProfile, submitted: boolean) => {
     await enterApp(user, submitted);
   };
 
-  // Handler: full site logout — clears the server-side session (which also
-  // drops any admin unlock) and all locally-held data.
+  // Handler: full logout — clears the server-side session (attendee or
+  // superadmin, whichever is active) and all locally-held data.
   const handleLogout = async () => {
     await api.authLogout().catch(() => {});
     setCurrentUser(null);
     setHasSubmittedSurvey(false);
-    setIsAdmin(false);
+    setIsSuperadmin(false);
     setAdminResponses([]);
     setAdminRsvps([]);
     setScoutedVenues([]);
@@ -191,9 +213,9 @@ export default function App() {
     setActiveTab('survey');
   };
 
-  // Load / clear admin-only data whenever admin status changes.
+  // Load / clear organizer-only data whenever the account's organizer status changes.
   useEffect(() => {
-    if (!isAdmin) {
+    if (!currentUser?.isOrganizer) {
       setAdminResponses([]);
       setAdminRsvps([]);
       setScoutedVenues([]);
@@ -209,18 +231,7 @@ export default function App() {
       setAdminRsvps(rsvps);
       setScoutedVenues(venues);
     })();
-  }, [isAdmin]);
-
-  // Handler: real admin login — validated server-side, session cookie set on success.
-  const handleAdminLogin = async (passcode: string): Promise<boolean> => {
-    try {
-      await api.adminLogin(passcode);
-      setIsAdmin(true);
-      return true;
-    } catch {
-      return false;
-    }
-  };
+  }, [currentUser?.isOrganizer]);
 
   // Handler: Save Event Details
   const handleSaveEventDetails = async (newDetails: EventDetails) => {
@@ -231,7 +242,7 @@ export default function App() {
   const handleSurveySubmitted = async (newResponse: SurveyResponseCreate) => {
     const created = await api.createSurveyResponse(newResponse);
     setHasSubmittedSurvey(true);
-    if (isAdmin) setAdminResponses(prev => [created, ...prev]);
+    if (currentUser?.isOrganizer) setAdminResponses(prev => [created, ...prev]);
 
     // The backend may have auto-created/updated an RSVP from this submission
     // (see POST /api/survey-responses) — refresh the aggregates that depend on it.
@@ -241,7 +252,7 @@ export default function App() {
     ]);
     setStats(newStats);
     setPublicRsvps(newPublicRsvps);
-    if (isAdmin) setAdminRsvps(await api.fetchAdminRsvps());
+    if (currentUser?.isOrganizer) setAdminRsvps(await api.fetchAdminRsvps());
   };
 
   // Handler: Direct RSVP Submitted
@@ -265,7 +276,7 @@ export default function App() {
       }
       return [publicVersion, ...prev];
     });
-    if (isAdmin) {
+    if (currentUser?.isOrganizer) {
       setAdminRsvps(prev => {
         const idx = prev.findIndex(r => r.id === saved.id);
         if (idx >= 0) {
@@ -382,10 +393,16 @@ export default function App() {
     );
   }
 
+  // The superadmin never touches the attendee/organizer app at all — a
+  // completely separate, self-contained portal.
+  if (isSuperadmin) {
+    return <SuperadminPortal onLogout={handleLogout} />;
+  }
+
   // The entire site is gated behind login — no announcements, dashboard, or
   // survey are reachable without an account.
   if (!currentUser) {
-    return <AuthGate onAuthenticated={handleAuthenticated} />;
+    return <AuthGate onAuthenticated={handleAuthenticated} onSuperadminAuthenticated={handleSuperadminAuthenticated} />;
   }
 
   // One-time profile setup (name/mobile confirmation + Then & Now photos)
@@ -404,15 +421,15 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Avatar click — jumps straight into the admin view (passcode gate still
-  // applies there if not yet unlocked) or back to wherever the attendee was
-  // last, without dropping the underlying admin session either way.
+  // Avatar menu link — jumps into the organizer view or back to wherever the
+  // attendee was last. Only offered at all when the account has organizer
+  // access (see Header.tsx); there's no passcode gate to fall back to anymore.
   const handleToggleAdminView = () => {
     navigateToTab(activeTab === 'admin' ? lastAttendeeTab : 'admin');
   };
 
   const adminViewActive = activeTab === 'admin';
-  const navTabs = adminViewActive ? (isAdmin ? ADMIN_NAV_TABS : []) : NAV_TABS;
+  const navTabs = adminViewActive ? (currentUser.isOrganizer ? ADMIN_NAV_TABS : []) : NAV_TABS;
   const navActiveKey = adminViewActive ? adminTab : activeTab;
   const navOnSelect = adminViewActive ? navigateToAdminTab : navigateToTab;
 
@@ -428,6 +445,7 @@ export default function App() {
         navActiveKey={navActiveKey}
         onNavSelect={navOnSelect}
         adminViewActive={adminViewActive}
+        canAccessOrganizerView={currentUser.isOrganizer}
         onToggleAdminView={handleToggleAdminView}
         currentUser={currentUser}
         onLogout={handleLogout}
@@ -491,7 +509,7 @@ export default function App() {
         {activeTab === 'directory' && <DirectorySection />}
 
         {/* Tab 4: Photo Wall — collaborative albums */}
-        {activeTab === 'photos' && <PhotoWallSection currentUser={currentUser} isAdmin={isAdmin} />}
+        {activeTab === 'photos' && <PhotoWallSection currentUser={currentUser} isOrganizer={currentUser.isOrganizer} />}
 
         {/* Tab 5: Public Dashboard & Funds Transparency */}
         {activeTab === 'dashboard' && (
@@ -502,31 +520,36 @@ export default function App() {
           />
         )}
 
-        {/* Tab 6: Admin & Treasury Portal — replaces the attendee tabs
-            entirely while active (see Header.tsx's avatar toggle) */}
+        {/* Tab 6: Organizer Portal — replaces the attendee tabs entirely
+            while active (see Header.tsx's avatar-menu toggle). Only ever
+            reachable when the account has organizer access — there's no
+            passcode fallback anymore. */}
         {activeTab === 'admin' && (
-          <AdminPortal
-            isAdmin={isAdmin}
-            onLogin={handleAdminLogin}
-            adminTab={adminTab}
-            responses={adminResponses}
-            expenses={expenses}
-            announcements={announcements}
-            rsvps={adminRsvps}
-            eventDetails={eventDetails}
-            scoutedVenues={scoutedVenues}
-            onSaveEventDetails={handleSaveEventDetails}
-            onDeleteResponse={handleDeleteResponse}
-            onUpdatePaymentStatus={handleUpdatePaymentStatus}
-            onSaveExpense={handleSaveExpense}
-            onDeleteExpense={handleDeleteExpense}
-            onSaveAnnouncement={handleSaveAnnouncement}
-            onDeleteAnnouncement={handleDeleteAnnouncement}
-            onTogglePinAnnouncement={handleTogglePinAnnouncement}
-            onSaveVenue={handleSaveVenue}
-            onDeleteVenue={handleDeleteVenue}
-            onExitAdmin={() => navigateToTab(lastAttendeeTab)}
-          />
+          currentUser.isOrganizer ? (
+            <AdminPortal
+              adminTab={adminTab}
+              responses={adminResponses}
+              expenses={expenses}
+              announcements={announcements}
+              rsvps={adminRsvps}
+              eventDetails={eventDetails}
+              scoutedVenues={scoutedVenues}
+              onSaveEventDetails={handleSaveEventDetails}
+              onDeleteResponse={handleDeleteResponse}
+              onUpdatePaymentStatus={handleUpdatePaymentStatus}
+              onSaveExpense={handleSaveExpense}
+              onDeleteExpense={handleDeleteExpense}
+              onSaveAnnouncement={handleSaveAnnouncement}
+              onDeleteAnnouncement={handleDeleteAnnouncement}
+              onTogglePinAnnouncement={handleTogglePinAnnouncement}
+              onSaveVenue={handleSaveVenue}
+              onDeleteVenue={handleDeleteVenue}
+            />
+          ) : (
+            <div className="max-w-sm mx-auto py-16 px-4 text-center text-sm text-on-surface-variant">
+              You don't have organizer access.
+            </div>
+          )
         )}
 
       </main>

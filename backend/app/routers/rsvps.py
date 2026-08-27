@@ -4,16 +4,21 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.audit import record_action
 from app.database import get_db
-from app.models import RSVPRecord
+from app.models import RSVPRecord, User
 from app.schemas import RSVPCreate, RSVPOut, RSVPPublicOut
-from app.security import get_current_user, require_admin
+from app.security import get_current_user, get_organizer_actor
 
 router = APIRouter(prefix="/api/rsvps", tags=["rsvps"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("", response_model=RSVPOut)
-async def create_or_update_rsvp(payload: RSVPCreate, db: AsyncSession = Depends(get_db)):
+async def create_or_update_rsvp(
+    payload: RSVPCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     existing = None
     if payload.contact_number:
         result = await db.execute(
@@ -31,10 +36,18 @@ async def create_or_update_rsvp(payload: RSVPCreate, db: AsyncSession = Depends(
         existing.dietary_restrictions = payload.dietary_restrictions
         existing.message_to_batch = payload.message_to_batch
         record = existing
+        verb = "updated"
     else:
         record = RSVPRecord(**payload.model_dump())
         db.add(record)
+        verb = "submitted"
 
+    record_action(
+        db,
+        f"{current_user.full_name} {verb} an RSVP ({payload.status})",
+        actor_name=current_user.full_name,
+        actor_user_id=current_user.id,
+    )
     await db.commit()
     await db.refresh(record)
     return record
@@ -46,7 +59,9 @@ async def list_public_rsvps(db: AsyncSession = Depends(get_db)):
     return result.scalars().all()
 
 
-@router.get("/admin", response_model=list[RSVPOut], dependencies=[Depends(require_admin)])
-async def list_admin_rsvps(db: AsyncSession = Depends(get_db)):
+@router.get("/admin", response_model=list[RSVPOut])
+async def list_admin_rsvps(
+    db: AsyncSession = Depends(get_db), actor=Depends(get_organizer_actor)
+):
     result = await db.execute(select(RSVPRecord).order_by(RSVPRecord.submitted_at.desc()))
     return result.scalars().all()

@@ -7,7 +7,7 @@ import { AlbumDetail } from './AlbumDetail';
 
 interface PhotoWallSectionProps {
   currentUser: UserProfile;
-  isAdmin: boolean;
+  isOrganizer: boolean;
 }
 
 const AlbumCard: React.FC<{ album: Album; onOpen: () => void }> = ({ album, onOpen }) => {
@@ -67,7 +67,7 @@ const AlbumCard: React.FC<{ album: Album; onOpen: () => void }> = ({ album, onOp
   );
 };
 
-export const PhotoWallSection: React.FC<PhotoWallSectionProps> = ({ currentUser, isAdmin }) => {
+export const PhotoWallSection: React.FC<PhotoWallSectionProps> = ({ currentUser, isOrganizer }) => {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
@@ -88,7 +88,7 @@ export const PhotoWallSection: React.FC<PhotoWallSectionProps> = ({ currentUser,
       <AlbumDetail
         albumId={selectedAlbumId}
         currentUser={currentUser}
-        isAdmin={isAdmin}
+        isOrganizer={isOrganizer}
         onBack={() => {
           setSelectedAlbumId(null);
           loadAlbums();

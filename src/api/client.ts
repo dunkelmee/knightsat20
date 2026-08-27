@@ -1,7 +1,9 @@
 import {
   Album,
+  AdminUserSummary,
   AlbumDetail,
   Announcement,
+  AuditLogEntry,
   DashboardStats,
   DirectoryListResponse,
   DirectoryUpdatePayload,
@@ -99,20 +101,12 @@ export const updateEventDetails = (payload: EventDetails) =>
 
 export const fetchDashboardStats = () => apiFetch<DashboardStats>('/dashboard/stats');
 
-// --- Admin auth ------------------------------------------------------------------
-
-export const adminLogin = (passcode: string) =>
-  post<{ isAdmin: boolean }>('/admin/login', { passcode });
-export const adminLogout = () => post<{ isAdmin: boolean }>('/admin/logout');
-export const adminSession = () => apiFetch<{ isAdmin: boolean }>('/admin/session');
-export const resetDemoData = () => post<void>('/admin/reset-demo-data');
-
 // --- User auth (email OTP) --------------------------------------------------------
 
 export const registerAccount = (payload: { email: string; fullName: string; mobileNumber: string }) =>
-  post<{ message: string }>('/auth/register', payload);
+  post<{ message: string; requiresSuperadminPassword?: boolean }>('/auth/register', payload);
 export const requestLogin = (email: string) =>
-  post<{ message: string }>('/auth/login', { email });
+  post<{ message: string; requiresSuperadminPassword?: boolean }>('/auth/login', { email });
 export const verifyOtp = (email: string, code: string) =>
   post<{ user: UserProfile; hasSubmittedSurvey: boolean }>('/auth/verify', { email, code });
 export const fetchAuthSession = () =>
@@ -124,6 +118,18 @@ export const updateProfile = (payload: {
   thenPhotoUrl?: string | null;
   nowPhotoUrl?: string | null;
 }) => put<{ user: UserProfile; hasSubmittedSurvey: boolean }>('/auth/profile', payload);
+
+// --- Superadmin --------------------------------------------------------------------
+
+export const superadminLogin = (email: string, password: string) =>
+  post<{ isSuperadmin: boolean }>('/auth/superadmin-login', { email, password });
+export const fetchSuperadminSession = () =>
+  apiFetch<{ isSuperadmin: boolean }>('/auth/superadmin-session');
+export const fetchSuperadminUsers = () => apiFetch<AdminUserSummary[]>('/superadmin/users');
+export const updateUserOrganizerStatus = (id: string, isOrganizer: boolean) =>
+  patch<AdminUserSummary>(`/superadmin/users/${id}/organizer`, { isOrganizer });
+export const fetchAuditLogs = () => apiFetch<AuditLogEntry[]>('/superadmin/audit-logs');
+export const resetDemoData = () => post<void>('/superadmin/reset-demo-data');
 
 // --- Directory ---------------------------------------------------------------
 

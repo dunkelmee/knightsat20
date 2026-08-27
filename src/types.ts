@@ -148,8 +148,9 @@ export type PublicRSVP = Pick<
   'id' | 'submittedAt' | 'fullName' | 'status' | 'bringingPlusOne' | 'kidsCount' | 'messageToBatch'
 >;
 
-// A logged-in alumnus's account — separate from admin-portal access, which is
-// still a shared passcode unlocked from inside the app once logged in.
+// A logged-in alumnus's account. Organizer access is a permanent, per-account
+// flag granted only by the superadmin (see SuperadminPortal) — there's no
+// shared passcode anymore.
 export interface UserProfile {
   id: string;
   email: string;
@@ -162,6 +163,25 @@ export interface UserProfile {
   currentRole?: string | null;
   sectionHs?: string | null;
   showInDirectory: boolean;
+  isOrganizer: boolean;
+}
+
+// --- Superadmin ---------------------------------------------------------------
+
+export interface AdminUserSummary {
+  id: string;
+  fullName: string;
+  email: string;
+  createdAt: string;
+  isOrganizer: boolean;
+  onboardingCompleted: boolean;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  actorName: string;
+  description: string;
+  createdAt: string;
 }
 
 // --- Directory --------------------------------------------------------------
