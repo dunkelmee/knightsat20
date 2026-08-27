@@ -471,59 +471,9 @@ export default function App() {
 
       {/* Footer */}
       <footer className="relative bg-surface-container text-on-surface-variant border-t border-outline-variant/40 text-xs py-10 px-4 sm:px-6 mt-12">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded bg-primary text-on-primary flex items-center justify-center font-bold shadow-soft">
-              <GraduationCap className="w-6 h-6 text-on-primary" />
-            </div>
-            <div>
-              <div className="font-serif font-semibold text-on-surface text-base">
-                Makati Science High School • Batch 2007
-              </div>
-              <div className="text-xs text-on-surface-variant">
-                Official Reunion Planning & Operating Funds Hub
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 text-sm font-semibold">
-            <button
-              type="button"
-              onClick={() => { setActiveTab('survey'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="hover:text-primary transition-colors"
-            >
-              Planning Survey
-            </button>
-            <span>•</span>
-            <button
-              type="button"
-              onClick={() => { setActiveTab('board'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="hover:text-primary transition-colors"
-            >
-              Batch Board
-            </button>
-            <span>•</span>
-            <button
-              type="button"
-              onClick={() => { setActiveTab('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="hover:text-primary transition-colors"
-            >
-              Operating Funds
-            </button>
-            <span>•</span>
-            <button
-              type="button"
-              onClick={() => { setActiveTab('admin'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="hover:text-primary transition-colors text-primary font-bold"
-            >
-              Admin Portal
-            </button>
-          </div>
-        </div>
-
         <div className="max-w-7xl mx-auto mt-6 pt-6 border-t border-outline-variant/40 text-center text-xs text-on-surface-variant flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>Excellence & Service • MakSci 2007 Forever</span>
-          <span>Designed with care for the Makati Science High School Batch 2007 Reunion</span>
+          <span>Designed with love for the Makati Science High School Batch 2007 Reunion</span>
         </div>
       </footer>
 
