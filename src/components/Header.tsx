@@ -60,17 +60,12 @@ export const Header: React.FC<HeaderProps> = ({
               <GraduationCap className="w-4 h-4 text-on-primary" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-serif font-semibold text-base sm:text-lg text-on-surface tracking-tight leading-none">
-                  Makati Science High School
-                </h1>
-                <span className="px-1.5 py-0.5 text-[11px] font-semibold rounded bg-primary-container text-on-primary-container border border-primary-container">
-                  Batch 2007
-                </span>
-              </div>
-              <p className="text-[11px] text-on-surface-variant mt-0.5">
-                Reunion Hub
-              </p>
+              <h1 className="font-serif font-semibold text-base sm:text-lg text-on-surface tracking-tight leading-none">
+                Makati Science High School '07 Reunion
+              </h1>
+              <span className="inline-block mt-1 px-1.5 py-0.5 text-[11px] font-semibold rounded bg-primary-container text-on-primary-container border border-primary-container">
+                Knights @ 20
+              </span>
             </div>
           </div>
 

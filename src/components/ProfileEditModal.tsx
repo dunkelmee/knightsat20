@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { User as UserIcon, Phone, MapPin, Briefcase, GraduationCap, X } from 'lucide-react';
+import { User as UserIcon, Phone, MapPin, Sparkles, X } from 'lucide-react';
 import { UserProfile } from '../types';
 import { ApiError, updateDirectoryProfile, updateProfile } from '../api/client';
+import { PhotoTile } from './PhotoTile';
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -18,9 +19,10 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 }) => {
   const [fullName, setFullName] = useState(currentUser.fullName);
   const [mobileNumber, setMobileNumber] = useState(currentUser.mobileNumber);
+  const [thenPhotoUrl, setThenPhotoUrl] = useState<string | null>(currentUser.thenPhotoUrl || null);
+  const [nowPhotoUrl, setNowPhotoUrl] = useState<string | null>(currentUser.nowPhotoUrl || null);
   const [currentCity, setCurrentCity] = useState(currentUser.currentCity || '');
   const [currentRole, setCurrentRole] = useState(currentUser.currentRole || '');
-  const [sectionHs, setSectionHs] = useState(currentUser.sectionHs || '');
   const [showInDirectory, setShowInDirectory] = useState(currentUser.showInDirectory);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,19 +38,17 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     setError('');
     setIsSubmitting(true);
     try {
-      // then/now photos aren't editable here — pass the existing values
-      // through unchanged, since the backend overwrites both on every save.
       const [{ user }] = await Promise.all([
         updateProfile({
           fullName: fullName.trim(),
           mobileNumber: mobileNumber.trim(),
-          thenPhotoUrl: currentUser.thenPhotoUrl ?? null,
-          nowPhotoUrl: currentUser.nowPhotoUrl ?? null,
+          thenPhotoUrl,
+          nowPhotoUrl,
         }),
         updateDirectoryProfile({
           currentCity: currentCity.trim() || null,
           currentRole: currentRole.trim() || null,
-          sectionHs: sectionHs.trim() || null,
+          sectionHs: null,
           showInDirectory,
         }),
       ]);
@@ -56,7 +56,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         ...user,
         currentCity: currentCity.trim() || null,
         currentRole: currentRole.trim() || null,
-        sectionHs: sectionHs.trim() || null,
+        sectionHs: null,
         showInDirectory,
       });
     } catch (err) {
@@ -73,7 +73,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm bg-surface-container-lowest rounded p-6 border border-outline-variant/30 shadow-soft space-y-4"
+        className="w-full max-w-md max-h-[85vh] overflow-y-auto bg-surface-container-lowest rounded p-6 border border-outline-variant/30 shadow-soft space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -119,52 +119,62 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             </div>
           </div>
 
+          <div>
+            <label className="block text-xs font-semibold text-on-surface-variant mb-2">
+              Then &amp; Now photos <span className="text-on-surface-variant font-normal">(optional)</span>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <PhotoTile
+                label="Then (Batch 2007)"
+                hint="Upload a high school photo"
+                photoUrl={thenPhotoUrl}
+                applyThenFilter
+                onPhotoSelected={setThenPhotoUrl}
+                onClear={() => setThenPhotoUrl(null)}
+              />
+              <PhotoTile
+                label="Now (Today)"
+                hint="Upload a recent photo"
+                photoUrl={nowPhotoUrl}
+                onPhotoSelected={setNowPhotoUrl}
+                onClear={() => setNowPhotoUrl(null)}
+              />
+            </div>
+            <p className="text-[10px] text-on-surface-variant mt-1.5">
+              Max 4MB per photo. Your "Now" photo is also used as your profile avatar.
+            </p>
+          </div>
+
           <div className="pt-1 border-t border-outline-variant/30 space-y-3">
             <p className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wide">
               Directory listing
             </p>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">City</label>
-                <div className="relative">
-                  <MapPin className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={currentCity}
-                    onChange={(e) => setCurrentCity(e.target.value)}
-                    placeholder="e.g. Makati"
-                    className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">Role</label>
-                <div className="relative">
-                  <Briefcase className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={currentRole}
-                    onChange={(e) => setCurrentRole(e.target.value)}
-                    placeholder="e.g. UX Director"
-                    className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
-                  />
-                </div>
+            <div>
+              <label className="block text-xs font-semibold text-on-surface-variant mb-1">City</label>
+              <div className="relative">
+                <MapPin className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={currentCity}
+                  onChange={(e) => setCurrentCity(e.target.value)}
+                  placeholder="e.g. Makati"
+                  className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+                />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-on-surface-variant mb-1">
-                HS Section <span className="font-normal">(optional)</span>
+                What are you currently up to?
               </label>
               <div className="relative">
-                <GraduationCap className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
+                <Sparkles className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  value={sectionHs}
-                  onChange={(e) => setSectionHs(e.target.value)}
-                  placeholder="e.g. IV-Curie"
+                  value={currentRole}
+                  onChange={(e) => setCurrentRole(e.target.value)}
+                  placeholder="e.g. UX Director, married with 2 kids"
                   className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
                 />
               </div>

@@ -423,9 +423,10 @@ export default function App() {
         />
       )}
 
-      {/* Prominent Pending Date & Venue Banner — Directory/Photos get their
-          own dedicated headers instead (see spec 1.3/2.3), so it's hidden there. */}
-      {activeTab !== 'directory' && activeTab !== 'photos' && (
+      {/* Prominent Pending Date & Venue Banner — only on the Batch Board tab,
+          which is the hero-carrying landing page once a survey's been
+          answered. Survey/Funds/Directory/Photos all get their own headers. */}
+      {activeTab === 'board' && (
         <PendingBanner
           totalSurveys={stats.totalSurveys}
           totalPledges={stats.totalPledges}

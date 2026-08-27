@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Search, Users, Ban } from 'lucide-react';
+import { Search, Users, Ban, MapPin } from 'lucide-react';
 import { DirectoryCounts, DirectoryPerson, DirectoryStatus } from '../types';
 import { fetchDirectory } from '../api/client';
 
@@ -64,12 +64,21 @@ const DirectoryCard: React.FC<{ person: DirectoryPerson }> = ({ person }) => {
 
       <h4 className="font-serif font-semibold text-sm text-on-surface mt-2.5">{person.displayName}</h4>
       {person.status === 'missing' && !person.nowPhotoUrl ? (
-        <p className="text-[11px] italic text-outline mt-0.5">
-          {person.lastSeenCity ? `Last seen in ${person.lastSeenCity}` : 'Last seen — unknown'}
+        <p className="flex items-center gap-1 text-[11px] italic text-outline mt-0.5 truncate">
+          {person.lastSeenCity ? (
+            <>
+              <MapPin className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{person.lastSeenCity}</span>
+            </>
+          ) : (
+            <span>Last seen — unknown</span>
+          )}
+          {person.lastSeenCity && person.currentRole && <span className="flex-shrink-0">•</span>}
+          {person.currentRole && <span className="truncate">{person.currentRole}</span>}
         </p>
       ) : (
         <p className="text-[11px] text-on-surface-variant mt-0.5 truncate">
-          {[person.currentCity, person.currentRole].filter(Boolean).join(' · ') || ' '}
+          {[person.currentCity, person.currentRole].filter(Boolean).join(' • ') || ' '}
         </p>
       )}
     </div>

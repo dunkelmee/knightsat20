@@ -5,8 +5,8 @@ import { ClipboardList, LayoutGrid, Users, Image, BarChart3 } from 'lucide-react
 // floating bottom bar and the desktop in-header tabs render from this same
 // array so they can't drift apart (see DIRECTORY_AND_PHOTOWALL.md section 3).
 export const NAV_TABS = [
-  { key: 'survey', label: 'Survey', icon: ClipboardList },
   { key: 'board', label: 'Batch Board', icon: LayoutGrid },
+  { key: 'survey', label: 'Survey', icon: ClipboardList },
   { key: 'directory', label: 'Directory', icon: Users },
   { key: 'photos', label: 'Photos', icon: Image },
   { key: 'dashboard', label: 'Funds', icon: BarChart3 },

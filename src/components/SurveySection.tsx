@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   CheckCircle2, Send, ChevronRight, ChevronLeft,
-  Sparkles, HeartHandshake,
+  Sparkles, HeartHandshake, ClipboardList,
   Minus, Plus
 } from 'lucide-react';
 import { SurveyResponse, SurveyResponseCreate } from '../types';
@@ -260,15 +260,20 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
   return (
     <div id="survey-form-container" className="max-w-2xl mx-auto py-6 px-4">
 
-      {/* Sleek Minimal Intro */}
-      <div className="mb-4 bg-surface-container-lowest text-on-surface rounded p-4 sm:p-5 border border-outline-variant/30">
-        <h2 className="text-base sm:text-lg font-serif font-semibold text-on-surface">
-          Reunion Planning Survey
-        </h2>
-        <p className="text-xs text-on-surface-variant mt-0.5">
+      {/* Section Title — matches the icon + serif headline pattern used by
+          the Batch Board / Funds tabs, rather than a standalone card */}
+      <div className="mb-5">
+        <div className="flex items-center gap-2">
+          <ClipboardList className="w-4 h-4 text-primary" />
+          <h2 className="text-base sm:text-lg font-serif font-semibold text-on-surface">
+            Reunion Planning Survey
+          </h2>
+        </div>
+        <p className="text-xs text-on-surface-variant mt-1">
           Help us choose the best date, venue style, and batch fund target.
         </p>
       </div>
+      <div className="border-t border-outline-variant/30 mb-5" />
 
       {/* 3-Step Sleek Navigation Bar */}
       <div id="survey-step-tabs" className="mb-5 bg-surface-container-low p-1 rounded border border-outline-variant/30 grid grid-cols-3 gap-1">
