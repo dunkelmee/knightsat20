@@ -24,10 +24,10 @@ export const PendingBanner: React.FC<PendingBannerProps> = ({
   return (
     <section id="pending-status-banner" className="bg-surface-container-low text-on-surface border-b border-outline-variant/40">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex flex-col items-center text-center md:items-stretch md:text-left md:flex-row md:justify-between gap-5">
 
           {/* Main Info */}
-          <div className="space-y-2.5">
+          <div className="space-y-2.5 flex flex-col items-center md:items-start">
             <div className="flex items-center gap-2">
               <h2 className="text-xl sm:text-2xl font-serif font-semibold text-on-surface tracking-tight">
                 Makati Science High School <span className="text-primary font-medium">Batch 2007 Reunion</span>
@@ -41,7 +41,7 @@ export const PendingBanner: React.FC<PendingBannerProps> = ({
             </div>
 
             {/* Date & Venue Display */}
-            <div className="flex flex-wrap gap-2 text-xs text-on-surface-variant">
+            <div className="flex flex-wrap justify-center md:justify-start gap-2 text-xs text-on-surface-variant">
               <div className="inline-flex items-center gap-1.5 bg-surface-container-lowest/90 px-3 py-1.5 rounded border border-outline-variant/40 shadow-soft">
                 <Calendar className="w-3.5 h-3.5 text-on-surface-variant" />
                 <span>Date: <strong className="text-on-surface font-semibold">{displayDate}</strong></span>
@@ -68,7 +68,7 @@ export const PendingBanner: React.FC<PendingBannerProps> = ({
           </div>
 
           {/* Action & Quick Stats */}
-          <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end gap-2.5 flex-shrink-0">
+          <div className="flex flex-col items-center md:items-end gap-2.5 flex-shrink-0">
             <button
               id="btn-banner-survey-cta"
               type="button"

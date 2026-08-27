@@ -23,6 +23,9 @@ import {
   AdminPortal
 } from './components/admin/AdminPortal';
 import {
+  ProfileEditModal
+} from './components/ProfileEditModal';
+import {
   AuthGate
 } from './components/auth/AuthGate';
 import {
@@ -76,6 +79,7 @@ export default function App() {
   // inside the app once logged in.
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [hasSubmittedSurvey, setHasSubmittedSurvey] = useState(false);
+  const [showProfileEdit, setShowProfileEdit] = useState(false);
 
   // Public data, backed by the FastAPI + Postgres API (see backend/)
   const [eventDetails, setEventDetails] = useState<EventDetails>(DEFAULT_EVENT_DETAILS);
@@ -390,11 +394,23 @@ export default function App() {
         }}
         isAdmin={isAdmin}
         setIsAdmin={handleSetIsAdmin}
-        responseCount={stats.totalSurveys}
-        totalPledges={stats.totalPledges}
         currentUser={currentUser}
         onLogout={handleLogout}
+        onEditProfile={() => setShowProfileEdit(true)}
       />
+
+      {/* Edit-Profile Modal (full name & mobile number) */}
+      {currentUser && (
+        <ProfileEditModal
+          isOpen={showProfileEdit}
+          currentUser={currentUser}
+          onClose={() => setShowProfileEdit(false)}
+          onSaved={(user) => {
+            setCurrentUser(user);
+            setShowProfileEdit(false);
+          }}
+        />
+      )}
 
       {/* Prominent Pending Date & Venue Banner */}
       <PendingBanner
@@ -428,7 +444,6 @@ export default function App() {
             onOpenAdminToPost={() => setActiveTab('admin')}
             rsvps={publicRsvps}
             onRsvpSubmitted={handleRsvpSubmitted}
-            onNavigateToSurvey={() => setActiveTab('survey')}
           />
         )}
 
@@ -438,8 +453,6 @@ export default function App() {
             stats={stats}
             expenses={expenses}
             eventDetails={eventDetails}
-            onOpenAdmin={() => setActiveTab('admin')}
-            onTakeSurvey={() => setActiveTab('survey')}
           />
         )}
 
@@ -470,8 +483,8 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="relative bg-surface-container text-on-surface-variant border-t border-outline-variant/40 text-xs py-10 px-4 sm:px-6 mt-12">
-        <div className="max-w-7xl mx-auto mt-6 pt-6 border-t border-outline-variant/40 text-center text-xs text-on-surface-variant flex flex-col sm:flex-row items-center justify-between gap-2">
+      <footer className="relative bg-surface-container text-on-surface-variant border-t border-outline-variant/40 text-xs py-6 px-4 sm:px-6 mt-12">
+        <div className="max-w-7xl mx-auto text-center flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2">
           <span>Excellence & Service • MakSci 2007 Forever</span>
           <span>Designed with love for the Makati Science High School Batch 2007 Reunion</span>
         </div>

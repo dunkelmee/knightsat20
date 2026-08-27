@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   HeartHandshake, Receipt, Scale, TrendingUp,
-  Calendar, MapPin, Sparkles, ShieldCheck, CheckCircle2, Clock, PiggyBank, Vote
+  Calendar, MapPin, CheckCircle2, Clock, PiggyBank, Vote
 } from 'lucide-react';
 import { PlannedExpense, DashboardStats, EventDetails } from '../types';
 import { formatPHP } from '../utils/pledgeParser';
@@ -10,16 +10,12 @@ interface PublicDashboardSectionProps {
   stats: DashboardStats;
   expenses: PlannedExpense[];
   eventDetails?: EventDetails;
-  onOpenAdmin: () => void;
-  onTakeSurvey: () => void;
 }
 
 export const PublicDashboardSection: React.FC<PublicDashboardSectionProps> = ({
   stats,
   expenses,
   eventDetails,
-  onOpenAdmin,
-  onTakeSurvey,
 }) => {
   // Financial computations — pledge totals are server-computed aggregates (no
   // survey PII leaves the backend); expense totals come straight from the
@@ -42,37 +38,15 @@ export const PublicDashboardSection: React.FC<PublicDashboardSectionProps> = ({
   return (
     <div id="public-dashboard-container" className="max-w-5xl mx-auto py-6 px-4 space-y-6">
 
-      {/* Sleek Top Banner */}
-      <div className="bg-surface-container-lowest text-on-surface rounded p-4 sm:p-5 border border-outline-variant/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-base sm:text-lg font-serif font-semibold tracking-tight text-on-surface">
-            Batch Operating Funds & Ledger
-          </h2>
-          <p className="text-on-surface-variant text-xs max-w-lg">
-            Live auto-calculated summary of total pledges from survey responses and planned budget line-items.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={onTakeSurvey}
-            className="px-4 py-2 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft transition-all flex items-center gap-1.5"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Pledge in Survey</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onOpenAdmin}
-            className="px-3.5 py-2 rounded bg-background border border-secondary text-secondary hover:bg-surface-container font-semibold text-xs transition-all flex items-center gap-1.5"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-secondary" />
-            <span>Treasury Admin</span>
-          </button>
-        </div>
+      {/* Section Title */}
+      <div className="flex items-center gap-2">
+        <Scale className="w-4 h-4 text-primary" />
+        <h2 className="text-base sm:text-lg font-serif font-semibold tracking-tight text-on-surface">
+          Operating Funds & Ledger
+        </h2>
       </div>
+
+      <div className="border-t border-outline-variant/30" />
 
       {/* 3 Core Financial Metric Cards (Sleek proportions) */}
       <div id="financial-metric-cards" className="grid grid-cols-1 sm:grid-cols-3 gap-3">

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import {
   Bell, Pin, User, Heart, Share2, Check, Send, Users, CheckCircle2,
-  MessageSquare, UserPlus, Clock, Plus, Minus, Search, ClipboardList,
+  MessageSquare, UserPlus, Clock, Plus, Minus, Search,
   ChevronDown, ChevronUp, Sparkles, Megaphone, UsersRound,
 } from 'lucide-react';
 import { Announcement, PublicRSVP, RSVPRecord } from '../types';
@@ -13,7 +13,6 @@ interface BatchBoardSectionProps {
   onOpenAdminToPost: () => void;
   rsvps: PublicRSVP[];
   onRsvpSubmitted: (rsvp: RSVPRecord) => void;
-  onNavigateToSurvey: () => void;
 }
 
 export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
@@ -22,7 +21,6 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
   onOpenAdminToPost,
   rsvps,
   onRsvpSubmitted,
-  onNavigateToSurvey,
 }) => {
   // Announcements state
   const [selectedTag, setSelectedTag] = useState<string>('All');
@@ -269,33 +267,15 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
       {/* ============ ATTENDEE ROSTER & GUEST LIST ============ */}
       <section id="roster-section" className="space-y-5">
 
-        {/* Informative Survey vs Roster Clarification Banner */}
-        <div className="bg-surface-container-low rounded p-4 sm:p-5 border border-outline-variant/30 shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-primary-container/20 text-on-primary-container border border-primary-container/50">
-                Unified Headcount
-              </span>
-              <h2 className="text-sm sm:text-base font-serif font-semibold text-on-surface">
-                Batch 2007 Attendee Roster & Guest List
-              </h2>
-            </div>
-            <p className="text-xs text-on-surface-variant max-w-xl">
-              <strong className="text-on-surface font-semibold">Completing the Reunion Survey automatically adds you to this roster</strong> and records your venue/date votes. If you already filled out the survey, you are already counted below!
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              type="button"
-              onClick={onNavigateToSurvey}
-              className="px-4 py-2 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft flex items-center gap-1.5 transition-all"
-            >
-              <ClipboardList className="w-3.5 h-3.5" />
-              <span>Answer Full Survey</span>
-            </button>
-          </div>
+        {/* Section Title */}
+        <div className="flex items-center gap-2">
+          <Users className="w-4 h-4 text-primary" />
+          <h2 className="text-sm sm:text-base font-serif font-semibold text-on-surface">
+            Attendee Roster & Guest List
+          </h2>
         </div>
+
+        <div className="border-t border-outline-variant/30" />
 
         {/* Sleek Minimalist Headcount Strip */}
         <div id="rsvp-headcount-cards" className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
