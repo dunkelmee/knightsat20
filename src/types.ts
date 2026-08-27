@@ -18,7 +18,7 @@ export interface SurveyResponse {
 
   // Q4: Venue
   venueSuggestion?: string; // Venue name and location
-  preferredVenueType: 'Restaurant / private dining' | 'Hotel / function room' | 'Resort / outdoor venue' | 'School / campus' | 'Private house / events place' | 'Other' | string;
+  preferredVenueType: string[]; // Multiselect: Restaurant / private dining, Hotel / function room, Resort / outdoor venue, School / campus, Private house / events place, Other
   venueTypeOther?: string;
 
   // Q5: Contributions & Sponsorship

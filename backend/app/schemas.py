@@ -30,7 +30,7 @@ class SurveyResponseCreate(CamelModel):
     specific_date_notes: str | None = None
 
     venue_suggestion: str | None = None
-    preferred_venue_type: str
+    preferred_venue_type: list[str] = Field(default_factory=list)
     venue_type_other: str | None = None
 
     pledge_option: str

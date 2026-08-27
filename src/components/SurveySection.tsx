@@ -28,7 +28,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
   const [preferredMonths, setPreferredMonths] = useState<string[]>(['April', 'December']);
   const [specificDateNotes, setSpecificDateNotes] = useState<string>('');
   const [venueSuggestion, setVenueSuggestion] = useState<string>('');
-  const [preferredVenueType, setPreferredVenueType] = useState<string>('Hotel / function room in Makati or BGC');
+  const [preferredVenueType, setPreferredVenueType] = useState<string[]>(['Hotel / function room in Makati or BGC']);
   const [venueTypeOther, setVenueTypeOther] = useState<string>('');
 
   // Step 2: Organizing & Skills
@@ -102,6 +102,15 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
     }
   };
 
+  // Venue type toggle handler
+  const handleVenueTypeToggle = (type: string) => {
+    if (preferredVenueType.includes(type)) {
+      setPreferredVenueType(preferredVenueType.filter(t => t !== type));
+    } else {
+      setPreferredVenueType([...preferredVenueType, type]);
+    }
+  };
+
   // Skill toggle handler
   const handleSkillToggle = (skill: string) => {
     if (skill === 'Prefer to just attend & relax') {
@@ -155,7 +164,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
 
     const finalSkills = skillsOffered.map(s => s === 'Other' && skillsOtherText ? `Other: ${skillsOtherText}` : s);
     const finalSponsorships = otherSponsorships.map(s => s === 'Other' && otherSponsorshipsOtherText ? `Other: ${otherSponsorshipsOtherText}` : s);
-    const finalVenueType = preferredVenueType === 'Other' && venueTypeOther ? `Other: ${venueTypeOther}` : preferredVenueType;
+    const finalVenueType = preferredVenueType.map(t => t === 'Other' && venueTypeOther ? `Other: ${venueTypeOther}` : t);
 
     const newResponse: SurveyResponseCreate = {
       attendance,
@@ -190,7 +199,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
     setPreferredMonths(['April', 'December']);
     setSpecificDateNotes('');
     setVenueSuggestion('');
-    setPreferredVenueType('Hotel / function room in Makati or BGC');
+    setPreferredVenueType(['Hotel / function room in Makati or BGC']);
     setVenueTypeOther('');
     setWillingToOrganize('Maybe, depending on tasks');
     setSkillsOffered([]);
@@ -451,16 +460,15 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                     <label
                       key={type}
                       className={`flex items-center gap-2 p-2.5 rounded border cursor-pointer transition-all ${
-                        preferredVenueType === type
+                        preferredVenueType.includes(type)
                           ? 'border-primary bg-primary-container/15 text-on-surface font-semibold ring-1 ring-primary'
                           : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
                       }`}
                     >
                       <input
-                        type="radio"
-                        name="venueType"
-                        checked={preferredVenueType === type}
-                        onChange={() => setPreferredVenueType(type)}
+                        type="checkbox"
+                        checked={preferredVenueType.includes(type)}
+                        onChange={() => handleVenueTypeToggle(type)}
                         className="w-3.5 h-3.5 text-primary focus:ring-primary"
                       />
                       <span className="text-xs font-medium">{type}</span>
@@ -468,7 +476,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                   ))}
                 </div>
 
-                {preferredVenueType === 'Other' && (
+                {preferredVenueType.includes('Other') && (
                   <div className="mt-2">
                     <input
                       id="input-venueTypeOther"

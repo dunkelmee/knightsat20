@@ -101,7 +101,7 @@ class SurveyResponse(Base):
     specific_date_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     venue_suggestion: Mapped[str | None] = mapped_column(String, nullable=True)
-    preferred_venue_type: Mapped[str] = mapped_column(String, nullable=False)
+    preferred_venue_type: Mapped[list[str]] = mapped_column(JSONB, default=list)
     venue_type_other: Mapped[str | None] = mapped_column(String, nullable=True)
 
     pledge_option: Mapped[str] = mapped_column(String, nullable=False)

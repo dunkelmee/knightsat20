@@ -48,7 +48,11 @@ export function exportSurveyResponsesToCSV(responses: SurveyResponse[]) {
     escapeCSV(r.preferredMonths.join(', ')),
     escapeCSV(r.specificDateNotes || ''),
     escapeCSV(r.venueSuggestion || ''),
-    escapeCSV(r.preferredVenueType === 'Other' && r.venueTypeOther ? `Other: ${r.venueTypeOther}` : r.preferredVenueType),
+    escapeCSV(
+      r.preferredVenueType
+        .map((type) => (type === 'Other' && r.venueTypeOther ? `Other: ${r.venueTypeOther}` : type))
+        .join(', '),
+    ),
     escapeCSV(r.pledgeOption),
     escapeCSV(r.customPledgeAmount || ''),
     escapeCSV(r.computedPledgeAmount),

@@ -94,9 +94,9 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
           <div className="p-4 bg-surface-container-low rounded border border-outline-variant/30 space-y-1">
             <div className="text-xs font-bold text-on-surface-variant uppercase tracking-wide">Q4. Venue Preference</div>
             <div className="text-on-surface font-semibold">
-              {response.preferredVenueType === 'Other' && response.venueTypeOther
-                ? `Other: ${response.venueTypeOther}`
-                : response.preferredVenueType}
+              {response.preferredVenueType
+                .map((type) => (type === 'Other' && response.venueTypeOther ? `Other: ${response.venueTypeOther}` : type))
+                .join(', ')}
             </div>
             {response.venueSuggestion && (
               <p className="text-xs text-on-surface-variant mt-1">
