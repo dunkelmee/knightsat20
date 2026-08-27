@@ -34,6 +34,9 @@ services:
       PORT: 8000
     ports:
       - "8123:8000"
+    volumes:
+      - knightsat_uploads:/app/uploads
 
 volumes:
   knightsat_pgdata:
+  knightsat_uploads:

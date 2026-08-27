@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { User as UserIcon, Phone, X } from 'lucide-react';
+import { User as UserIcon, Phone, MapPin, Briefcase, GraduationCap, X } from 'lucide-react';
 import { UserProfile } from '../types';
-import { ApiError, updateProfile } from '../api/client';
+import { ApiError, updateDirectoryProfile, updateProfile } from '../api/client';
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -18,6 +18,10 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 }) => {
   const [fullName, setFullName] = useState(currentUser.fullName);
   const [mobileNumber, setMobileNumber] = useState(currentUser.mobileNumber);
+  const [currentCity, setCurrentCity] = useState(currentUser.currentCity || '');
+  const [currentRole, setCurrentRole] = useState(currentUser.currentRole || '');
+  const [sectionHs, setSectionHs] = useState(currentUser.sectionHs || '');
+  const [showInDirectory, setShowInDirectory] = useState(currentUser.showInDirectory);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,13 +38,27 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     try {
       // then/now photos aren't editable here — pass the existing values
       // through unchanged, since the backend overwrites both on every save.
-      const { user } = await updateProfile({
-        fullName: fullName.trim(),
-        mobileNumber: mobileNumber.trim(),
-        thenPhotoUrl: currentUser.thenPhotoUrl ?? null,
-        nowPhotoUrl: currentUser.nowPhotoUrl ?? null,
+      const [{ user }] = await Promise.all([
+        updateProfile({
+          fullName: fullName.trim(),
+          mobileNumber: mobileNumber.trim(),
+          thenPhotoUrl: currentUser.thenPhotoUrl ?? null,
+          nowPhotoUrl: currentUser.nowPhotoUrl ?? null,
+        }),
+        updateDirectoryProfile({
+          currentCity: currentCity.trim() || null,
+          currentRole: currentRole.trim() || null,
+          sectionHs: sectionHs.trim() || null,
+          showInDirectory,
+        }),
+      ]);
+      onSaved({
+        ...user,
+        currentCity: currentCity.trim() || null,
+        currentRole: currentRole.trim() || null,
+        sectionHs: sectionHs.trim() || null,
+        showInDirectory,
       });
-      onSaved(user);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.');
     } finally {
@@ -99,6 +117,68 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                 className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
               />
             </div>
+          </div>
+
+          <div className="pt-1 border-t border-outline-variant/30 space-y-3">
+            <p className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wide">
+              Directory listing
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1">City</label>
+                <div className="relative">
+                  <MapPin className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={currentCity}
+                    onChange={(e) => setCurrentCity(e.target.value)}
+                    placeholder="e.g. Makati"
+                    className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1">Role</label>
+                <div className="relative">
+                  <Briefcase className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={currentRole}
+                    onChange={(e) => setCurrentRole(e.target.value)}
+                    placeholder="e.g. UX Director"
+                    className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                HS Section <span className="font-normal">(optional)</span>
+              </label>
+              <div className="relative">
+                <GraduationCap className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={sectionHs}
+                  onChange={(e) => setSectionHs(e.target.value)}
+                  placeholder="e.g. IV-Curie"
+                  className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+                />
+              </div>
+            </div>
+
+            <label className="flex items-center gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showInDirectory}
+                onChange={(e) => setShowInDirectory(e.target.checked)}
+                className="w-4 h-4 accent-primary"
+              />
+              <span className="text-xs text-on-surface-variant">Show me in the Directory</span>
+            </label>
           </div>
 
           {error && <p className="text-xs text-error">{error}</p>}

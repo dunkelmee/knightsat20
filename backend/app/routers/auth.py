@@ -43,6 +43,10 @@ def _to_profile_out(user: User) -> UserProfileOut:
         then_photo_url=user.then_photo_url,
         now_photo_url=user.now_photo_url,
         onboarding_completed=user.onboarding_completed_at is not None,
+        current_city=user.current_city,
+        current_role=user.current_role,
+        section_hs=user.section_hs,
+        show_in_directory=user.show_in_directory,
     )
 
 

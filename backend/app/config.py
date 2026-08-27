@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     session_secret: str = "dev-insecure-session-secret-change-me"
     environment: str = "development"
     static_dir: str = "static"
+    uploads_dir: str = "uploads"
     resend_api_key: str = ""
     resend_from_email: str = "MSHS Batch 2007 <onboarding@resend.dev>"
 

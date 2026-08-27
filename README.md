@@ -10,6 +10,40 @@ and mobile/WhatsApp number, then log in with a 6-digit code emailed to them (no 
 admin/treasury portal is a separate, additional shared passcode unlocked from inside the app once
 logged in.
 
+## Features
+
+### For alumni
+
+- **Email-OTP login** — register with email, full name, and mobile/WhatsApp number; log in with a
+  6-digit code emailed to you, no password to remember.
+- **One-time profile setup** — confirm your name/mobile and optionally upload "Then" (high school)
+  and "Now" (recent) photos, shown once right after your first login.
+- **Survey** — a 3-step form covering attendance intent, preferred month/venue type, willingness to
+  help organize (with skills offered), pledge amount, other sponsorships, plus-ones/kids count, and
+  free-text suggestions. Submitting can auto-create or update your RSVP.
+- **Batch Board** — announcements (filterable by tag, likeable, shareable, with pinned posts) plus a
+  live attendee roster you can search/filter and a self-service "Express RSVP" form.
+- **Operating Funds & Ledger** — a public transparency dashboard showing total pledges, planned
+  expenses, running balance, headcount estimates, and the itemized expense list. No personal data
+  shown.
+- **Edit profile** anytime from the header, plus logout.
+
+### For the organizing committee
+
+Unlocked with a separate admin passcode from inside the app (your alumni login stays active
+independently). The admin/treasury portal adds:
+
+- **Date & Venue Settings** — update the event status, date, and venue shown to everyone.
+- **Surveys** — view every response including contact details, delete a response, and mark pledges
+  as paid.
+- **Ledger & Expenses** — add, edit, and delete the planned expenses that feed the public funds
+  dashboard.
+- **Announcements** — create, edit, delete, and pin/unpin posts on the Batch Board.
+- **RSVP Roster (admin view)** — the full roster including contact info, not just the public counts.
+- **Reset Demo Data** — restore surveys/expenses/announcements to the fictional demo fixtures, handy
+  for showing off the app before real responses come in.
+- **Lock** — end the admin session without logging out of the site.
+
 ## Run locally with Docker (recommended)
 
 **Prerequisites:** Docker

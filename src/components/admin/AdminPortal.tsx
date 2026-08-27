@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   ShieldCheck, Lock, Unlock, ClipboardList, Receipt,
-  Bell, Users, RefreshCw, Sparkles, Calendar
+  Bell, Users, RefreshCw, Sparkles, Calendar, Images
 } from 'lucide-react';
 import { SurveyResponse, PlannedExpense, Announcement, RSVPRecord, EventDetails } from '../../types';
 import { SurveyResponsesTab } from './SurveyResponsesTab';
@@ -9,6 +9,7 @@ import { OperatingFundsTab } from './OperatingFundsTab';
 import { AnnouncementsManagerTab } from './AnnouncementsManagerTab';
 import { RsvpSummaryTab } from './RsvpSummaryTab';
 import { EventDetailsManagerTab } from './EventDetailsManagerTab';
+import { AdminPhotoWallTab } from './AdminPhotoWallTab';
 
 interface AdminPortalProps {
   isAdmin: boolean;
@@ -53,7 +54,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 }) => {
   const [passcode, setPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState(false);
-  const [adminTab, setAdminTab] = useState<'event' | 'responses' | 'funds' | 'announcements' | 'rsvp'>('event');
+  const [adminTab, setAdminTab] = useState<'event' | 'responses' | 'funds' | 'announcements' | 'rsvp' | 'photowall'>('event');
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,6 +238,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           <Users className="w-3.5 h-3.5" />
           <span>RSVP Roster ({rsvps.length})</span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => setAdminTab('photowall')}
+          className={`px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            adminTab === 'photowall'
+              ? 'bg-primary text-on-primary shadow-soft'
+              : 'text-on-surface-variant hover:bg-surface-container'
+          }`}
+        >
+          <Images className="w-3.5 h-3.5" />
+          <span>Photo Wall</span>
+        </button>
       </div>
 
       {/* Render Active Admin Tab */}
@@ -281,6 +295,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             responses={responses}
           />
         )}
+
+        {adminTab === 'photowall' && <AdminPhotoWallTab />}
       </div>
 
     </div>

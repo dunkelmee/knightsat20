@@ -32,6 +32,17 @@ class User(Base):
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
+    # --- Directory fields (alumni-editable via Edit Profile) ---
+    current_city: Mapped[str | None] = mapped_column(String, nullable=True)
+    current_role: Mapped[str | None] = mapped_column(String, nullable=True)
+    section_hs: Mapped[str | None] = mapped_column(String, nullable=True)
+    show_in_directory: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_faculty: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Marks fixture rows created by "Reset Demo Data" so a reset can safely
+    # wipe/recreate them without ever touching real registered accounts.
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
+
 
 class OtpCode(Base):
     __tablename__ = "otp_codes"
@@ -145,6 +156,36 @@ class PlannedExpense(Base):
     status: Mapped[str] = mapped_column(String, nullable=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
+class Album(Base):
+    __tablename__ = "albums"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False)
+    # Flags the single "Reunion Day" album surfaced first with a live badge.
+    is_live_day: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class Photo(Base):
+    __tablename__ = "photos"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    album_id: Mapped[str] = mapped_column(
+        String, ForeignKey("albums.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    uploaded_by: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False)
+    # A local relative path (served from /uploads) or, for demo fixtures, a
+    # full external URL — see app/storage.py::resolve_url.
+    storage_key: Mapped[str] = mapped_column(Text, nullable=False)
+    thumb_key: Mapped[str] = mapped_column(Text, nullable=False)
+    width: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    height: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    caption: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
 class EventDetails(Base):

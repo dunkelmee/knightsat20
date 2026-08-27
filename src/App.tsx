@@ -20,6 +20,12 @@ import {
   PublicDashboardSection
 } from './components/PublicDashboardSection';
 import {
+  DirectorySection
+} from './components/DirectorySection';
+import {
+  PhotoWallSection
+} from './components/photowall/PhotoWallSection';
+import {
   AdminPortal
 } from './components/admin/AdminPortal';
 import {
@@ -31,6 +37,9 @@ import {
 import {
   ProfileSetup
 } from './components/auth/ProfileSetup';
+import {
+  MobileNav
+} from './components/nav/AppNav';
 import {
   SurveyResponse,
   SurveyResponseCreate,
@@ -379,8 +388,13 @@ export default function App() {
     return <ProfileSetup currentUser={currentUser} onSaved={handleProfileSaved} />;
   }
 
+  const navigateToTab = (tab: string) => {
+    setActiveTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <div className="min-h-screen bg-background text-on-background flex flex-col font-sans selection:bg-primary-container selection:text-on-primary-container">
+    <div className="@container/app min-h-screen bg-background text-on-background flex flex-col font-sans selection:bg-primary-container selection:text-on-primary-container">
 
       {/* Paper-grain texture overlay */}
       <div className="paper-grain" aria-hidden="true" />
@@ -388,10 +402,7 @@ export default function App() {
       {/* Header */}
       <Header
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
+        setActiveTab={navigateToTab}
         isAdmin={isAdmin}
         setIsAdmin={handleSetIsAdmin}
         currentUser={currentUser}
@@ -412,20 +423,24 @@ export default function App() {
         />
       )}
 
-      {/* Prominent Pending Date & Venue Banner */}
-      <PendingBanner
-        totalSurveys={stats.totalSurveys}
-        totalPledges={stats.totalPledges}
-        eventDetails={eventDetails}
-        onTakeSurveyClick={() => {
-          setActiveTab('survey');
-          const el = document.getElementById('survey-form-container');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }}
-      />
+      {/* Prominent Pending Date & Venue Banner — Directory/Photos get their
+          own dedicated headers instead (see spec 1.3/2.3), so it's hidden there. */}
+      {activeTab !== 'directory' && activeTab !== 'photos' && (
+        <PendingBanner
+          totalSurveys={stats.totalSurveys}
+          totalPledges={stats.totalPledges}
+          eventDetails={eventDetails}
+          onTakeSurveyClick={() => {
+            setActiveTab('survey');
+            const el = document.getElementById('survey-form-container');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+        />
+      )}
 
-      {/* Main Content Body */}
-      <main className="flex-1 pb-16">
+      {/* Main Content Body — extra bottom padding on mobile so content clears
+          the floating bottom nav (see AppNav.tsx's MobileNav) */}
+      <main className="flex-1 pb-24 @min-[700px]/app:pb-16">
 
         {/* Tab 1: Survey Form (Highlighted as #1 Priority) */}
         {activeTab === 'survey' && (
@@ -447,7 +462,13 @@ export default function App() {
           />
         )}
 
-        {/* Tab 4: Public Dashboard & Funds Transparency */}
+        {/* Tab 3: Directory — Then & Now roster */}
+        {activeTab === 'directory' && <DirectorySection />}
+
+        {/* Tab 4: Photo Wall — collaborative albums */}
+        {activeTab === 'photos' && <PhotoWallSection currentUser={currentUser} isAdmin={isAdmin} />}
+
+        {/* Tab 5: Public Dashboard & Funds Transparency */}
         {activeTab === 'dashboard' && (
           <PublicDashboardSection
             stats={stats}
@@ -456,7 +477,7 @@ export default function App() {
           />
         )}
 
-        {/* Tab 5: Admin & Treasury Portal */}
+        {/* Tab 6: Admin & Treasury Portal */}
         {activeTab === 'admin' && (
           <AdminPortal
             isAdmin={isAdmin}
@@ -489,6 +510,9 @@ export default function App() {
           <span>Designed with love for the Makati Science High School Batch 2007 Reunion</span>
         </div>
       </footer>
+
+      {/* Floating bottom nav (mobile only — see AppNav.tsx) */}
+      <MobileNav activeTab={activeTab} setActiveTab={navigateToTab} />
 
     </div>
   );

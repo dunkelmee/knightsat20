@@ -9,7 +9,16 @@ from datetime import datetime, timedelta as _td, timezone
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Announcement, EventDetails, PlannedExpense, RSVPRecord, SurveyResponse
+from app.models import (
+    Album,
+    Announcement,
+    EventDetails,
+    Photo,
+    PlannedExpense,
+    RSVPRecord,
+    SurveyResponse,
+    User,
+)
 
 EVENT_DETAILS_SEED = {
     "status": "Pending",
@@ -418,14 +427,178 @@ RSVPS_SEED = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# Directory demo alumni — real `users` rows (is_demo=True) so the Directory
+# tab has something to browse. `attending` drives whether a matching
+# SurveyResponse is created (Directory status is derived from that FK, see
+# routers/directory.py — not from the free-text RSVP roster above).
+# ---------------------------------------------------------------------------
+
+DEMO_ALUMNI_SEED = [
+    {
+        "id": "demo-user-1", "full_name": "Maria (Santos) Reyes", "email": "demo.maria.reyes@mshs2007.demo",
+        "mobile_number": "09171110001",
+        "then_photo_url": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&q=60",
+        "now_photo_url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=60",
+        "current_city": "Makati", "current_role": "UX Director", "section_hs": "IV-Curie",
+        "is_faculty": False, "attending": True,
+    },
+    {
+        "id": "demo-user-2", "full_name": "Daniel Cruz", "email": "demo.daniel.cruz@mshs2007.demo",
+        "mobile_number": "09171110002",
+        "then_photo_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=60",
+        "now_photo_url": None,
+        "current_city": "Cebu City", "current_role": None, "section_hs": "IV-Newton",
+        "is_faculty": False, "attending": False,
+    },
+    {
+        "id": "demo-user-3", "full_name": "Marcus Villanueva", "email": "demo.marcus.villanueva@mshs2007.demo",
+        "mobile_number": "09171110003",
+        "then_photo_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=60",
+        "now_photo_url": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=60",
+        "current_city": "Taguig", "current_role": "Software Engineer", "section_hs": "IV-Einstein",
+        "is_faculty": False, "attending": True,
+    },
+    {
+        "id": "demo-user-4", "full_name": "Elena Bautista", "email": "demo.elena.bautista@mshs2007.demo",
+        "mobile_number": "09171110004",
+        "then_photo_url": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=60",
+        "now_photo_url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=60",
+        "current_city": "Quezon City", "current_role": "Veterinarian", "section_hs": "IV-Dalton",
+        "is_faculty": False, "attending": True,
+    },
+    {
+        "id": "demo-user-5", "full_name": "Paolo Mendoza", "email": "demo.paolo.mendoza@mshs2007.demo",
+        "mobile_number": "09171110005",
+        "then_photo_url": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=60",
+        "now_photo_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=60",
+        "current_city": "Pasig", "current_role": "Architect", "section_hs": "IV-Darwin",
+        "is_faculty": False, "attending": True,
+    },
+    {
+        "id": "demo-user-6", "full_name": "Grace Lim", "email": "demo.grace.lim@mshs2007.demo",
+        "mobile_number": "09171110006",
+        "then_photo_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=60",
+        "now_photo_url": None,
+        "current_city": "Davao", "current_role": None, "section_hs": "IV-Curie",
+        "is_faculty": False, "attending": False,
+    },
+    {
+        "id": "demo-user-7", "full_name": "Gian Paolo Ramos", "email": "demo.gian.ramos@mshs2007.demo",
+        "mobile_number": "09171110007",
+        "then_photo_url": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&q=60",
+        "now_photo_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=60",
+        "current_city": "Singapore", "current_role": "Product Manager", "section_hs": "IV-Newton",
+        "is_faculty": False, "attending": True,
+    },
+    {
+        "id": "demo-user-8", "full_name": "Sheryl Anne Tan-Lim", "email": "demo.sheryl.tanlim@mshs2007.demo",
+        "mobile_number": "09171110008",
+        "then_photo_url": "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=400&q=60",
+        "now_photo_url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&q=60",
+        "current_city": "BGC, Taguig", "current_role": "Pastry Chef / Caterer", "section_hs": "IV-Newton",
+        "is_faculty": False, "attending": True,
+    },
+    {
+        "id": "demo-user-9", "full_name": "Mark Dennis Fernandez", "email": "demo.mark.fernandez@mshs2007.demo",
+        "mobile_number": "09171110009",
+        "then_photo_url": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&q=60",
+        "now_photo_url": None,
+        "current_city": "Singapore", "current_role": None, "section_hs": "IV-Einstein",
+        "is_faculty": False, "attending": False,
+    },
+    {
+        "id": "demo-user-10", "full_name": "Joanna Rose Perez", "email": "demo.joanna.perez@mshs2007.demo",
+        "mobile_number": "09171110010",
+        "then_photo_url": "https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=400&q=60",
+        "now_photo_url": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&q=60",
+        "current_city": "Boston, USA", "current_role": "Grad Student", "section_hs": "IV-Dalton",
+        "is_faculty": False, "attending": True,
+    },
+    {
+        "id": "demo-user-11", "full_name": "Mr. Antonio Villareal", "email": "demo.antonio.villareal@mshs2007.demo",
+        "mobile_number": "09171110011",
+        "then_photo_url": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=60",
+        "now_photo_url": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=60",
+        "current_city": "Makati", "current_role": "Physics Teacher (Retired)", "section_hs": None,
+        "is_faculty": True, "attending": False,
+    },
+    {
+        "id": "demo-user-12", "full_name": "Ms. Corazon Villamor", "email": "demo.corazon.villamor@mshs2007.demo",
+        "mobile_number": "09171110012",
+        "then_photo_url": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=60",
+        "now_photo_url": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=60",
+        "current_city": "Quezon City", "current_role": "Chemistry Teacher", "section_hs": None,
+        "is_faculty": True, "attending": False,
+    },
+]
+
+DEMO_ALBUMS_SEED = [
+    {
+        "id": "album-1",
+        "title": "Throwback: HS Days '03–'07",
+        "description": "Class photos, field trips, and everyday high school life.",
+        "created_by": "demo-user-1",
+        "is_live_day": False,
+        "photos": [
+            ("demo-user-1", "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=70"),
+            ("demo-user-3", "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&q=70"),
+            ("demo-user-4", "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&q=70"),
+            ("demo-user-5", "https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&q=70"),
+            ("demo-user-7", "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=70"),
+            ("demo-user-8", "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=70"),
+        ],
+    },
+    {
+        "id": "album-2",
+        "title": "Batch Trips & Reunions",
+        "description": "Meetups, mini-reunions, and out-of-town trips since graduation.",
+        "created_by": "demo-user-3",
+        "is_live_day": False,
+        "photos": [
+            ("demo-user-3", "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=800&q=70"),
+            ("demo-user-4", "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&q=70"),
+            ("demo-user-5", "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=70"),
+            ("demo-user-10", "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=70"),
+        ],
+    },
+    {
+        "id": "album-3",
+        "title": "Reunion Day — Live Uploads",
+        "description": "Opens on reunion day — projected live at the venue.",
+        "created_by": "demo-user-1",
+        "is_live_day": True,
+        "photos": [],
+    },
+]
+
+
+# Minimal, valid answers for the required survey fields — only used to give
+# "attending" demo alumni a SurveyResponse for Directory status derivation
+# (see routers/directory.py), not meant to be interesting seed content.
+_DEMO_SURVEY_DEFAULTS = {
+    "attendance": "Yes, definitely!",
+    "preferred_venue_type": "Hotel / function room",
+    "pledge_option": "₱2,000",
+    "willing_to_organize": "Maybe, depending on what’s needed",
+}
+
+
 async def reset_demo_data(session: AsyncSession) -> None:
     from app.pledge import parse_pledge_amount
 
+    # Children before parents: SurveyResponse/Album/Photo all FK to users,
+    # so every table that can reference a `users` row must be cleared before
+    # the demo `users` rows themselves are deleted below.
     await session.execute(delete(SurveyResponse))
     await session.execute(delete(RSVPRecord))
     await session.execute(delete(Announcement))
     await session.execute(delete(PlannedExpense))
     await session.execute(delete(EventDetails))
+    await session.execute(delete(Album))  # cascades photos
+    # Only ever deletes fixture accounts — real registered alumni (is_demo=false)
+    # are never touched by a reset.
+    await session.execute(delete(User).where(User.is_demo.is_(True)))
 
     now = datetime.now(timezone.utc)
 
@@ -447,5 +620,52 @@ async def reset_demo_data(session: AsyncSession) -> None:
 
     for row in RSVPS_SEED:
         session.add(RSVPRecord(submitted_at=now, **row))
+
+    for row in DEMO_ALUMNI_SEED:
+        row = dict(row)
+        row.pop("attending")
+        session.add(User(is_demo=True, onboarding_completed_at=now, created_at=now, **row))
+
+    # Demo users must exist before the SurveyResponse/Album/Photo rows below
+    # reference their ids via FK.
+    await session.flush()
+
+    for row in DEMO_ALUMNI_SEED:
+        if not row["attending"]:
+            continue
+        session.add(
+            SurveyResponse(
+                submitted_at=now,
+                user_id=row["id"],
+                full_name=row["full_name"],
+                contact_number=row["mobile_number"],
+                email=row["email"],
+                computed_pledge_amount=parse_pledge_amount(_DEMO_SURVEY_DEFAULTS["pledge_option"], None),
+                **_DEMO_SURVEY_DEFAULTS,
+            )
+        )
+
+    for album_row in DEMO_ALBUMS_SEED:
+        photos = album_row["photos"]
+        session.add(
+            Album(
+                id=album_row["id"],
+                title=album_row["title"],
+                description=album_row["description"],
+                created_by=album_row["created_by"],
+                is_live_day=album_row["is_live_day"],
+                created_at=now,
+            )
+        )
+        for photo_offset, (uploader_id, image_url) in enumerate(photos):
+            session.add(
+                Photo(
+                    album_id=album_row["id"],
+                    uploaded_by=uploader_id,
+                    storage_key=image_url,
+                    thumb_key=image_url,
+                    created_at=now - _td(minutes=len(photos) - photo_offset),
+                )
+            )
 
     await session.commit()

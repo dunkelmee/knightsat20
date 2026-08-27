@@ -7,14 +7,17 @@ from starlette.staticfiles import StaticFiles
 from app.config import get_settings
 from app.routers import (
     admin_auth,
+    albums,
     announcements,
     auth,
     dashboard,
+    directory,
     event_details,
     expenses,
     rsvps,
     survey_responses,
 )
+from app.storage import ensure_uploads_dir
 
 settings = get_settings()
 
@@ -45,6 +48,13 @@ app.include_router(announcements.router)
 app.include_router(expenses.router)
 app.include_router(event_details.router)
 app.include_router(dashboard.router)
+app.include_router(directory.router)
+app.include_router(albums.router)
+
+# Photo Wall uploads — mounted before the SPA catch-all below so /uploads/*
+# requests are served from disk rather than falling through to index.html.
+ensure_uploads_dir()
+app.mount("/uploads", StaticFiles(directory=settings.uploads_dir), name="uploads")
 
 static_dir = Path(settings.static_dir)
 if static_dir.is_dir():

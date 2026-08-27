@@ -225,6 +225,10 @@ class UserProfileOut(CamelModel):
     then_photo_url: str | None = None
     now_photo_url: str | None = None
     onboarding_completed: bool
+    current_city: str | None = None
+    current_role: str | None = None
+    section_hs: str | None = None
+    show_in_directory: bool = True
 
 
 class AuthSessionOut(CamelModel):
@@ -243,3 +247,94 @@ class ProfileUpdateRequest(CamelModel):
     mobile_number: str = Field(min_length=1, max_length=50)
     then_photo_url: str | None = Field(default=None, max_length=_MAX_PHOTO_DATA_URI_LENGTH)
     now_photo_url: str | None = Field(default=None, max_length=_MAX_PHOTO_DATA_URI_LENGTH)
+
+
+# ---------------------------------------------------------------------------
+# Directory
+# ---------------------------------------------------------------------------
+
+
+class DirectoryUpdateRequest(CamelModel):
+    current_city: str | None = Field(default=None, max_length=200)
+    current_role: str | None = Field(default=None, max_length=200)
+    section_hs: str | None = Field(default=None, max_length=200)
+    show_in_directory: bool = True
+
+
+class DirectoryPersonOut(CamelModel):
+    id: str
+    display_name: str
+    current_city: str | None = None
+    current_role: str | None = None
+    section_hs: str | None = None
+    then_photo_url: str | None = None
+    now_photo_url: str | None = None
+    status: str  # "attending" | "missing" | "faculty"
+    last_seen_city: str | None = None
+
+
+class DirectoryCountsOut(CamelModel):
+    all: int
+    attending: int
+    missing: int
+    faculty: int
+
+
+class DirectoryListOut(CamelModel):
+    total: int
+    counts: DirectoryCountsOut
+    next_cursor: str | None = None
+    people: list[DirectoryPersonOut]
+
+
+# ---------------------------------------------------------------------------
+# Photo Wall
+# ---------------------------------------------------------------------------
+
+
+class AlbumCreate(CamelModel):
+    title: str = Field(min_length=1, max_length=200)
+    description: str | None = Field(default=None, max_length=2000)
+
+
+class AlbumUpdate(CamelModel):
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    description: str | None = Field(default=None, max_length=2000)
+    is_live_day: bool | None = None
+
+
+class ContributorOut(CamelModel):
+    initials: str
+
+
+class AlbumOut(CamelModel):
+    id: str
+    title: str
+    description: str | None = None
+    is_live_day: bool
+    photo_count: int
+    contributor_count: int
+    cover_thumb_url: str | None = None
+    recent_thumb_urls: list[str] = Field(default_factory=list)
+    contributors: list[ContributorOut] = Field(default_factory=list)
+
+
+class PhotoOut(CamelModel):
+    id: str
+    thumb_url: str
+    full_url: str
+    caption: str | None = None
+    uploader_initials: str
+    uploaded_by: str
+    created_at: datetime
+
+
+class AlbumDetailOut(CamelModel):
+    id: str
+    title: str
+    description: str | None = None
+    is_live_day: bool
+    created_by: str
+    photo_count: int
+    next_cursor: str | None = None
+    photos: list[PhotoOut]

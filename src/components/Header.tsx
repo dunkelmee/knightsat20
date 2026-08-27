@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ClipboardList, BarChart3, Lock, Unlock, GraduationCap, LogOut, LayoutGrid, Pencil } from 'lucide-react';
+import { Lock, Unlock, GraduationCap, LogOut, Pencil } from 'lucide-react';
 import { UserProfile } from '../types';
+import { DesktopNav } from './nav/AppNav';
 
 interface HeaderProps {
   activeTab: string;
@@ -20,12 +21,6 @@ const getInitials = (fullName: string): string =>
     .map((part) => part[0])
     .join('')
     .toUpperCase();
-
-const TABS = [
-  { id: 'survey', label: 'Survey', icon: ClipboardList },
-  { id: 'board', label: 'Batch Board', icon: LayoutGrid },
-  { id: 'dashboard', label: 'Funds', icon: BarChart3 },
-] as const;
 
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
@@ -53,8 +48,8 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header id="header-main" className="sticky top-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 text-on-surface shadow-soft">
       {/* Main navigation header */}
-      <div id="header-nav-container" className="max-w-7xl mx-auto px-4 sm:px-6 py-3 space-y-5">
-        <div className="relative flex items-center justify-between gap-3">
+      <div id="header-nav-container" className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+        <div className="flex items-center gap-3">
           {/* Logo & School Name */}
           <div
             id="brand-logo-button"
@@ -78,6 +73,13 @@ export const Header: React.FC<HeaderProps> = ({
               </p>
             </div>
           </div>
+
+          {/* Spacer pushes the desktop nav + avatar to the far end */}
+          <div className="flex-1" />
+
+          {/* Desktop nav — same tab array as the mobile floating bottom bar
+              (AppNav.tsx), hidden below the 700px container-query breakpoint */}
+          <DesktopNav activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {/* Profile avatar & menu — Edit Profile, Admin Portal, Log out */}
           {currentUser && (
@@ -155,46 +157,7 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
           )}
-
-          {/* Navigation Tabs — desktop: plain links centered on the brand row */}
-          <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-7">
-            {TABS.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-1.5 pb-0.5 border-b-2 text-xs font-semibold whitespace-nowrap transition-colors ${
-                  activeTab === id
-                    ? 'text-primary border-primary'
-                    : 'text-on-surface-variant border-transparent hover:text-on-surface'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>{label}</span>
-              </button>
-            ))}
-          </nav>
         </div>
-
-        {/* Navigation Tabs — mobile: full-width segmented control below the brand row */}
-        <nav id="main-navigation" className="md:hidden grid grid-cols-3 gap-1.5 bg-surface-container-low p-1.5 rounded border border-outline-variant/30">
-          {TABS.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              id={`nav-tab-${id}`}
-              type="button"
-              onClick={() => setActiveTab(id)}
-              className={`py-3 px-2 rounded text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-                activeTab === id
-                  ? 'bg-primary text-on-primary shadow-soft'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
-              }`}
-            >
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">{label}</span>
-            </button>
-          ))}
-        </nav>
       </div>
     </header>
   );

@@ -146,4 +146,84 @@ export interface UserProfile {
   thenPhotoUrl?: string | null;
   nowPhotoUrl?: string | null;
   onboardingCompleted: boolean;
+  currentCity?: string | null;
+  currentRole?: string | null;
+  sectionHs?: string | null;
+  showInDirectory: boolean;
+}
+
+// --- Directory --------------------------------------------------------------
+
+export type DirectoryStatus = 'attending' | 'missing' | 'faculty';
+
+export interface DirectoryPerson {
+  id: string;
+  displayName: string;
+  currentCity?: string | null;
+  currentRole?: string | null;
+  sectionHs?: string | null;
+  thenPhotoUrl?: string | null;
+  nowPhotoUrl?: string | null;
+  status: DirectoryStatus;
+  lastSeenCity?: string | null;
+}
+
+export interface DirectoryCounts {
+  all: number;
+  attending: number;
+  missing: number;
+  faculty: number;
+}
+
+export interface DirectoryListResponse {
+  total: number;
+  counts: DirectoryCounts;
+  nextCursor: string | null;
+  people: DirectoryPerson[];
+}
+
+export interface DirectoryUpdatePayload {
+  currentCity?: string | null;
+  currentRole?: string | null;
+  sectionHs?: string | null;
+  showInDirectory: boolean;
+}
+
+// --- Photo Wall ---------------------------------------------------------------
+
+export interface Contributor {
+  initials: string;
+}
+
+export interface Album {
+  id: string;
+  title: string;
+  description?: string | null;
+  isLiveDay: boolean;
+  photoCount: number;
+  contributorCount: number;
+  coverThumbUrl?: string | null;
+  recentThumbUrls: string[];
+  contributors: Contributor[];
+}
+
+export interface Photo {
+  id: string;
+  thumbUrl: string;
+  fullUrl: string;
+  caption?: string | null;
+  uploaderInitials: string;
+  uploadedBy: string;
+  createdAt: string;
+}
+
+export interface AlbumDetail {
+  id: string;
+  title: string;
+  description?: string | null;
+  isLiveDay: boolean;
+  createdBy: string;
+  photoCount: number;
+  nextCursor: string | null;
+  photos: Photo[];
 }

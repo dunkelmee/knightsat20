@@ -10,6 +10,16 @@ interface PendingBannerProps {
   onTakeSurveyClick: () => void;
 }
 
+const StatusPill: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
+  <div className="flex-1 min-w-0 flex items-center gap-2 bg-surface-container-lowest/90 px-3 py-2 rounded border border-outline-variant/40 shadow-soft">
+    <span className="text-on-surface-variant flex-shrink-0">{icon}</span>
+    <div className="min-w-0">
+      <div className="text-[9px] font-bold uppercase tracking-wide text-on-surface-variant">{label}</div>
+      <div className="text-xs font-semibold text-on-surface truncate">{value}</div>
+    </div>
+  </div>
+);
+
 export const PendingBanner: React.FC<PendingBannerProps> = ({
   totalSurveys,
   totalPledges,
@@ -21,15 +31,19 @@ export const PendingBanner: React.FC<PendingBannerProps> = ({
   const displayVenue = eventDetails?.venue || 'Pending / For finalization';
   const displayTime = eventDetails?.time;
 
+  const description = isFinalized
+    ? 'The official date and venue have been confirmed by the committee. Please submit your RSVP and pledge.'
+    : 'Please share your preferred schedule, venue style, and batch fund pledge so we can finalize arrangements.';
+
   return (
     <section id="pending-status-banner" className="bg-surface-container-low text-on-surface border-b border-outline-variant/40">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex flex-col items-center text-center md:items-stretch md:text-left md:flex-row md:justify-between gap-5">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 md:py-6">
+        <div className="flex flex-col items-center text-center md:items-stretch md:text-left md:flex-row md:justify-between gap-4 md:gap-5">
 
           {/* Main Info */}
-          <div className="space-y-2.5 flex flex-col items-center md:items-start">
+          <div className="space-y-2.5 flex flex-col items-center md:items-start w-full md:w-auto">
             <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-serif font-semibold text-on-surface tracking-tight">
+              <h2 className="text-lg sm:text-2xl font-serif font-semibold text-on-surface tracking-tight">
                 Makati Science High School <span className="text-primary font-medium">Batch 2007 Reunion</span>
               </h2>
               {isFinalized && (
@@ -40,31 +54,17 @@ export const PendingBanner: React.FC<PendingBannerProps> = ({
               )}
             </div>
 
-            {/* Date & Venue Display */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-2 text-xs text-on-surface-variant">
-              <div className="inline-flex items-center gap-1.5 bg-surface-container-lowest/90 px-3 py-1.5 rounded border border-outline-variant/40 shadow-soft">
-                <Calendar className="w-3.5 h-3.5 text-on-surface-variant" />
-                <span>Date: <strong className="text-on-surface font-semibold">{displayDate}</strong></span>
-              </div>
-
-              <div className="inline-flex items-center gap-1.5 bg-surface-container-lowest/90 px-3 py-1.5 rounded border border-outline-variant/40 shadow-soft">
-                <MapPin className="w-3.5 h-3.5 text-on-surface-variant" />
-                <span>Venue: <strong className="text-on-surface font-semibold">{displayVenue}</strong></span>
-              </div>
-
+            {/* Date & Venue — condensed side-by-side pills */}
+            <div className="w-full flex gap-2 text-xs text-on-surface-variant max-w-sm md:max-w-none">
+              <StatusPill icon={<Calendar className="w-3.5 h-3.5" />} label="Date" value={displayDate} />
+              <StatusPill icon={<MapPin className="w-3.5 h-3.5" />} label="Venue" value={displayVenue} />
               {isFinalized && displayTime && (
-                <div className="inline-flex items-center gap-1.5 bg-surface-container-lowest/90 px-3 py-1.5 rounded border border-outline-variant/40 shadow-soft">
-                  <Clock className="w-3.5 h-3.5 text-on-surface-variant" />
-                  <span>Time: <strong className="text-on-surface font-semibold">{displayTime}</strong></span>
-                </div>
+                <StatusPill icon={<Clock className="w-3.5 h-3.5" />} label="Time" value={displayTime} />
               )}
             </div>
 
-            <p className="text-xs text-on-surface-variant max-w-xl">
-              {isFinalized
-                ? 'The official date and venue have been confirmed by the committee. Please submit your RSVP and pledge.'
-                : 'Please share your preferred schedule, venue style, and batch fund pledge so we can finalize arrangements.'}
-            </p>
+            {/* Desktop: paragraph stays with the title/pills column */}
+            <p className="hidden md:block text-xs text-on-surface-variant max-w-xl">{description}</p>
           </div>
 
           {/* Action & Quick Stats */}
@@ -86,6 +86,8 @@ export const PendingBanner: React.FC<PendingBannerProps> = ({
             </div>
           </div>
 
+          {/* Mobile: paragraph moves below the CTA, truncated to two lines */}
+          <p className="md:hidden text-xs text-on-surface-variant line-clamp-2 max-w-sm">{description}</p>
         </div>
       </div>
     </section>
