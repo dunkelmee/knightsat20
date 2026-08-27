@@ -1,5 +1,4 @@
 import { SurveyResponse, PlannedExpense, RSVPRecord } from '../types';
-import { formatPHP } from './pledgeParser';
 
 export function exportSurveyResponsesToCSV(responses: SurveyResponse[]) {
   const headers = [
@@ -119,30 +118,6 @@ export function exportPledgesAndExpensesToCSV(responses: SurveyResponse[], expen
 
   const csvContent = lines.join('\r\n');
   downloadFile(csvContent, `MSHS_Batch_2007_Operating_Funds_${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv;charset=utf-8;');
-}
-
-export function copyPledgesSummaryToClipboard(responses: SurveyResponse[]): string {
-  const lines: string[] = [];
-  const totalPledges = responses.reduce((acc, r) => acc + (r.computedPledgeAmount || 0), 0);
-  const pledgingCount = responses.filter(r => r.computedPledgeAmount > 0).length;
-
-  lines.push(`📊 MSHS Batch 2007 Reunion - Pledges Summary`);
-  lines.push(`Total Pledged: ${formatPHP(totalPledges)} (${pledgingCount} batchmates)`);
-  lines.push(`----------------------------------------`);
-  
-  responses
-    .filter(r => r.computedPledgeAmount > 0)
-    .sort((a, b) => b.computedPledgeAmount - a.computedPledgeAmount)
-    .forEach((r, idx) => {
-      const inKind = r.otherSponsorships.length > 0 && !r.otherSponsorships.includes('None for now') 
-        ? ` + [${r.otherSponsorships.join(', ')}]` 
-        : '';
-      lines.push(`${idx + 1}. ${r.fullName}: ${formatPHP(r.computedPledgeAmount)}${inKind} (${r.pledgePaidStatus || 'Pledged'})`);
-    });
-
-  const text = lines.join('\n');
-  navigator.clipboard.writeText(text);
-  return text;
 }
 
 function downloadFile(content: string, filename: string, mimeType: string) {

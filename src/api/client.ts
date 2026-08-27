@@ -10,6 +10,7 @@ import {
   PlannedExpense,
   PublicRSVP,
   RSVPRecord,
+  ScoutedVenue,
   SurveyResponse,
   SurveyResponseCreate,
   UserProfile,
@@ -78,6 +79,15 @@ export const createExpense = (payload: PlannedExpense) => post<PlannedExpense>('
 export const updateExpense = (id: string, payload: PlannedExpense) =>
   put<PlannedExpense>(`/expenses/${id}`, payload);
 export const deleteExpense = (id: string) => del(`/expenses/${id}`);
+
+// --- Scouted venues (admin only) --------------------------------------------------
+
+export const fetchScoutedVenues = () => apiFetch<ScoutedVenue[]>('/scouted-venues');
+export const createScoutedVenue = (payload: Omit<ScoutedVenue, 'id' | 'updatedAt'>) =>
+  post<ScoutedVenue>('/scouted-venues', payload);
+export const updateScoutedVenue = (id: string, payload: Omit<ScoutedVenue, 'id' | 'updatedAt'>) =>
+  put<ScoutedVenue>(`/scouted-venues/${id}`, payload);
+export const deleteScoutedVenue = (id: string) => del(`/scouted-venues/${id}`);
 
 // --- Event details --------------------------------------------------------------
 

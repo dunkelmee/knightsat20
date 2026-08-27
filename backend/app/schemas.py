@@ -140,6 +140,24 @@ class PlannedExpenseOut(PlannedExpenseCreate):
 
 
 # ---------------------------------------------------------------------------
+# Scouted venues (committee-internal, admin only)
+# ---------------------------------------------------------------------------
+
+
+class ScoutedVenueCreate(CamelModel):
+    name: str
+    tentative_date: str | None = None
+    address: str | None = None
+    quoted_cost: float | None = None
+    misc_details: str | None = None
+
+
+class ScoutedVenueOut(ScoutedVenueCreate):
+    id: str
+    updated_at: datetime
+
+
+# ---------------------------------------------------------------------------
 # Event details
 # ---------------------------------------------------------------------------
 

@@ -1,19 +1,30 @@
 import React, { useState } from 'react';
 import {
   Calendar, MapPin, Clock, Shirt, Sparkles,
-  CheckCircle2, Save, RotateCcw, AlertCircle
+  CheckCircle2, Save, RotateCcw, Plus, Edit2, Trash2, Landmark
 } from 'lucide-react';
-import { EventDetails } from '../../types';
+import { EventDetails, ScoutedVenue } from '../../types';
+import { formatPHP } from '../../utils/pledgeParser';
+import { AddVenueModal } from './AddVenueModal';
 
 interface EventDetailsManagerTabProps {
   eventDetails: EventDetails;
   onSaveEventDetails: (details: EventDetails) => void;
+  scoutedVenues: ScoutedVenue[];
+  onSaveVenue: (venue: ScoutedVenue) => void;
+  onDeleteVenue: (id: string) => void;
 }
 
 export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
   eventDetails,
   onSaveEventDetails,
+  scoutedVenues,
+  onSaveVenue,
+  onDeleteVenue,
 }) => {
+  const [isVenueModalOpen, setIsVenueModalOpen] = useState(false);
+  const [editingVenue, setEditingVenue] = useState<ScoutedVenue | null>(null);
+
   const [status, setStatus] = useState<'Pending' | 'Finalized'>(eventDetails.status || 'Pending');
   const [date, setDate] = useState(eventDetails.date || 'Pending / For finalization');
   const [time, setTime] = useState(eventDetails.time || '6:00 PM – 10:30 PM');
@@ -48,14 +59,6 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
     setVenue('Pending / For finalization');
     setVenueAddress('Makati / BGC Area (Based on Survey Results)');
     setTime('TBA (Target: 6:00 PM – 10:30 PM)');
-  };
-
-  const handleQuickFinalizeSample = (sampleDate: string, sampleVenue: string, sampleAddress: string) => {
-    setStatus('Finalized');
-    setDate(sampleDate);
-    setVenue(sampleVenue);
-    setVenueAddress(sampleAddress);
-    setTime('6:00 PM – 11:00 PM');
   };
 
   return (
@@ -280,49 +283,6 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
           />
         </div>
 
-        {/* Quick Venue Shortlist Presets */}
-        <div className="p-3 bg-surface-container-low rounded border border-outline-variant/30 space-y-2">
-          <div className="text-[11px] font-semibold text-on-surface-variant flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span>Quick Finalize Options (Scouted Venues)</span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              onClick={() => handleQuickFinalizeSample(
-                'Saturday, April 24, 2027',
-                'Dusit Thani Manila (Grand Ballroom)',
-                'Ayala Center, San Lorenzo, Makati City'
-              )}
-              className="text-[11px] bg-surface-container-lowest hover:bg-primary-container/15 text-on-surface-variant hover:text-on-primary-container px-2.5 py-1 rounded border border-outline-variant/30 transition-colors"
-            >
-              Dusit Thani Makati (Apr 24, 2027)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFinalizeSample(
-                'Saturday, December 18, 2027',
-                'The Blue Leaf Events Pavilion, BGC',
-                '100 Park Avenue, McKinley Hill, Taguig / BGC'
-              )}
-              className="text-[11px] bg-surface-container-lowest hover:bg-primary-container/15 text-on-surface-variant hover:text-on-primary-container px-2.5 py-1 rounded border border-outline-variant/30 transition-colors"
-            >
-              The Blue Leaf BGC (Dec 18, 2027)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFinalizeSample(
-                'Saturday, April 17, 2027',
-                'Makati Science High School Campus & Function Hall',
-                'Kalayaan Ave, Makati City'
-              )}
-              className="text-[11px] bg-surface-container-lowest hover:bg-primary-container/15 text-on-surface-variant hover:text-on-primary-container px-2.5 py-1 rounded border border-outline-variant/30 transition-colors"
-            >
-              MakSci Campus (Apr 17, 2027)
-            </button>
-          </div>
-        </div>
-
         {/* Action Buttons */}
         <div className="pt-2 flex items-center justify-between">
           <div>
@@ -344,6 +304,96 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
         </div>
 
       </form>
+
+      {/* Scouted Venues Shortlist */}
+      <div className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 shadow-soft space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-sm sm:text-base font-semibold text-on-surface flex items-center gap-2">
+            <Landmark className="w-4 h-4 text-primary" />
+            <span>Scouted Venues ({scoutedVenues.length})</span>
+          </h3>
+          <button
+            type="button"
+            onClick={() => {
+              setEditingVenue(null);
+              setIsVenueModalOpen(true);
+            }}
+            className="px-3 py-1.5 rounded bg-primary hover:opacity-90 text-on-primary text-xs font-bold shadow-soft flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Venue</span>
+          </button>
+        </div>
+
+        {scoutedVenues.length === 0 ? (
+          <div className="text-center py-8 space-y-2">
+            <Sparkles className="w-5 h-5 text-outline mx-auto" />
+            <p className="text-xs text-on-surface-variant">No scouted venues yet. Add one to start building the shortlist.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {scoutedVenues.map((v) => (
+              <div key={v.id} className="p-3.5 rounded border border-outline-variant/30 bg-surface-container-low/60 space-y-1.5">
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="font-serif font-semibold text-sm text-on-surface">{v.name}</h4>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingVenue(v);
+                        setIsVenueModalOpen(true);
+                      }}
+                      className="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant"
+                      title="Edit venue"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Remove "${v.name}" from the shortlist?`)) onDeleteVenue(v.id);
+                      }}
+                      className="p-1.5 rounded bg-error-container hover:opacity-80 text-on-error-container"
+                      title="Delete venue"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {v.tentativeDate && (
+                  <div className="text-xs text-on-surface-variant flex items-center gap-1.5">
+                    <Calendar className="w-3 h-3 flex-shrink-0" />
+                    <span>{v.tentativeDate}</span>
+                  </div>
+                )}
+                {v.address && (
+                  <div className="text-xs text-on-surface-variant flex items-center gap-1.5">
+                    <MapPin className="w-3 h-3 flex-shrink-0" />
+                    <span>{v.address}</span>
+                  </div>
+                )}
+                {v.quotedCost != null && (
+                  <div className="text-sm font-bold text-primary">{formatPHP(v.quotedCost)}</div>
+                )}
+                {v.miscDetails && (
+                  <p className="text-[11px] text-on-surface-variant pt-1 border-t border-outline-variant/20">
+                    {v.miscDetails}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {isVenueModalOpen && (
+        <AddVenueModal
+          onClose={() => setIsVenueModalOpen(false)}
+          onSaveVenue={onSaveVenue}
+          existingVenue={editingVenue}
+        />
+      )}
     </div>
   );
 };

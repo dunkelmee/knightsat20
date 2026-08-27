@@ -188,6 +188,21 @@ class Photo(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
+class ScoutedVenue(Base):
+    """Committee-internal venue shortlist — never exposed to attendees."""
+
+    __tablename__ = "scouted_venues"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    tentative_date: Mapped[str | None] = mapped_column(String, nullable=True)
+    address: Mapped[str | None] = mapped_column(String, nullable=True)
+    quoted_cost: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    misc_details: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
 class EventDetails(Base):
     """Singleton table — always exactly one row, id fixed to SINGLETON_ID."""
 

@@ -94,6 +94,18 @@ export interface PlannedExpense {
   updatedAt: string;
 }
 
+// Committee-internal venue shortlist (Event Planning tab) — never surfaced
+// to attendees, distinct from the public EventDetails singleton below.
+export interface ScoutedVenue {
+  id: string;
+  name: string;
+  tentativeDate?: string;
+  address?: string;
+  quotedCost?: number;
+  miscDetails?: string;
+  updatedAt: string;
+}
+
 export interface EventDetails {
   status: 'Pending' | 'Finalized';
   date: string;

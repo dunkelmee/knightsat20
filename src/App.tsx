@@ -38,7 +38,7 @@ import {
   ProfileSetup
 } from './components/auth/ProfileSetup';
 import {
-  MobileNav
+  MobileNav, NAV_TABS, ADMIN_NAV_TABS
 } from './components/nav/AppNav';
 import {
   SurveyResponse,
@@ -47,14 +47,12 @@ import {
   Announcement,
   RSVPRecord,
   PublicRSVP,
+  ScoutedVenue,
   EventDetails,
   DashboardStats,
   UserProfile
 } from './types';
 import * as api from './api/client';
-import {
-  GraduationCap
-} from 'lucide-react';
 
 const DEFAULT_EVENT_DETAILS: EventDetails = {
   status: 'Pending',
@@ -83,6 +81,16 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isBootstrapped, setIsBootstrapped] = useState(false);
 
+  // Admin view — activeTab === 'admin' is the signal that the admin view is
+  // showing (in place of the attendee tabs, not alongside them); adminTab is
+  // which admin sub-tab is selected, and lastAttendeeTab remembers where to
+  // return to when switching back (see the avatar toggle in Header.tsx).
+  const [adminTab, setAdminTab] = useState<string>('event');
+  const [lastAttendeeTab, setLastAttendeeTab] = useState<string>('survey');
+  useEffect(() => {
+    if (activeTab !== 'admin') setLastAttendeeTab(activeTab);
+  }, [activeTab]);
+
   // Site-wide login — the whole app is gated behind this (see AuthGate).
   // Admin-portal access is a separate, additional passcode unlocked from
   // inside the app once logged in.
@@ -101,6 +109,7 @@ export default function App() {
   // is true, so PII never reaches a signed-out browser.
   const [adminResponses, setAdminResponses] = useState<SurveyResponse[]>([]);
   const [adminRsvps, setAdminRsvps] = useState<RSVPRecord[]>([]);
+  const [scoutedVenues, setScoutedVenues] = useState<ScoutedVenue[]>([]);
 
   // Fetches everything the logged-in app needs; only ever called once a user
   // session exists, since every one of these endpoints now requires login.
@@ -177,6 +186,8 @@ export default function App() {
     setIsAdmin(false);
     setAdminResponses([]);
     setAdminRsvps([]);
+    setScoutedVenues([]);
+    setAdminTab('event');
     setActiveTab('survey');
   };
 
@@ -185,15 +196,18 @@ export default function App() {
     if (!isAdmin) {
       setAdminResponses([]);
       setAdminRsvps([]);
+      setScoutedVenues([]);
       return;
     }
     (async () => {
-      const [responses, rsvps] = await Promise.all([
+      const [responses, rsvps, venues] = await Promise.all([
         api.fetchSurveyResponses(),
         api.fetchAdminRsvps(),
+        api.fetchScoutedVenues(),
       ]);
       setAdminResponses(responses);
       setAdminRsvps(rsvps);
+      setScoutedVenues(venues);
     })();
   }, [isAdmin]);
 
@@ -206,12 +220,6 @@ export default function App() {
     } catch {
       return false;
     }
-  };
-
-  // Handler: log out — clears both local state and the server-side session.
-  const handleSetIsAdmin = (val: boolean) => {
-    setIsAdmin(val);
-    if (!val) api.adminLogout().catch(() => {});
   };
 
   // Handler: Save Event Details
@@ -343,29 +351,27 @@ export default function App() {
     setAnnouncements(prev => prev.map(a => a.id === id ? updated : a));
   };
 
-  // Handler: Reset to Demo Data
-  const handleResetDemoData = async () => {
-    await api.resetDemoData();
-    const [details, anns, exps, dashStats, rsvpList] = await Promise.all([
-      api.fetchEventDetails(),
-      api.fetchAnnouncements(),
-      api.fetchExpenses(),
-      api.fetchDashboardStats(),
-      api.fetchPublicRsvps(),
-    ]);
-    setEventDetails(details);
-    setAnnouncements(anns);
-    setExpenses(exps);
-    setStats(dashStats);
-    setPublicRsvps(rsvpList);
-    if (isAdmin) {
-      const [responses, rsvps] = await Promise.all([
-        api.fetchSurveyResponses(),
-        api.fetchAdminRsvps(),
-      ]);
-      setAdminResponses(responses);
-      setAdminRsvps(rsvps);
-    }
+  // Handler: Save / Edit Scouted Venue
+  const handleSaveVenue = async (venue: ScoutedVenue) => {
+    const exists = scoutedVenues.some(v => v.id === venue.id);
+    const saved = exists
+      ? await api.updateScoutedVenue(venue.id, venue)
+      : await api.createScoutedVenue(venue);
+    setScoutedVenues(prev => {
+      const idx = prev.findIndex(v => v.id === saved.id);
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = saved;
+        return updated;
+      }
+      return [saved, ...prev];
+    });
+  };
+
+  // Handler: Delete Scouted Venue
+  const handleDeleteVenue = async (id: string) => {
+    await api.deleteScoutedVenue(id);
+    setScoutedVenues(prev => prev.filter(v => v.id !== id));
   };
 
   if (!isBootstrapped) {
@@ -393,6 +399,23 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const navigateToAdminTab = (tab: string) => {
+    setAdminTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Avatar click — jumps straight into the admin view (passcode gate still
+  // applies there if not yet unlocked) or back to wherever the attendee was
+  // last, without dropping the underlying admin session either way.
+  const handleToggleAdminView = () => {
+    navigateToTab(activeTab === 'admin' ? lastAttendeeTab : 'admin');
+  };
+
+  const adminViewActive = activeTab === 'admin';
+  const navTabs = adminViewActive ? (isAdmin ? ADMIN_NAV_TABS : []) : NAV_TABS;
+  const navActiveKey = adminViewActive ? adminTab : activeTab;
+  const navOnSelect = adminViewActive ? navigateToAdminTab : navigateToTab;
+
   return (
     <div className="@container/app min-h-screen bg-background text-on-background flex flex-col font-sans selection:bg-primary-container selection:text-on-primary-container">
 
@@ -401,10 +424,11 @@ export default function App() {
 
       {/* Header */}
       <Header
-        activeTab={activeTab}
-        setActiveTab={navigateToTab}
-        isAdmin={isAdmin}
-        setIsAdmin={handleSetIsAdmin}
+        navTabs={navTabs}
+        navActiveKey={navActiveKey}
+        onNavSelect={navOnSelect}
+        adminViewActive={adminViewActive}
+        onToggleAdminView={handleToggleAdminView}
         currentUser={currentUser}
         onLogout={handleLogout}
         onEditProfile={() => setShowProfileEdit(true)}
@@ -478,17 +502,19 @@ export default function App() {
           />
         )}
 
-        {/* Tab 6: Admin & Treasury Portal */}
+        {/* Tab 6: Admin & Treasury Portal — replaces the attendee tabs
+            entirely while active (see Header.tsx's avatar toggle) */}
         {activeTab === 'admin' && (
           <AdminPortal
             isAdmin={isAdmin}
-            setIsAdmin={handleSetIsAdmin}
             onLogin={handleAdminLogin}
+            adminTab={adminTab}
             responses={adminResponses}
             expenses={expenses}
             announcements={announcements}
             rsvps={adminRsvps}
             eventDetails={eventDetails}
+            scoutedVenues={scoutedVenues}
             onSaveEventDetails={handleSaveEventDetails}
             onDeleteResponse={handleDeleteResponse}
             onUpdatePaymentStatus={handleUpdatePaymentStatus}
@@ -497,8 +523,9 @@ export default function App() {
             onSaveAnnouncement={handleSaveAnnouncement}
             onDeleteAnnouncement={handleDeleteAnnouncement}
             onTogglePinAnnouncement={handleTogglePinAnnouncement}
-            onResetDemoData={handleResetDemoData}
-            onExitAdmin={() => setActiveTab('survey')}
+            onSaveVenue={handleSaveVenue}
+            onDeleteVenue={handleDeleteVenue}
+            onExitAdmin={() => navigateToTab(lastAttendeeTab)}
           />
         )}
 
@@ -513,7 +540,7 @@ export default function App() {
       </footer>
 
       {/* Floating bottom nav (mobile only — see AppNav.tsx) */}
-      <MobileNav activeTab={activeTab} setActiveTab={navigateToTab} />
+      <MobileNav tabs={navTabs} activeTab={navActiveKey} setActiveTab={navOnSelect} />
 
     </div>
   );

@@ -133,8 +133,8 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
         </div>
       </div>
 
-      {/* Expenses Table */}
-      <div className="bg-surface-container-lowest rounded border border-outline-variant/30 shadow-soft overflow-hidden">
+      {/* Expenses Table — desktop/large screens only, see the card list below for mobile */}
+      <div className="hidden lg:block bg-surface-container-lowest rounded border border-outline-variant/30 shadow-soft overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-on-surface-variant">
             <thead className="bg-inverse-surface text-inverse-on-surface uppercase text-[10px] tracking-wider">
@@ -223,6 +223,84 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
             </tfoot>
           </table>
         </div>
+      </div>
+
+      {/* Expense Cards — mobile/tablet only, mirrors the table above */}
+      <div className="lg:hidden space-y-3">
+        {expenses.length === 0 ? (
+          <div className="py-8 text-center text-xs text-on-surface-variant bg-surface-container-lowest rounded border border-outline-variant/30">
+            No planned expenses yet.
+          </div>
+        ) : (
+          expenses.map((exp) => (
+            <div
+              key={exp.id}
+              className="bg-surface-container-lowest rounded p-4 border border-outline-variant/30 shadow-soft space-y-2.5"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="font-bold text-sm text-on-surface">{exp.name}</div>
+                <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  exp.status === 'Paid' ? 'bg-success-container text-on-success-container' :
+                  exp.status === 'Approved' ? 'bg-tertiary-container/25 text-on-tertiary-container' :
+                  exp.status === 'Quoted' ? 'bg-secondary-container text-on-secondary-container' :
+                  'bg-surface-container text-on-surface-variant'
+                }`}>
+                  {exp.status}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant text-[10px] font-semibold">
+                  {exp.category}
+                </span>
+                <span className="text-[11px] text-on-surface-variant">{exp.targetDate || 'TBD'}</span>
+              </div>
+
+              <div className="font-bold text-error text-base pt-2 border-t border-outline-variant/20">
+                {formatPHP(exp.amount)}
+              </div>
+
+              {exp.notes && (
+                <p className="text-[11px] text-on-surface-variant truncate" title={exp.notes}>
+                  {exp.notes}
+                </p>
+              )}
+
+              <div className="flex items-center justify-end gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingExpense(exp);
+                    setIsModalOpen(true);
+                  }}
+                  className="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant"
+                  title="Edit expense"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm(`Delete expense "${exp.name}"?`)) {
+                      onDeleteExpense(exp.id);
+                    }
+                  }}
+                  className="p-1.5 rounded bg-error-container hover:opacity-80 text-on-error-container"
+                  title="Delete expense"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+
+        {expenses.length > 0 && (
+          <div className="bg-surface-container-low rounded p-4 border border-outline-variant/30 font-bold text-on-surface flex items-center justify-between text-xs">
+            <span>Total Planned Expenses</span>
+            <span className="text-error text-sm">{formatPHP(totalExpenses)}</span>
+          </div>
+        )}
       </div>
 
       {/* Category Breakdown Cards */}

@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Lock, Unlock, GraduationCap, LogOut, Pencil } from 'lucide-react';
+import { GraduationCap, LogOut, Pencil, ShieldCheck, ArrowLeftRight } from 'lucide-react';
 import { UserProfile } from '../types';
-import { DesktopNav } from './nav/AppNav';
+import { DesktopNav, NavTab } from './nav/AppNav';
 
 interface HeaderProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  isAdmin: boolean;
-  setIsAdmin: (val: boolean) => void;
+  navTabs: NavTab[];
+  navActiveKey: string;
+  onNavSelect: (key: string) => void;
+  adminViewActive: boolean;
+  onToggleAdminView: () => void;
   currentUser: UserProfile | null;
   onLogout: () => void;
   onEditProfile: () => void;
@@ -23,10 +24,11 @@ const getInitials = (fullName: string): string =>
     .toUpperCase();
 
 export const Header: React.FC<HeaderProps> = ({
-  activeTab,
-  setActiveTab,
-  isAdmin,
-  setIsAdmin,
+  navTabs,
+  navActiveKey,
+  onNavSelect,
+  adminViewActive,
+  onToggleAdminView,
   currentUser,
   onLogout,
   onEditProfile,
@@ -54,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div
             id="brand-logo-button"
             className="flex items-center gap-2.5 cursor-pointer group"
-            onClick={() => setActiveTab('survey')}
+            onClick={() => onNavSelect(adminViewActive ? 'event' : 'survey')}
           >
             <div className="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center font-bold text-sm shadow-soft flex-shrink-0">
               <GraduationCap className="w-4 h-4 text-on-primary" />
@@ -72,11 +74,12 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Spacer pushes the desktop nav + avatar to the far end */}
           <div className="flex-1" />
 
-          {/* Desktop nav — same tab array as the mobile floating bottom bar
-              (AppNav.tsx), hidden below the 700px container-query breakpoint */}
-          <DesktopNav activeTab={activeTab} setActiveTab={setActiveTab} />
+          {/* Desktop nav — attendee tabs, or the admin tabs in place of them
+              once the admin view is active (see AppNav.tsx) — hidden below
+              the 700px container-query breakpoint */}
+          <DesktopNav tabs={navTabs} activeTab={navActiveKey} setActiveTab={onNavSelect} />
 
-          {/* Profile avatar & menu — Edit Profile, Admin Portal, Log out */}
+          {/* Profile avatar & menu — Edit Profile, view switch, Log out */}
           {currentUser && (
             <div className="relative flex-shrink-0" ref={menuRef}>
               <button
@@ -84,7 +87,7 @@ export const Header: React.FC<HeaderProps> = ({
                 type="button"
                 onClick={() => setMenuOpen((open) => !open)}
                 title={currentUser.fullName}
-                className="w-9 h-9 rounded-full overflow-hidden border border-outline-variant/40 shadow-soft flex items-center justify-center bg-primary-container text-on-primary-container font-semibold text-xs hover:opacity-90 transition-opacity"
+                className="relative w-9 h-9 rounded-full overflow-hidden border border-outline-variant/40 shadow-soft flex items-center justify-center bg-primary-container text-on-primary-container font-semibold text-xs hover:opacity-90 transition-opacity"
               >
                 {currentUser.nowPhotoUrl ? (
                   <img
@@ -94,6 +97,11 @@ export const Header: React.FC<HeaderProps> = ({
                   />
                 ) : (
                   <span>{getInitials(currentUser.fullName)}</span>
+                )}
+                {adminViewActive && (
+                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary text-on-primary flex items-center justify-center border-2 border-surface-container-lowest">
+                    <ShieldCheck className="w-2.5 h-2.5" />
+                  </span>
                 )}
               </button>
 
@@ -120,20 +128,16 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
 
                   <button
-                    id="btn-admin-menu-item"
+                    id="btn-toggle-admin-view"
                     type="button"
                     onClick={() => {
-                      if (isAdmin) {
-                        setIsAdmin(false);
-                      } else {
-                        setActiveTab('admin');
-                      }
+                      onToggleAdminView();
                       setMenuOpen(false);
                     }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
                   >
-                    {isAdmin ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-                    <span>{isAdmin ? 'Admin Mode Active' : 'Admin Portal'}</span>
+                    <ArrowLeftRight className="w-3.5 h-3.5" />
+                    <span>{adminViewActive ? 'To organizer view' : 'To attendee view'}</span>
                   </button>
 
                   <button

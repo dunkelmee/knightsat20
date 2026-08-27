@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import {
-  ShieldCheck, Lock, Unlock, ClipboardList, Receipt,
-  Bell, Users, RefreshCw, Sparkles, Calendar, Images
-} from 'lucide-react';
-import { SurveyResponse, PlannedExpense, Announcement, RSVPRecord, EventDetails } from '../../types';
+import { Lock, Unlock } from 'lucide-react';
+import { SurveyResponse, PlannedExpense, Announcement, RSVPRecord, EventDetails, ScoutedVenue } from '../../types';
 import { SurveyResponsesTab } from './SurveyResponsesTab';
 import { OperatingFundsTab } from './OperatingFundsTab';
 import { AnnouncementsManagerTab } from './AnnouncementsManagerTab';
@@ -13,13 +10,14 @@ import { AdminPhotoWallTab } from './AdminPhotoWallTab';
 
 interface AdminPortalProps {
   isAdmin: boolean;
-  setIsAdmin: (val: boolean) => void;
   onLogin: (passcode: string) => Promise<boolean>;
+  adminTab: string;
   responses: SurveyResponse[];
   expenses: PlannedExpense[];
   announcements: Announcement[];
   rsvps: RSVPRecord[];
   eventDetails: EventDetails;
+  scoutedVenues: ScoutedVenue[];
   onSaveEventDetails: (details: EventDetails) => void;
   onDeleteResponse: (id: string) => void;
   onUpdatePaymentStatus: (id: string, status: SurveyResponse['pledgePaidStatus']) => void;
@@ -28,19 +26,24 @@ interface AdminPortalProps {
   onSaveAnnouncement: (announcement: Announcement) => void;
   onDeleteAnnouncement: (id: string) => void;
   onTogglePinAnnouncement: (id: string) => void;
-  onResetDemoData: () => void;
+  onSaveVenue: (venue: ScoutedVenue) => void;
+  onDeleteVenue: (id: string) => void;
   onExitAdmin: () => void;
 }
 
+// The tab switcher itself lives in the shared AppNav (see nav/AppNav.tsx's
+// ADMIN_NAV_TABS) — it replaces the attendee nav entirely while this view is
+// active, rather than duplicating a second tab strip inside this component.
 export const AdminPortal: React.FC<AdminPortalProps> = ({
   isAdmin,
-  setIsAdmin,
   onLogin,
+  adminTab,
   responses,
   expenses,
   announcements,
   rsvps,
   eventDetails,
+  scoutedVenues,
   onSaveEventDetails,
   onDeleteResponse,
   onUpdatePaymentStatus,
@@ -49,12 +52,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onSaveAnnouncement,
   onDeleteAnnouncement,
   onTogglePinAnnouncement,
-  onResetDemoData,
+  onSaveVenue,
+  onDeleteVenue,
   onExitAdmin,
 }) => {
   const [passcode, setPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState(false);
-  const [adminTab, setAdminTab] = useState<'event' | 'responses' | 'funds' | 'announcements' | 'rsvp' | 'photowall'>('event');
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,182 +126,52 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   }
 
   return (
-    <div id="admin-portal-container" className="max-w-5xl mx-auto py-5 px-4 space-y-4">
+    <div id="admin-portal-container" className="max-w-5xl mx-auto py-5 px-4">
+      {adminTab === 'event' && (
+        <EventDetailsManagerTab
+          eventDetails={eventDetails}
+          onSaveEventDetails={onSaveEventDetails}
+          scoutedVenues={scoutedVenues}
+          onSaveVenue={onSaveVenue}
+          onDeleteVenue={onDeleteVenue}
+        />
+      )}
 
-      {/* Top Admin Header Bar */}
-      <div className="bg-surface-container-lowest text-on-surface rounded p-4 border border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-soft">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded bg-primary text-on-primary flex items-center justify-center font-bold flex-shrink-0">
-            <ShieldCheck className="w-5 h-5 text-on-primary" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-serif font-semibold text-on-surface">
-                Makati Science Batch 2007 Admin
-              </h2>
-              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-primary-container/20 text-on-primary-container border border-primary-container/50">
-                Committee
-              </span>
-            </div>
-            <p className="text-xs text-on-surface-variant">
-              Survey responses, operating ledger, announcements, and live RSVP roster.
-            </p>
-          </div>
-        </div>
+      {adminTab === 'responses' && (
+        <SurveyResponsesTab
+          responses={responses}
+          expenses={expenses}
+          onDeleteResponse={onDeleteResponse}
+          onUpdatePaymentStatus={onUpdatePaymentStatus}
+        />
+      )}
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm('Reset all surveys, expenses, and announcements back to initial demo data?')) {
-                onResetDemoData();
-              }
-            }}
-            title="Reset to fresh demo state"
-            className="px-3 py-1.5 rounded bg-background hover:bg-surface-container text-on-surface-variant text-xs font-semibold flex items-center gap-1 transition-colors border border-secondary/30"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Reset Demo Data</span>
-          </button>
+      {adminTab === 'funds' && (
+        <OperatingFundsTab
+          responses={responses}
+          expenses={expenses}
+          onSaveExpense={onSaveExpense}
+          onDeleteExpense={onDeleteExpense}
+        />
+      )}
 
-          <button
-            type="button"
-            onClick={() => setIsAdmin(false)}
-            className="px-3 py-1.5 rounded bg-secondary hover:opacity-90 text-on-secondary font-semibold text-xs shadow-soft transition-all flex items-center gap-1"
-          >
-            <Lock className="w-3.5 h-3.5" />
-            <span>Lock</span>
-          </button>
-        </div>
-      </div>
+      {adminTab === 'announcements' && (
+        <AnnouncementsManagerTab
+          announcements={announcements}
+          onSaveAnnouncement={onSaveAnnouncement}
+          onDeleteAnnouncement={onDeleteAnnouncement}
+          onTogglePin={onTogglePinAnnouncement}
+        />
+      )}
 
-      {/* Admin Tab Switcher */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none border-b border-outline-variant/30">
-        <button
-          type="button"
-          onClick={() => setAdminTab('event')}
-          className={`px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-            adminTab === 'event'
-              ? 'bg-primary text-on-primary shadow-soft'
-              : 'text-on-surface-variant hover:bg-surface-container'
-          }`}
-        >
-          <Calendar className="w-3.5 h-3.5" />
-          <span>Date & Venue Settings</span>
-        </button>
+      {adminTab === 'rsvp' && (
+        <RsvpSummaryTab
+          rsvps={rsvps}
+          responses={responses}
+        />
+      )}
 
-        <button
-          type="button"
-          onClick={() => setAdminTab('responses')}
-          className={`px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-            adminTab === 'responses'
-              ? 'bg-primary text-on-primary shadow-soft'
-              : 'text-on-surface-variant hover:bg-surface-container'
-          }`}
-        >
-          <ClipboardList className="w-3.5 h-3.5" />
-          <span>Surveys ({responses.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setAdminTab('funds')}
-          className={`px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-            adminTab === 'funds'
-              ? 'bg-primary text-on-primary shadow-soft'
-              : 'text-on-surface-variant hover:bg-surface-container'
-          }`}
-        >
-          <Receipt className="w-3.5 h-3.5" />
-          <span>Ledger & Expenses</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setAdminTab('announcements')}
-          className={`px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-            adminTab === 'announcements'
-              ? 'bg-primary text-on-primary shadow-soft'
-              : 'text-on-surface-variant hover:bg-surface-container'
-          }`}
-        >
-          <Bell className="w-3.5 h-3.5" />
-          <span>Announcements ({announcements.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setAdminTab('rsvp')}
-          className={`px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-            adminTab === 'rsvp'
-              ? 'bg-primary text-on-primary shadow-soft'
-              : 'text-on-surface-variant hover:bg-surface-container'
-          }`}
-        >
-          <Users className="w-3.5 h-3.5" />
-          <span>RSVP Roster ({rsvps.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setAdminTab('photowall')}
-          className={`px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-            adminTab === 'photowall'
-              ? 'bg-primary text-on-primary shadow-soft'
-              : 'text-on-surface-variant hover:bg-surface-container'
-          }`}
-        >
-          <Images className="w-3.5 h-3.5" />
-          <span>Photo Wall</span>
-        </button>
-      </div>
-
-      {/* Render Active Admin Tab */}
-      <div>
-        {adminTab === 'event' && (
-          <EventDetailsManagerTab
-            eventDetails={eventDetails}
-            onSaveEventDetails={onSaveEventDetails}
-          />
-        )}
-
-        {adminTab === 'responses' && (
-          <SurveyResponsesTab
-            responses={responses}
-            expenses={expenses}
-            onDeleteResponse={onDeleteResponse}
-            onUpdatePaymentStatus={onUpdatePaymentStatus}
-          />
-        )}
-
-        {adminTab === 'funds' && (
-          <OperatingFundsTab
-            responses={responses}
-            expenses={expenses}
-            onSaveExpense={onSaveExpense}
-            onDeleteExpense={onDeleteExpense}
-          />
-        )}
-
-        {adminTab === 'announcements' && (
-          <AnnouncementsManagerTab
-            announcements={announcements}
-            onSaveAnnouncement={onSaveAnnouncement}
-            onDeleteAnnouncement={onDeleteAnnouncement}
-            onTogglePin={onTogglePinAnnouncement}
-          />
-        )}
-
-        {adminTab === 'rsvp' && (
-          <RsvpSummaryTab
-            rsvps={rsvps}
-            responses={responses}
-          />
-        )}
-
-        {adminTab === 'photowall' && <AdminPhotoWallTab />}
-      </div>
-
+      {adminTab === 'photowall' && <AdminPhotoWallTab />}
     </div>
   );
 };

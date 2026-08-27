@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import {
-  Search, Download, Copy, Eye, Trash2, Filter,
-  Check, FileSpreadsheet, HeartHandshake, Users, ArrowUpDown
+  Search, Download, Eye, Trash2, Filter,
+  Check, FileSpreadsheet, HeartHandshake, Users
 } from 'lucide-react';
 import { SurveyResponse, PlannedExpense } from '../../types';
 import { formatPHP } from '../../utils/pledgeParser';
-import { exportSurveyResponsesToCSV, exportPledgesAndExpensesToCSV, copyPledgesSummaryToClipboard } from '../../utils/exportUtils';
+import { exportSurveyResponsesToCSV, exportPledgesAndExpensesToCSV } from '../../utils/exportUtils';
 import { ResponseDetailModal } from './ResponseDetailModal';
 
 interface SurveyResponsesTabProps {
@@ -25,7 +25,6 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
   const [attendanceFilter, setAttendanceFilter] = useState('All');
   const [pledgeFilter, setPledgeFilter] = useState('All');
   const [selectedResponse, setSelectedResponse] = useState<SurveyResponse | null>(null);
-  const [copiedToast, setCopiedToast] = useState(false);
 
   // Compute metrics
   const totalPledges = responses.reduce((acc, r) => acc + (r.computedPledgeAmount || 0), 0);
@@ -52,12 +51,6 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
 
     return matchesSearch && matchesAttendance && matchesPledge;
   });
-
-  const handleCopyClipboard = () => {
-    copyPledgesSummaryToClipboard(responses);
-    setCopiedToast(true);
-    setTimeout(() => setCopiedToast(false), 2500);
-  };
 
   return (
     <div id="survey-responses-tab" className="space-y-6">
@@ -137,16 +130,6 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
               <Download className="w-3.5 h-3.5" />
               <span>Export Pledges & Ledger CSV</span>
             </button>
-
-            <button
-              id="btn-copy-pledges-summary"
-              type="button"
-              onClick={handleCopyClipboard}
-              className="px-3.5 py-2 rounded bg-background border border-secondary text-secondary hover:bg-surface-container text-xs font-semibold shadow-soft transition-all flex items-center gap-1.5"
-            >
-              {copiedToast ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copiedToast ? 'Copied to Clipboard!' : 'Copy Summary'}</span>
-            </button>
           </div>
         </div>
 
@@ -193,8 +176,8 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
         </div>
       </div>
 
-      {/* Responses Table */}
-      <div className="bg-surface-container-lowest rounded border border-outline-variant/30 shadow-soft overflow-hidden">
+      {/* Responses Table — desktop/large screens only, see the card list below for mobile */}
+      <div className="hidden lg:block bg-surface-container-lowest rounded border border-outline-variant/30 shadow-soft overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-on-surface-variant">
             <thead className="bg-inverse-surface text-inverse-on-surface uppercase text-[10px] tracking-wider">
@@ -326,6 +309,109 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Responses Cards — mobile/tablet only, mirrors the table above */}
+      <div className="lg:hidden space-y-3">
+        {filteredResponses.length === 0 ? (
+          <div className="py-8 text-center text-xs text-on-surface-variant bg-surface-container-lowest rounded border border-outline-variant/30">
+            No survey responses match your filter criteria.
+          </div>
+        ) : (
+          filteredResponses.map((r) => (
+            <div
+              key={r.id}
+              className="bg-surface-container-lowest rounded p-4 border border-outline-variant/30 shadow-soft space-y-2.5"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="font-serif font-semibold text-sm text-on-surface">{r.fullName}</div>
+                  {r.section2007 && (
+                    <span className="text-[10px] text-tertiary font-normal">{r.section2007}</span>
+                  )}
+                </div>
+                <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  r.attendance.includes('Yes') ? 'bg-success-container text-on-success-container' :
+                  r.attendance.includes('Most likely') ? 'bg-tertiary-container/25 text-on-tertiary-container' :
+                  r.attendance.includes('Not sure') ? 'bg-primary-container/20 text-on-primary-container' :
+                  'bg-error-container text-on-error-container'
+                }`}>
+                  {r.attendance.replace('Unfortunately, I won’t be able to attend', 'Cannot attend')}
+                </span>
+              </div>
+
+              <div className="text-xs text-on-surface-variant">
+                <div>{r.contactNumber}</div>
+                {r.email && <div className="text-[10px] text-outline">{r.email}</div>}
+              </div>
+
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-outline-variant/20">
+                <div>
+                  {r.computedPledgeAmount > 0 ? (
+                    <div className="text-primary font-bold text-sm">
+                      {formatPHP(r.computedPledgeAmount)}
+                      <div className="text-[10px] text-on-surface-variant font-normal">
+                        {r.pledgeOption} {r.customPledgeAmount ? `(${r.customPledgeAmount})` : ''}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-outline text-sm">₱0</span>
+                  )}
+                </div>
+
+                {r.computedPledgeAmount > 0 ? (
+                  <select
+                    value={r.pledgePaidStatus || 'Unpaid / Pledged'}
+                    onChange={(e) => onUpdatePaymentStatus(r.id, e.target.value as any)}
+                    className={`text-[11px] font-semibold px-2 py-1 rounded border focus:outline-none ${
+                      r.pledgePaidStatus === 'Fully Paid' ? 'bg-success-container text-on-success-container border-success' :
+                      r.pledgePaidStatus === 'Partially Paid' ? 'bg-tertiary-container/25 text-on-tertiary-container border-tertiary' :
+                      'bg-primary-container/20 text-on-primary-container border-primary-container'
+                    }`}
+                  >
+                    <option value="Unpaid / Pledged">Unpaid / Pledged</option>
+                    <option value="Partially Paid">Partially Paid</option>
+                    <option value="Fully Paid">Fully Paid</option>
+                  </select>
+                ) : (
+                  <span className="text-outline text-[11px]">N/A</span>
+                )}
+              </div>
+
+              {(r.skillsOffered.length > 0 || r.otherSponsorships.length > 0) && (
+                <div className="text-[11px] text-on-surface-variant truncate">
+                  {r.skillsOffered.length > 0 ? r.skillsOffered.join(', ') : 'None'}
+                  {r.otherSponsorships.length > 0 && !r.otherSponsorships.includes('None for now') && (
+                    <span className="text-primary"> · 🎁 {r.otherSponsorships.join(', ')}</span>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setSelectedResponse(r)}
+                  title="Inspect Full Response"
+                  className="p-1.5 rounded bg-tertiary-container/20 hover:bg-tertiary-container/35 text-on-tertiary-container transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm(`Delete survey response from ${r.fullName}?`)) {
+                      onDeleteResponse(r.id);
+                    }
+                  }}
+                  title="Delete response"
+                  className="p-1.5 rounded bg-error-container hover:opacity-80 text-on-error-container transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Response Detail Modal */}
