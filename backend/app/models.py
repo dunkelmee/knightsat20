@@ -39,10 +39,6 @@ class User(Base):
     show_in_directory: Mapped[bool] = mapped_column(Boolean, default=True)
     is_faculty: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    # Marks fixture rows created by "Reset Demo Data" so a reset can safely
-    # wipe/recreate them without ever touching real registered accounts.
-    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
-
     # Permanent, per-account organizer access — granted/revoked only by the
     # superadmin (see routers/superadmin.py). Replaces the old shared
     # passcode: every new account starts as a plain attendee.
@@ -73,6 +69,19 @@ class OtpCode(Base):
     consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     requested_ip: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class SuperadminLoginAttempt(Base):
+    """One row per *failed* superadmin login, used only to throttle brute-force
+    attempts (see app/superadmin_lockout.py). Rows aren't pruned — the table
+    stays small since only failures are recorded and every check is windowed
+    to the last few minutes."""
+
+    __tablename__ = "superadmin_login_attempts"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    ip: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)
 
 
 class SurveyResponse(Base):

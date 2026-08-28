@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ShieldCheck, ClipboardList, Users, ScrollText, LogOut, RefreshCw } from 'lucide-react';
+import { ShieldCheck, ClipboardList, Users, ScrollText, LogOut } from 'lucide-react';
 import { SurveyResponse } from '../../types';
 import * as api from '../../api/client';
 import { SurveyResponsesTab } from '../admin/SurveyResponsesTab';
@@ -27,7 +27,6 @@ export const SuperadminPortal: React.FC<SuperadminPortalProps> = ({ onLogout }) 
   const [tab, setTab] = useState<SuperadminTab>('responses');
   const [responses, setResponses] = useState<SurveyResponse[]>([]);
   const [isLoadingResponses, setIsLoadingResponses] = useState(true);
-  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -47,19 +46,6 @@ export const SuperadminPortal: React.FC<SuperadminPortalProps> = ({ onLogout }) 
     setResponses((prev) => prev.map((r) => (r.id === id ? updated : r)));
   };
 
-  const handleResetDemoData = async () => {
-    if (!window.confirm('Reset the entire app back to demo data? This clears real survey responses, RSVPs, announcements, expenses, and demo directory/photo content.')) {
-      return;
-    }
-    setIsResetting(true);
-    try {
-      await api.resetDemoData();
-      setResponses(await api.fetchSurveyResponses());
-    } finally {
-      setIsResetting(false);
-    }
-  };
-
   return (
     <div className="@container/app min-h-screen bg-background text-on-background flex flex-col font-sans">
       <div className="paper-grain" aria-hidden="true" />
@@ -77,17 +63,6 @@ export const SuperadminPortal: React.FC<SuperadminPortalProps> = ({ onLogout }) 
           {/* Desktop nav — same DesktopNav used by the attendee/organizer
               views, hidden below the 700px container-query breakpoint. */}
           <DesktopNav tabs={TABS} activeTab={tab} setActiveTab={(key) => setTab(key as SuperadminTab)} />
-
-          <button
-            type="button"
-            onClick={handleResetDemoData}
-            disabled={isResetting}
-            title="Reset the app to fresh demo data"
-            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container text-xs font-semibold disabled:opacity-60 transition-colors"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{isResetting ? 'Resetting…' : 'Reset Demo Data'}</span>
-          </button>
 
           <button
             type="button"

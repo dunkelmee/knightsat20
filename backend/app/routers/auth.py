@@ -31,6 +31,7 @@ from app.security import (
     is_superadmin,
 )
 from app.storage import delete_profile_photo, resolve_url, save_profile_photo
+from app.superadmin_lockout import check_not_locked_out, record_failed_attempt
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -252,7 +253,11 @@ async def remove_profile_photo(
 
 @router.post("/superadmin-login", response_model=SuperadminSessionOut)
 async def superadmin_login(payload: SuperadminLoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    ip = _client_ip(request)
+    await check_not_locked_out(db, ip)
+
     if not _is_superadmin_email(payload.email) or not check_superadmin_password(payload.password):
+        await record_failed_attempt(db, ip, payload.email)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password.")
 
     request.session[SESSION_SUPERADMIN_KEY] = True

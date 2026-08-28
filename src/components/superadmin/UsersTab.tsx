@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { ShieldCheck, ShieldOff, Users } from 'lucide-react';
+import { ShieldCheck, ShieldOff, Trash2, Users } from 'lucide-react';
 import { AdminUserSummary } from '../../types';
-import { fetchSuperadminUsers, updateUserOrganizerStatus } from '../../api/client';
+import { ApiError, deleteSuperadminUser, fetchSuperadminUsers, updateUserOrganizerStatus } from '../../api/client';
+import { DeleteUserModal } from './DeleteUserModal';
 
 export const UsersTab: React.FC = () => {
   const [users, setUsers] = useState<AdminUserSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [userPendingDelete, setUserPendingDelete] = useState<AdminUserSummary | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState('');
 
   const load = async () => setUsers(await fetchSuperadminUsers());
 
@@ -20,6 +24,26 @@ export const UsersTab: React.FC = () => {
   const handleToggle = async (user: AdminUserSummary) => {
     const updated = await updateUserOrganizerStatus(user.id, !user.isOrganizer);
     setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+  };
+
+  const openDeleteModal = (user: AdminUserSummary) => {
+    setDeleteError('');
+    setUserPendingDelete(user);
+  };
+
+  const handleConfirmDelete = async (password: string) => {
+    if (!userPendingDelete) return;
+    setDeleteError('');
+    setDeletingId(userPendingDelete.id);
+    try {
+      await deleteSuperadminUser(userPendingDelete.id, password);
+      setUsers((prev) => prev.filter((u) => u.id !== userPendingDelete.id));
+      setUserPendingDelete(null);
+    } catch (err) {
+      setDeleteError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   if (isLoading) {
@@ -64,22 +88,45 @@ export const UsersTab: React.FC = () => {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => handleToggle(user)}
-                title={user.isOrganizer ? 'Revoke organizer access' : 'Grant organizer access'}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-colors ${
-                  user.isOrganizer
-                    ? 'bg-error-container text-on-error-container hover:opacity-80'
-                    : 'bg-primary text-on-primary hover:opacity-90'
-                }`}
-              >
-                {user.isOrganizer ? <ShieldOff className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
-                <span>{user.isOrganizer ? 'Revoke' : 'Grant'}</span>
-              </button>
+              <div className="flex-shrink-0 flex flex-col items-stretch gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleToggle(user)}
+                  title={user.isOrganizer ? 'Revoke organizer access' : 'Grant organizer access'}
+                  className={`flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-colors ${
+                    user.isOrganizer
+                      ? 'bg-error-container text-on-error-container hover:opacity-80'
+                      : 'bg-primary text-on-primary hover:opacity-90'
+                  }`}
+                >
+                  {user.isOrganizer ? <ShieldOff className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                  <span>{user.isOrganizer ? 'Revoke' : 'Grant'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => openDeleteModal(user)}
+                  disabled={deletingId === user.id}
+                  title="Delete user and all their data"
+                  className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold border border-error text-error hover:bg-error-container/40 disabled:opacity-60 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{deletingId === user.id ? 'Deleting…' : 'Delete'}</span>
+                </button>
+              </div>
             </div>
           ))}
         </div>
+      )}
+
+      {userPendingDelete && (
+        <DeleteUserModal
+          user={userPendingDelete}
+          isDeleting={deletingId === userPendingDelete.id}
+          error={deleteError}
+          onCancel={() => setUserPendingDelete(null)}
+          onConfirm={handleConfirmDelete}
+        />
       )}
     </div>
   );

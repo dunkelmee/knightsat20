@@ -225,6 +225,13 @@ class OrganizerUpdateRequest(CamelModel):
     is_organizer: bool
 
 
+class SuperadminPasswordConfirm(CamelModel):
+    """Step-up re-auth required for the most destructive superadmin actions
+    (deleting a user) even though the session is already superadmin-gated."""
+
+    password: str
+
+
 class AuditLogOut(CamelModel):
     id: str
     actor_name: str

@@ -154,8 +154,9 @@ export const fetchSuperadminSession = () =>
 export const fetchSuperadminUsers = () => apiFetch<AdminUserSummary[]>('/superadmin/users');
 export const updateUserOrganizerStatus = (id: string, isOrganizer: boolean) =>
   patch<AdminUserSummary>(`/superadmin/users/${id}/organizer`, { isOrganizer });
+export const deleteSuperadminUser = (id: string, password: string) =>
+  apiFetch<void>(`/superadmin/users/${id}`, { method: 'DELETE', body: JSON.stringify({ password }) });
 export const fetchAuditLogs = () => apiFetch<AuditLogEntry[]>('/superadmin/audit-logs');
-export const resetDemoData = () => post<void>('/superadmin/reset-demo-data');
 
 // --- Directory ---------------------------------------------------------------
 

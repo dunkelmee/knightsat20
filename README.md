@@ -109,9 +109,7 @@ http://localhost:3000.
 4. Deploy. The container runs `alembic upgrade head` on boot, then serves both the API and the
    built frontend from one process — no separate frontend service or CORS config needed.
 
-The database starts empty by default — real committee data only. The superadmin portal's
-"Reset Demo Data" button (or `POST /api/superadmin/reset-demo-data`) loads the fictional demo
-fixtures if you want to show the app populated before real responses come in.
+The database starts empty by default — real committee data only.
 
 ## Project layout
 
