@@ -15,6 +15,7 @@ from app.schemas import (
     DirectoryUpdateRequest,
 )
 from app.security import get_current_user
+from app.storage import resolve_url
 
 router = APIRouter(tags=["directory"], dependencies=[Depends(get_current_user)])
 
@@ -105,8 +106,8 @@ async def list_directory(
             current_city=user.current_city,
             current_role=user.current_role,
             section_hs=user.section_hs,
-            then_photo_url=user.then_photo_url,
-            now_photo_url=user.now_photo_url,
+            then_photo_url=resolve_url(user.then_photo_url),
+            now_photo_url=resolve_url(user.now_photo_url),
             status=status,
             last_seen_city=user.current_city if status == "missing" and not user.now_photo_url else None,
         )
@@ -165,8 +166,8 @@ async def update_directory_profile(
         current_city=current_user.current_city,
         current_role=current_user.current_role,
         section_hs=current_user.section_hs,
-        then_photo_url=current_user.then_photo_url,
-        now_photo_url=current_user.now_photo_url,
+        then_photo_url=resolve_url(current_user.then_photo_url),
+        now_photo_url=resolve_url(current_user.now_photo_url),
         status="faculty" if current_user.is_faculty else "missing",
         last_seen_city=None,
     )

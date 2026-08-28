@@ -6,7 +6,7 @@ database is intentionally left empty so real committee members never see fake pl
 
 from datetime import datetime, timedelta as _td, timezone
 
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import (
@@ -595,7 +595,12 @@ async def reset_demo_data(session: AsyncSession) -> None:
     await session.execute(delete(Announcement))
     await session.execute(delete(PlannedExpense))
     await session.execute(delete(EventDetails))
-    await session.execute(delete(Album))  # cascades photos
+    # Scoped to demo-owned albums only — a bare `delete(Album)` previously wiped
+    # every album (and, via cascade, every photo row) including ones real
+    # alumni had uploaded to the Photo Wall. Must run before the demo users
+    # below are deleted, since it relies on their is_demo flag still being set.
+    demo_user_ids = select(User.id).where(User.is_demo.is_(True))
+    await session.execute(delete(Album).where(Album.created_by.in_(demo_user_ids)))  # cascades photos
     # Only ever deletes fixture accounts — real registered alumni (is_demo=false)
     # are never touched by a reset.
     await session.execute(delete(User).where(User.is_demo.is_(True)))
