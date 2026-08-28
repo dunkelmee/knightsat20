@@ -280,17 +280,16 @@ class AuthSessionOut(CamelModel):
     has_submitted_survey: bool = False
 
 
-# Base64 data-URI photos, capped generously above the 4MB client-side limit
-# (see ProfileSetup.tsx) to reject oversized payloads outright rather than
-# relying solely on the frontend check.
-_MAX_PHOTO_DATA_URI_LENGTH = 7_000_000
-
-
 class ProfileUpdateRequest(CamelModel):
     full_name: str = Field(min_length=1, max_length=200)
     mobile_number: str = Field(min_length=1, max_length=50)
-    then_photo_url: str | None = Field(default=None, max_length=_MAX_PHOTO_DATA_URI_LENGTH)
-    now_photo_url: str | None = Field(default=None, max_length=_MAX_PHOTO_DATA_URI_LENGTH)
+
+
+# Then/Now photos are uploaded (and removed) via their own endpoint —
+# POST/DELETE /api/auth/profile/photo — since the browser resizes them to a
+# JPEG file before upload rather than inlining base64 into this payload.
+class ProfilePhotoOut(CamelModel):
+    url: str | None = None
 
 
 # ---------------------------------------------------------------------------

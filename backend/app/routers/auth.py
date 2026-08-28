@@ -1,6 +1,8 @@
+import uuid
 from datetime import datetime, timezone
+from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,6 +15,7 @@ from app.schemas import (
     AuthMessageOut,
     AuthSessionOut,
     LoginRequest,
+    ProfilePhotoOut,
     ProfileUpdateRequest,
     RegisterRequest,
     SuperadminLoginRequest,
@@ -27,12 +30,18 @@ from app.security import (
     get_current_user,
     is_superadmin,
 )
+from app.storage import delete_profile_photo, resolve_url, save_profile_photo
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 _GENERIC_SENT_MESSAGE = "If that email has an account, we've sent a verification code."
 _GENERIC_REGISTER_MESSAGE = "Check your email for a verification code to finish setting up your account."
 _SUPERADMIN_PASSWORD_MESSAGE = "Enter the superadmin password."
+
+# The browser resizes every "then"/"now" photo to a small JPEG before upload
+# (see src/utils/imageResize.ts) — this just guards against a misbehaving
+# client rather than being the primary size control.
+_MAX_PROFILE_PHOTO_BYTES = 3 * 1024 * 1024
 
 
 def _client_ip(request: Request) -> str | None:
@@ -165,8 +174,6 @@ async def update_profile(
 ):
     current_user.full_name = payload.full_name.strip()
     current_user.mobile_number = payload.mobile_number.strip()
-    current_user.then_photo_url = payload.then_photo_url
-    current_user.now_photo_url = payload.now_photo_url
     if current_user.onboarding_completed_at is None:
         current_user.onboarding_completed_at = datetime.now(timezone.utc)
     record_action(
@@ -182,6 +189,57 @@ async def update_profile(
         user=_to_profile_out(current_user),
         has_submitted_survey=await _has_submitted_survey(db, current_user.id),
     )
+
+
+@router.post("/profile/photo", response_model=ProfilePhotoOut)
+async def upload_profile_photo(
+    slot: Literal["then", "now"] = Form(...),
+    photo: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if photo.content_type != "image/jpeg":
+        raise HTTPException(status_code=400, detail="Only JPEG uploads are accepted")
+
+    image_bytes = await photo.read()
+    if len(image_bytes) > _MAX_PROFILE_PHOTO_BYTES:
+        raise HTTPException(status_code=400, detail="Photo is too large")
+
+    old_key = current_user.then_photo_url if slot == "then" else current_user.now_photo_url
+    key = save_profile_photo(current_user.id, str(uuid.uuid4()), image_bytes)
+    if slot == "then":
+        current_user.then_photo_url = key
+    else:
+        current_user.now_photo_url = key
+
+    record_action(
+        db, f"{current_user.full_name} updated their {slot} photo",
+        actor_name=current_user.full_name, actor_user_id=current_user.id,
+    )
+    await db.commit()
+    delete_profile_photo(old_key)
+
+    return ProfilePhotoOut(url=resolve_url(key))
+
+
+@router.delete("/profile/photo", status_code=204)
+async def remove_profile_photo(
+    slot: Literal["then", "now"] = Query(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    old_key = current_user.then_photo_url if slot == "then" else current_user.now_photo_url
+    if slot == "then":
+        current_user.then_photo_url = None
+    else:
+        current_user.now_photo_url = None
+
+    record_action(
+        db, f"{current_user.full_name} removed their {slot} photo",
+        actor_name=current_user.full_name, actor_user_id=current_user.id,
+    )
+    await db.commit()
+    delete_profile_photo(old_key)
 
 
 # ---------------------------------------------------------------------------

@@ -43,6 +43,26 @@ def delete_photo_files(storage_key: str, thumb_key: str) -> None:
         path.unlink(missing_ok=True)
 
 
+def _profile_dir(user_id: str) -> Path:
+    return Path(get_settings().uploads_dir) / "profiles" / user_id
+
+
+def save_profile_photo(user_id: str, photo_id: str, image_bytes: bytes, ext: str = "jpg") -> str:
+    """Writes one resized "then"/"now" profile photo, returns its storage_key."""
+    profile_dir = _profile_dir(user_id)
+    profile_dir.mkdir(parents=True, exist_ok=True)
+
+    key = f"profiles/{user_id}/{photo_id}.{ext}"
+    (Path(get_settings().uploads_dir) / key).write_bytes(image_bytes)
+    return key
+
+
+def delete_profile_photo(key: str | None) -> None:
+    if not key or is_external_url(key):
+        return
+    (Path(get_settings().uploads_dir) / key).unlink(missing_ok=True)
+
+
 def is_external_url(key: str) -> bool:
     return key.startswith("http://") or key.startswith("https://")
 

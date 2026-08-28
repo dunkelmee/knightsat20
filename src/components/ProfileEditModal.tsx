@@ -42,8 +42,6 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         updateProfile({
           fullName: fullName.trim(),
           mobileNumber: mobileNumber.trim(),
-          thenPhotoUrl,
-          nowPhotoUrl,
         }),
         updateDirectoryProfile({
           currentCity: currentCity.trim() || null,
@@ -125,23 +123,24 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             </label>
             <div className="grid grid-cols-2 gap-3">
               <PhotoTile
+                slot="then"
                 label="Then (Batch 2007)"
                 hint="Upload a high school photo"
                 photoUrl={thenPhotoUrl}
                 applyThenFilter
-                onPhotoSelected={setThenPhotoUrl}
-                onClear={() => setThenPhotoUrl(null)}
+                onPhotoChanged={setThenPhotoUrl}
               />
               <PhotoTile
+                slot="now"
                 label="Now (Today)"
                 hint="Upload a recent photo"
                 photoUrl={nowPhotoUrl}
-                onPhotoSelected={setNowPhotoUrl}
-                onClear={() => setNowPhotoUrl(null)}
+                onPhotoChanged={setNowPhotoUrl}
               />
             </div>
             <p className="text-[10px] text-on-surface-variant mt-1.5">
-              Max 4MB per photo. Your "Now" photo is also used as your profile avatar.
+              Photos upload and resize automatically as soon as you pick them. Your "Now" photo is
+              also used as your profile avatar.
             </p>
           </div>
 

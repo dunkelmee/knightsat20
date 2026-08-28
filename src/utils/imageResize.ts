@@ -8,6 +8,7 @@
 
 const FULL_MAX_DIMENSION = 1600;
 const THUMB_MAX_DIMENSION = 400;
+const PROFILE_MAX_DIMENSION = 480;
 const JPEG_QUALITY = 0.85;
 
 const drawResized = (bitmap: ImageBitmap, maxDimension: number): Promise<Blob> => {
@@ -46,6 +47,19 @@ export const resizePhotoForUpload = async (file: File): Promise<ResizedPhoto> =>
       drawResized(bitmap, THUMB_MAX_DIMENSION),
     ]);
     return { full, thumb, width: bitmap.width, height: bitmap.height };
+  } finally {
+    bitmap.close();
+  }
+};
+
+// Same client-side resize as above, but for the Directory's small "Then &
+// Now" avatar tiles — a single ~480px JPEG is plenty and keeps the
+// /api/directory payload light (was previously an unresized base64 data URI
+// up to 4MB per photo, embedded directly in that JSON response).
+export const resizeProfilePhoto = async (file: File): Promise<Blob> => {
+  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  try {
+    return await drawResized(bitmap, PROFILE_MAX_DIMENSION);
   } finally {
     bitmap.close();
   }

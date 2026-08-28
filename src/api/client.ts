@@ -113,12 +113,37 @@ export const verifyOtp = (email: string, code: string) =>
 export const fetchAuthSession = () =>
   apiFetch<{ user: UserProfile | null; hasSubmittedSurvey: boolean }>('/auth/session');
 export const authLogout = () => post<{ user: UserProfile | null }>('/auth/logout');
-export const updateProfile = (payload: {
-  fullName: string;
-  mobileNumber: string;
-  thenPhotoUrl?: string | null;
-  nowPhotoUrl?: string | null;
-}) => put<{ user: UserProfile; hasSubmittedSurvey: boolean }>('/auth/profile', payload);
+export const updateProfile = (payload: { fullName: string; mobileNumber: string }) =>
+  put<{ user: UserProfile; hasSubmittedSurvey: boolean }>('/auth/profile', payload);
+
+// Bypasses the JSON-only apiFetch wrapper for the same reason as
+// uploadAlbumPhotos below — multipart uploads can't set Content-Type by hand.
+export const uploadProfilePhoto = async (slot: 'then' | 'now', photo: Blob): Promise<string | null> => {
+  const formData = new FormData();
+  formData.append('slot', slot);
+  formData.append('photo', photo, `${slot}.jpg`);
+
+  const res = await fetch('/api/auth/profile/photo', {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let message = `Upload failed (${res.status})`;
+    try {
+      const body = await res.json();
+      if (body?.detail) message = typeof body.detail === 'string' ? body.detail : message;
+    } catch {}
+    throw new ApiError(message);
+  }
+
+  const body = await res.json();
+  return body.url ?? null;
+};
+
+export const deleteProfilePhoto = (slot: 'then' | 'now') =>
+  apiFetch<void>(`/auth/profile/photo?slot=${slot}`, { method: 'DELETE' });
 
 // --- Superadmin --------------------------------------------------------------------
 

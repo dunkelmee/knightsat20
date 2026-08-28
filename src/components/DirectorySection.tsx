@@ -24,27 +24,51 @@ const PhotoTile: React.FC<{ url: string | null | undefined; label: string; then?
   label,
   then,
   initials,
-}) => (
-  <div className="relative flex-1 aspect-square rounded-md overflow-hidden border border-tertiary/20 bg-surface-container-high">
-    {url ? (
-      <img
-        src={url}
-        alt={label}
-        className="w-full h-full object-cover"
-        style={then ? { filter: 'sepia(0.55) contrast(0.95) saturate(0.85)' } : undefined}
-      />
-    ) : then ? (
-      <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-sm font-serif font-semibold">
-        {initials}
-      </div>
-    ) : (
-      <div className="w-full h-full flex items-center justify-center text-outline">
-        <Ban className="w-5 h-5" />
-      </div>
-    )}
-    <span className="absolute left-1.5 bottom-1.5 px-1.5 py-0.5 rounded bg-inverse-surface/70 text-inverse-on-surface text-[8px] font-bold tracking-widest uppercase">
-      {label}
-    </span>
+}) => {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div className="relative flex-1 aspect-square rounded-md overflow-hidden border border-tertiary/20 bg-surface-container-high">
+      {url ? (
+        <>
+          {!loaded && <div className="absolute inset-0 animate-pulse bg-surface-container-high" />}
+          <img
+            src={url}
+            alt={label}
+            loading="lazy"
+            decoding="async"
+            onLoad={() => setLoaded(true)}
+            onError={() => setLoaded(true)}
+            className={`w-full h-full object-cover transition-opacity duration-300 ${
+              loaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={then ? { filter: 'sepia(0.55) contrast(0.95) saturate(0.85)' } : undefined}
+          />
+        </>
+      ) : then ? (
+        <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-sm font-serif font-semibold">
+          {initials}
+        </div>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-outline">
+          <Ban className="w-5 h-5" />
+        </div>
+      )}
+      <span className="absolute left-1.5 bottom-1.5 px-1.5 py-0.5 rounded bg-inverse-surface/70 text-inverse-on-surface text-[8px] font-bold tracking-widest uppercase">
+        {label}
+      </span>
+    </div>
+  );
+};
+
+const DirectoryCardSkeleton: React.FC = () => (
+  <div className="bg-surface-container-lowest rounded p-2.5 border border-outline-variant/30 shadow-soft animate-pulse">
+    <div className="flex gap-1.5">
+      <div className="flex-1 aspect-square rounded-md bg-surface-container-high" />
+      <div className="flex-1 aspect-square rounded-md bg-surface-container-high" />
+    </div>
+    <div className="h-3.5 w-2/3 rounded bg-surface-container-high mt-2.5" />
+    <div className="h-2.5 w-1/2 rounded bg-surface-container-high mt-1.5" />
   </div>
 );
 
@@ -158,7 +182,11 @@ export const DirectorySection: React.FC = () => {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12 text-xs text-on-surface-variant">Loading batchmates…</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <DirectoryCardSkeleton key={i} />
+          ))}
+        </div>
       ) : people.length === 0 ? (
         <div className="text-center py-10 px-4 space-y-2.5">
           <div className="w-10 h-10 rounded-full bg-primary-container/20 text-on-primary-container flex items-center justify-center mx-auto border border-primary-container/50">
