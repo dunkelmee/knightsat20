@@ -104,6 +104,7 @@ export default function App() {
   // granted only by the superadmin) rather than a separate in-app unlock.
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [hasSubmittedSurvey, setHasSubmittedSurvey] = useState(false);
+  const [mySurveyResponse, setMySurveyResponse] = useState<SurveyResponse | null>(null);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
 
   // Public data, backed by the FastAPI + Postgres API (see backend/)
@@ -141,8 +142,9 @@ export default function App() {
   // they've already answered the survey (on this or an earlier login),
   // otherwise the Survey.
   const enterApp = async (user: UserProfile, submitted: boolean) => {
-    await loadAppData();
+    const [, existingResponse] = await Promise.all([loadAppData(), api.fetchMySurveyResponse()]);
     setHasSubmittedSurvey(submitted);
+    setMySurveyResponse(existingResponse);
     setActiveTab(submitted ? 'board' : 'survey');
     setCurrentUser(user);
   };
@@ -205,6 +207,7 @@ export default function App() {
     await api.authLogout().catch(() => {});
     setCurrentUser(null);
     setHasSubmittedSurvey(false);
+    setMySurveyResponse(null);
     setIsSuperadmin(false);
     setAdminResponses([]);
     setAdminRsvps([]);
@@ -242,7 +245,10 @@ export default function App() {
   const handleSurveySubmitted = async (newResponse: SurveyResponseCreate) => {
     const created = await api.createSurveyResponse(newResponse);
     setHasSubmittedSurvey(true);
-    if (currentUser?.isOrganizer) setAdminResponses(prev => [created, ...prev]);
+    setMySurveyResponse(created);
+    if (currentUser?.isOrganizer) {
+      setAdminResponses(prev => [created, ...prev.filter(r => r.id !== created.id)]);
+    }
 
     // The backend may have auto-created/updated an RSVP from this submission
     // (see POST /api/survey-responses) — refresh the aggregates that depend on it.
@@ -489,6 +495,7 @@ export default function App() {
         {activeTab === 'survey' && (
           <SurveySection
             submitterName={currentUser.fullName}
+            existingResponse={mySurveyResponse}
             onSurveySubmitted={handleSurveySubmitted}
             onNavigateToRsvp={() => setActiveTab('board')}
           />

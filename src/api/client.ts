@@ -52,6 +52,7 @@ const del = (path: string) => apiFetch<void>(path, { method: 'DELETE' });
 
 export const createSurveyResponse = (payload: SurveyResponseCreate) =>
   post<SurveyResponse>('/survey-responses', payload);
+export const fetchMySurveyResponse = () => apiFetch<SurveyResponse | null>('/survey-responses/me');
 export const fetchSurveyResponses = () => apiFetch<SurveyResponse[]>('/survey-responses');
 export const deleteSurveyResponse = (id: string) => del(`/survey-responses/${id}`);
 export const updatePaymentStatus = (id: string, status: SurveyResponse['pledgePaidStatus']) =>

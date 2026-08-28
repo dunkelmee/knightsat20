@@ -60,27 +60,51 @@ async def _sync_rsvp_from_survey(db: AsyncSession, response: SurveyResponse) -> 
         )
 
 
+@router.get("/me", response_model=SurveyResponseOut | None)
+async def get_my_survey_response(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(SurveyResponse).where(SurveyResponse.user_id == current_user.id)
+    )
+    return result.scalars().first()
+
+
 @router.post("", response_model=SurveyResponseOut)
 async def create_survey_response(
     payload: SurveyResponseCreate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # The survey stays open indefinitely with a single editable response per
+    # user — resubmitting updates the existing row in place rather than
+    # accumulating a new one (a deadline may later gate this, not yet).
     computed_pledge_amount = parse_pledge_amount(payload.pledge_option, payload.custom_pledge_amount)
-    response = SurveyResponse(
-        **payload.model_dump(),
-        user_id=current_user.id,
-        full_name=current_user.full_name,
-        contact_number=current_user.mobile_number,
-        email=current_user.email,
-        computed_pledge_amount=computed_pledge_amount,
+    result = await db.execute(
+        select(SurveyResponse).where(SurveyResponse.user_id == current_user.id)
     )
-    db.add(response)
+    response = result.scalars().first()
+    is_new = response is None
+
+    if is_new:
+        response = SurveyResponse(user_id=current_user.id)
+        db.add(response)
+    else:
+        response.submitted_at = datetime.now(timezone.utc)
+
+    for field, value in payload.model_dump().items():
+        setattr(response, field, value)
+    response.full_name = current_user.full_name
+    response.contact_number = current_user.mobile_number
+    response.email = current_user.email
+    response.computed_pledge_amount = computed_pledge_amount
+
     await db.flush()
     await _sync_rsvp_from_survey(db, response)
     record_action(
         db,
-        f"{current_user.full_name} submitted the reunion survey",
+        f"{current_user.full_name} {'submitted' if is_new else 'updated'} the reunion survey",
         actor_name=current_user.full_name,
         actor_user_id=current_user.id,
     )

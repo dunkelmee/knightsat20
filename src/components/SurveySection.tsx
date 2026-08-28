@@ -9,12 +9,29 @@ import { parsePledgeAmount, parseRawAmountString, formatPHP } from '../utils/ple
 
 interface SurveySectionProps {
   submitterName: string;
+  existingResponse: SurveyResponse | null;
   onSurveySubmitted: (response: SurveyResponseCreate) => void;
   onNavigateToRsvp: () => void;
 }
 
+// Reverses the "Other: <text>" encoding handleSubmit applies to multiselect
+// answers, splitting a stored list back into its selectable values plus the
+// free-text entry — needed to prefill the form from an existing response.
+const splitOtherEntries = (values: string[]): { normalized: string[]; otherText: string } => {
+  let otherText = '';
+  const normalized = values.map((value) => {
+    if (value.startsWith('Other: ')) {
+      otherText = value.slice('Other: '.length);
+      return 'Other';
+    }
+    return value;
+  });
+  return { normalized, otherText };
+};
+
 export const SurveySection: React.FC<SurveySectionProps> = ({
   submitterName,
+  existingResponse,
   onSurveySubmitted,
   onNavigateToRsvp,
 }) => {
@@ -50,6 +67,51 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
 
   // Form validation errors
   const [errors, setErrors] = useState<{ pledge?: string }>({});
+
+  // Survey is always open and one response per user is stored (see
+  // backend upsert in routers/survey_responses.py) — prefill the form with
+  // the account's existing answers so re-visiting the tab edits them in
+  // place instead of starting blank. Keyed on the response id, which stays
+  // stable across edits, so this doesn't clobber in-progress typing when
+  // the parent echoes back the just-submitted response.
+  useEffect(() => {
+    if (!existingResponse) return;
+
+    setAttendance(existingResponse.attendance);
+    setAttendanceReason(existingResponse.attendanceReason || '');
+    setPreferredMonths(existingResponse.preferredMonths.length ? existingResponse.preferredMonths : ['April', 'December']);
+    setSpecificDateNotes(existingResponse.specificDateNotes || '');
+    setVenueSuggestion(existingResponse.venueSuggestion || '');
+
+    const venueType = splitOtherEntries(
+      existingResponse.preferredVenueType.length
+        ? existingResponse.preferredVenueType
+        : ['Hotel / function room in Makati or BGC']
+    );
+    setPreferredVenueType(venueType.normalized);
+    setVenueTypeOther(venueType.otherText);
+
+    setWillingToOrganize(existingResponse.willingToOrganize);
+
+    const skills = splitOtherEntries(existingResponse.skillsOffered);
+    setSkillsOffered(skills.normalized);
+    setSkillsOtherText(skills.otherText);
+    setSkillsDetails(existingResponse.skillsDetails || '');
+    setNominatedOrganizer(existingResponse.nominatedOrganizer || '');
+
+    setPledgeOption(existingResponse.pledgeOption);
+    setCustomPledgeAmount(existingResponse.customPledgeAmount || '');
+
+    const sponsorships = splitOtherEntries(existingResponse.otherSponsorships);
+    setOtherSponsorships(sponsorships.normalized);
+    setOtherSponsorshipsOtherText(sponsorships.otherText);
+    setOtherSponsorshipDetails(existingResponse.otherSponsorshipDetails || '');
+
+    setPlusOnesCount(existingResponse.plusOnesCount || 0);
+    setKidsCount(existingResponse.kidsCount || 0);
+    setOtherSuggestions(existingResponse.otherSuggestions || '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingResponse?.id]);
 
   const monthsList = [
     'April',
@@ -192,28 +254,11 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
     window.scrollTo({ top: 40, behavior: 'smooth' });
   };
 
-  const handleResetForm = () => {
+  // Goes back into the form to keep editing — the survey is always open and
+  // stores one response per user, so this reopens the just-submitted answers
+  // rather than clearing them (see the prefill effect above).
+  const handleEditResponse = () => {
     setIsSubmitted(false);
-    setAttendance('Yes, definitely!');
-    setAttendanceReason('');
-    setPreferredMonths(['April', 'December']);
-    setSpecificDateNotes('');
-    setVenueSuggestion('');
-    setPreferredVenueType(['Hotel / function room in Makati or BGC']);
-    setVenueTypeOther('');
-    setWillingToOrganize('Maybe, depending on tasks');
-    setSkillsOffered([]);
-    setSkillsOtherText('');
-    setSkillsDetails('');
-    setNominatedOrganizer('');
-    setPledgeOption('₱3,000');
-    setCustomPledgeAmount('');
-    setOtherSponsorships([]);
-    setOtherSponsorshipsOtherText('');
-    setOtherSponsorshipDetails('');
-    setPlusOnesCount(0);
-    setKidsCount(0);
-    setOtherSuggestions('');
     setCurrentStep(1);
     setErrors({});
   };
@@ -255,10 +300,10 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
             <button
               id="btn-survey-submit-another"
               type="button"
-              onClick={handleResetForm}
+              onClick={handleEditResponse}
               className="w-full sm:w-auto px-4 py-2.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-semibold text-xs transition-all border border-outline-variant/30"
             >
-              Fill Again
+              Edit My Response
             </button>
           </div>
         </div>

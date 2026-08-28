@@ -83,8 +83,10 @@ class SurveyResponse(Base):
 
     # Nullable so historical/demo-seeded rows without an account still work;
     # real submissions always set this (see routers/survey_responses.py).
+    # Unique because each account has exactly one (editable) survey response,
+    # upserted in place rather than accumulating a new row per submission.
     user_id: Mapped[str | None] = mapped_column(
-        String, ForeignKey("users.id"), nullable=True, index=True
+        String, ForeignKey("users.id"), nullable=True, unique=True, index=True
     )
 
     # Denormalized snapshot of the submitter's identity at submission time —
