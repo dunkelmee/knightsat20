@@ -163,12 +163,20 @@ export const fetchAuditLogs = () => apiFetch<AuditLogEntry[]>('/superadmin/audit
 export const fetchDirectory = (params: {
   q?: string;
   filter?: 'all' | 'attending' | 'missing' | 'faculty';
+  y1?: string;
+  y2?: string;
+  y3?: string;
+  y4?: string;
   cursor?: string;
   limit?: number;
 }) => {
   const search = new URLSearchParams();
   if (params.q) search.set('q', params.q);
   if (params.filter) search.set('filter', params.filter);
+  if (params.y1) search.set('y1', params.y1);
+  if (params.y2) search.set('y2', params.y2);
+  if (params.y3) search.set('y3', params.y3);
+  if (params.y4) search.set('y4', params.y4);
   if (params.cursor) search.set('cursor', params.cursor);
   if (params.limit) search.set('limit', String(params.limit));
   const qs = search.toString();

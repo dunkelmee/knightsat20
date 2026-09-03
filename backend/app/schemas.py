@@ -283,6 +283,9 @@ class UserProfileOut(CamelModel):
     onboarding_completed: bool
     current_city: str | None = None
     current_role: str | None = None
+    section_year1: str | None = None
+    section_year2: str | None = None
+    section_year3: str | None = None
     section_hs: str | None = None
     show_in_directory: bool = True
     is_organizer: bool = False
@@ -313,6 +316,9 @@ class ProfilePhotoOut(CamelModel):
 class DirectoryUpdateRequest(CamelModel):
     current_city: str | None = Field(default=None, max_length=200)
     current_role: str | None = Field(default=None, max_length=200)
+    section_year1: str | None = Field(default=None, max_length=200)
+    section_year2: str | None = Field(default=None, max_length=200)
+    section_year3: str | None = Field(default=None, max_length=200)
     section_hs: str | None = Field(default=None, max_length=200)
     show_in_directory: bool = True
 
@@ -322,6 +328,9 @@ class DirectoryPersonOut(CamelModel):
     display_name: str
     current_city: str | None = None
     current_role: str | None = None
+    section_year1: str | None = None
+    section_year2: str | None = None
+    section_year3: str | None = None
     section_hs: str | None = None
     then_photo_url: str | None = None
     now_photo_url: str | None = None

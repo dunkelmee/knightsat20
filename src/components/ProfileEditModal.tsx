@@ -3,6 +3,7 @@ import { User as UserIcon, Phone, MapPin, Sparkles, X } from 'lucide-react';
 import { UserProfile } from '../types';
 import { ApiError, updateDirectoryProfile, updateProfile } from '../api/client';
 import { PhotoTile } from './PhotoTile';
+import { SectionFieldKey, YEAR_SECTIONS } from '../utils/sections';
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -23,6 +24,12 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   const [nowPhotoUrl, setNowPhotoUrl] = useState<string | null>(currentUser.nowPhotoUrl || null);
   const [currentCity, setCurrentCity] = useState(currentUser.currentCity || '');
   const [currentRole, setCurrentRole] = useState(currentUser.currentRole || '');
+  const [sections, setSections] = useState<Record<SectionFieldKey, string>>({
+    sectionYear1: currentUser.sectionYear1 || '',
+    sectionYear2: currentUser.sectionYear2 || '',
+    sectionYear3: currentUser.sectionYear3 || '',
+    sectionHs: currentUser.sectionHs || '',
+  });
   const [showInDirectory, setShowInDirectory] = useState(currentUser.showInDirectory);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,7 +53,10 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         updateDirectoryProfile({
           currentCity: currentCity.trim() || null,
           currentRole: currentRole.trim() || null,
-          sectionHs: null,
+          sectionYear1: sections.sectionYear1 || null,
+          sectionYear2: sections.sectionYear2 || null,
+          sectionYear3: sections.sectionYear3 || null,
+          sectionHs: sections.sectionHs || null,
           showInDirectory,
         }),
       ]);
@@ -54,7 +64,10 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         ...user,
         currentCity: currentCity.trim() || null,
         currentRole: currentRole.trim() || null,
-        sectionHs: null,
+        sectionYear1: sections.sectionYear1 || null,
+        sectionYear2: sections.sectionYear2 || null,
+        sectionYear3: sections.sectionYear3 || null,
+        sectionHs: sections.sectionHs || null,
         showInDirectory,
       });
     } catch (err) {
@@ -176,6 +189,33 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                   placeholder="e.g. UX Director, married with 2 kids"
                   className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
                 />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-on-surface-variant mb-2">
+                High school section <span className="text-on-surface-variant font-normal">(optional)</span>
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {YEAR_SECTIONS.map(({ key, label, options }) => (
+                  <div key={key}>
+                    <label className="block text-[10px] font-semibold text-on-surface-variant mb-1">
+                      {label}
+                    </label>
+                    <select
+                      value={sections[key]}
+                      onChange={(e) => setSections((prev) => ({ ...prev, [key]: e.target.value }))}
+                      className="w-full px-2.5 py-2 rounded border border-secondary/30 text-on-surface text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+                    >
+                      <option value="">Not set</option>
+                      {options.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
               </div>
             </div>
 

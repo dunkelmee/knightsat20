@@ -58,6 +58,10 @@ def _status_expr():
 async def list_directory(
     q: str | None = Query(default=None),
     filter: Literal["all", "attending", "missing", "faculty"] = Query(default="all"),
+    y1: str | None = Query(default=None),
+    y2: str | None = Query(default=None),
+    y3: str | None = Query(default=None),
+    y4: str | None = Query(default=None),
     cursor: str | None = Query(default=None),
     limit: int = Query(default=24, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -72,12 +76,24 @@ async def list_directory(
                 User.full_name.ilike(term),
                 User.current_city.ilike(term),
                 User.current_role.ilike(term),
+                User.section_year1.ilike(term),
+                User.section_year2.ilike(term),
+                User.section_year3.ilike(term),
                 User.section_hs.ilike(term),
             )
         )
 
     if filter != "all":
         base = base.where(status_col == filter)
+
+    if y1:
+        base = base.where(User.section_year1 == y1)
+    if y2:
+        base = base.where(User.section_year2 == y2)
+    if y3:
+        base = base.where(User.section_year3 == y3)
+    if y4:
+        base = base.where(User.section_hs == y4)
 
     if cursor:
         decoded = _decode_cursor(cursor)
@@ -105,6 +121,9 @@ async def list_directory(
             display_name=user.full_name,
             current_city=user.current_city,
             current_role=user.current_role,
+            section_year1=user.section_year1,
+            section_year2=user.section_year2,
+            section_year3=user.section_year3,
             section_hs=user.section_hs,
             then_photo_url=resolve_url(user.then_photo_url),
             now_photo_url=resolve_url(user.now_photo_url),
@@ -151,6 +170,9 @@ async def update_directory_profile(
 ):
     current_user.current_city = payload.current_city
     current_user.current_role = payload.current_role
+    current_user.section_year1 = payload.section_year1
+    current_user.section_year2 = payload.section_year2
+    current_user.section_year3 = payload.section_year3
     current_user.section_hs = payload.section_hs
     current_user.show_in_directory = payload.show_in_directory
     record_action(
@@ -165,6 +187,9 @@ async def update_directory_profile(
         display_name=current_user.full_name,
         current_city=current_user.current_city,
         current_role=current_user.current_role,
+        section_year1=current_user.section_year1,
+        section_year2=current_user.section_year2,
+        section_year3=current_user.section_year3,
         section_hs=current_user.section_hs,
         then_photo_url=resolve_url(current_user.then_photo_url),
         now_photo_url=resolve_url(current_user.now_photo_url),

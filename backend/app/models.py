@@ -35,6 +35,11 @@ class User(Base):
     # --- Directory fields (alumni-editable via Edit Profile) ---
     current_city: Mapped[str | None] = mapped_column(String, nullable=True)
     current_role: Mapped[str | None] = mapped_column(String, nullable=True)
+    section_year1: Mapped[str | None] = mapped_column(String, nullable=True)
+    section_year2: Mapped[str | None] = mapped_column(String, nullable=True)
+    section_year3: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Holds the 4th Year section — kept under its original name to avoid a
+    # column rename migration; section_year1..3 cover the other three years.
     section_hs: Mapped[str | None] = mapped_column(String, nullable=True)
     show_in_directory: Mapped[bool] = mapped_column(Boolean, default=True)
     is_faculty: Mapped[bool] = mapped_column(Boolean, default=False)

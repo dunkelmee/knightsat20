@@ -161,7 +161,10 @@ export interface UserProfile {
   onboardingCompleted: boolean;
   currentCity?: string | null;
   currentRole?: string | null;
-  sectionHs?: string | null;
+  sectionYear1?: string | null;
+  sectionYear2?: string | null;
+  sectionYear3?: string | null;
+  sectionHs?: string | null; // holds the 4th Year section — see utils/sections.ts
   showInDirectory: boolean;
   isOrganizer: boolean;
 }
@@ -193,6 +196,9 @@ export interface DirectoryPerson {
   displayName: string;
   currentCity?: string | null;
   currentRole?: string | null;
+  sectionYear1?: string | null;
+  sectionYear2?: string | null;
+  sectionYear3?: string | null;
   sectionHs?: string | null;
   thenPhotoUrl?: string | null;
   nowPhotoUrl?: string | null;
@@ -217,6 +223,9 @@ export interface DirectoryListResponse {
 export interface DirectoryUpdatePayload {
   currentCity?: string | null;
   currentRole?: string | null;
+  sectionYear1?: string | null;
+  sectionYear2?: string | null;
+  sectionYear3?: string | null;
   sectionHs?: string | null;
   showInDirectory: boolean;
 }
