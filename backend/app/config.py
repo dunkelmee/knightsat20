@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     uploads_dir: str = "uploads"
     resend_api_key: str = ""
     resend_from_email: str = "MSHS Batch 2007 <onboarding@resend.dev>"
+    invite_code: str = ""
 
     @property
     def is_production(self) -> bool:

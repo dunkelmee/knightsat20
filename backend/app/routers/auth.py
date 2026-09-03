@@ -57,6 +57,14 @@ def _is_superadmin_email(email: str) -> bool:
     return email.strip().lower() == settings.superadmin_email.strip().lower()
 
 
+def _check_invite_code(invite_code: str) -> None:
+    settings = get_settings()
+    if not settings.invite_code:
+        return
+    if invite_code.strip() != settings.invite_code:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect invite code.")
+
+
 async def _get_user_by_email(db: AsyncSession, email: str) -> User | None:
     normalized = email.strip().lower()
     result = await db.execute(select(User).where(User.email == normalized))
@@ -94,6 +102,8 @@ async def register(payload: RegisterRequest, request: Request, db: AsyncSession 
     normalized_email = payload.email.strip().lower()
     if _is_superadmin_email(normalized_email):
         return AuthMessageOut(message=_SUPERADMIN_PASSWORD_MESSAGE, requires_superadmin_password=True)
+
+    _check_invite_code(payload.invite_code)
 
     existing = await _get_user_by_email(db, normalized_email)
 

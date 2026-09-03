@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { GraduationCap, Mail, Phone, User as UserIcon, ArrowLeft, Send, ShieldCheck, Lock } from 'lucide-react';
+import { GraduationCap, Mail, Phone, User as UserIcon, ArrowLeft, Send, ShieldCheck, Lock, KeyRound } from 'lucide-react';
 import { UserProfile } from '../../types';
 import { ApiError, registerAccount, requestLogin, superadminLogin, verifyOtp } from '../../api/client';
 
@@ -18,6 +18,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onSuperadmi
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [pendingEmail, setPendingEmail] = useState('');
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [superadminPassword, setSuperadminPassword] = useState('');
@@ -70,8 +71,8 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onSuperadmi
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !fullName.trim() || !mobileNumber.trim()) {
-      setError('Please fill in your email, full name, and mobile/WhatsApp number.');
+    if (!email.trim() || !fullName.trim() || !mobileNumber.trim() || !inviteCode.trim()) {
+      setError('Please fill in your email, full name, mobile/WhatsApp number, and invite code.');
       return;
     }
     setError('');
@@ -82,6 +83,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onSuperadmi
         email: email.trim(),
         fullName: fullName.trim(),
         mobileNumber: mobileNumber.trim(),
+        inviteCode: inviteCode.trim(),
       });
       if (requiresSuperadminPassword) {
         setPendingEmail(email.trim());
@@ -190,6 +192,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onSuperadmi
     setInfoMessage('');
     setOtp(Array(OTP_LENGTH).fill(''));
     setSuperadminPassword('');
+    setInviteCode('');
   };
 
   return (
@@ -408,6 +411,23 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onSuperadmi
                     placeholder="e.g. 09171234567"
                     value={mobileNumber}
                     onChange={(e) => setMobileNumber(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                  Invite code
+                </label>
+                <div className="relative">
+                  <KeyRound className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    placeholder="From the batch Messenger group"
+                    value={inviteCode}
+                    onChange={(e) => setInviteCode(e.target.value)}
                     className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
                   />
                 </div>

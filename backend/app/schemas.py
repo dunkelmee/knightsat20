@@ -248,6 +248,7 @@ class RegisterRequest(CamelModel):
     email: EmailStr
     full_name: str = Field(min_length=1, max_length=200)
     mobile_number: str = Field(min_length=1, max_length=50)
+    invite_code: str = Field(min_length=1, max_length=100)
 
 
 class LoginRequest(CamelModel):

@@ -104,7 +104,7 @@ export const fetchDashboardStats = () => apiFetch<DashboardStats>('/dashboard/st
 
 // --- User auth (email OTP) --------------------------------------------------------
 
-export const registerAccount = (payload: { email: string; fullName: string; mobileNumber: string }) =>
+export const registerAccount = (payload: { email: string; fullName: string; mobileNumber: string; inviteCode: string }) =>
   post<{ message: string; requiresSuperadminPassword?: boolean }>('/auth/register', payload);
 export const requestLogin = (email: string) =>
   post<{ message: string; requiresSuperadminPassword?: boolean; accountNotFound?: boolean }>('/auth/login', { email });
