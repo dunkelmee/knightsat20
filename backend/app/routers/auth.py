@@ -35,7 +35,8 @@ from app.superadmin_lockout import check_not_locked_out, record_failed_attempt
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-_GENERIC_SENT_MESSAGE = "If that email has an account, we've sent a verification code."
+_GENERIC_SENT_MESSAGE = "We've sent a verification code to your email."
+_NO_ACCOUNT_MESSAGE = "We couldn't find an account with that email. Create one to get started."
 _GENERIC_REGISTER_MESSAGE = "Check your email for a verification code to finish setting up your account."
 _SUPERADMIN_PASSWORD_MESSAGE = "Enter the superadmin password."
 
@@ -124,9 +125,10 @@ async def login(payload: LoginRequest, request: Request, db: AsyncSession = Depe
         return AuthMessageOut(message=_SUPERADMIN_PASSWORD_MESSAGE, requires_superadmin_password=True)
 
     user = await _get_user_by_email(db, normalized_email)
-    if user:
-        await create_and_send_otp(db, user, _client_ip(request))
-    # Identical response whether or not the account exists.
+    if not user:
+        return AuthMessageOut(message=_NO_ACCOUNT_MESSAGE, account_not_found=True)
+
+    await create_and_send_otp(db, user, _client_ip(request))
     return AuthMessageOut(message=_GENERIC_SENT_MESSAGE)
 
 

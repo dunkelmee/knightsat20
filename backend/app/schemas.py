@@ -265,6 +265,11 @@ class AuthMessageOut(CamelModel):
     # frontend swaps its OTP step for a password prompt instead; no OTP is
     # sent and no `users` row is touched in that case.
     requires_superadmin_password: bool = False
+    # True when a login was attempted for an email with no account — the
+    # frontend routes the user to the registration form instead of the OTP
+    # screen. This app is a low-sensitivity batch reunion hub, so revealing
+    # non-existence here is an accepted tradeoff in favor of onboarding UX.
+    account_not_found: bool = False
 
 
 class UserProfileOut(CamelModel):

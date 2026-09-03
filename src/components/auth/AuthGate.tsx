@@ -41,13 +41,19 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onSuperadmi
       return;
     }
     setError('');
+    setInfoMessage('');
     setIsSubmitting(true);
     try {
-      const { message, requiresSuperadminPassword } = await requestLogin(email.trim());
+      const { message, requiresSuperadminPassword, accountNotFound } = await requestLogin(email.trim());
       if (requiresSuperadminPassword) {
         setPendingEmail(email.trim());
         setSuperadminPassword('');
         setMode('superadmin-password');
+        return;
+      }
+      if (accountNotFound) {
+        setInfoMessage(message);
+        setMode('register');
         return;
       }
       setInfoMessage(message);
@@ -69,6 +75,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onSuperadmi
       return;
     }
     setError('');
+    setInfoMessage('');
     setIsSubmitting(true);
     try {
       const { message, requiresSuperadminPassword } = await registerAccount({
@@ -340,7 +347,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onSuperadmi
                 New here?{' '}
                 <button
                   type="button"
-                  onClick={() => { setMode('register'); setError(''); }}
+                  onClick={() => { setMode('register'); setError(''); setInfoMessage(''); }}
                   className="text-secondary font-semibold hover:opacity-80"
                 >
                   Create an account
@@ -349,6 +356,12 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onSuperadmi
             </form>
           ) : (
             <form onSubmit={handleRegister} className="space-y-3.5">
+              {infoMessage && (
+                <p className="text-xs text-center text-on-primary-container bg-primary-container/20 border border-primary-container/50 rounded px-3 py-2">
+                  {infoMessage}
+                </p>
+              )}
+
               <div>
                 <label className="block text-xs font-semibold text-on-surface-variant mb-1">
                   Email address
@@ -415,7 +428,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onSuperadmi
                 Already registered?{' '}
                 <button
                   type="button"
-                  onClick={() => { setMode('login'); setError(''); }}
+                  onClick={() => { setMode('login'); setError(''); setInfoMessage(''); }}
                   className="text-secondary font-semibold hover:opacity-80"
                 >
                   Log in

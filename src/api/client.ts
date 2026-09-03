@@ -107,7 +107,7 @@ export const fetchDashboardStats = () => apiFetch<DashboardStats>('/dashboard/st
 export const registerAccount = (payload: { email: string; fullName: string; mobileNumber: string }) =>
   post<{ message: string; requiresSuperadminPassword?: boolean }>('/auth/register', payload);
 export const requestLogin = (email: string) =>
-  post<{ message: string; requiresSuperadminPassword?: boolean }>('/auth/login', { email });
+  post<{ message: string; requiresSuperadminPassword?: boolean; accountNotFound?: boolean }>('/auth/login', { email });
 export const verifyOtp = (email: string, code: string) =>
   post<{ user: UserProfile; hasSubmittedSurvey: boolean }>('/auth/verify', { email, code });
 export const fetchAuthSession = () =>
