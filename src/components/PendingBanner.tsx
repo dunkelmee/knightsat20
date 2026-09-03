@@ -42,12 +42,12 @@ export const PendingBanner: React.FC<PendingBannerProps> = ({
         <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-12">
 
           {/* Text column */}
-          <div className="flex-1 min-w-0 space-y-5">
+          <div className="flex-1 min-w-0">
 
             {/* Headline + CTA copy, with a small taped snapshot alongside on mobile only */}
-            <div className="flex items-start gap-3 md:block">
+            <div className="flex items-start gap-3 md:block mb-7 md:mb-8">
               <div className="flex-1 min-w-0">
-                <h2 className="font-serif font-semibold tracking-tight leading-[1.08] text-[1.9rem] sm:text-4xl md:text-[2.65rem]">
+                <h2 className="font-serif font-semibold tracking-tight leading-[1.08] text-[2.05rem] sm:text-[2.5rem] md:text-[2.85rem]">
                   <span className="block text-on-surface">Dalawang dekada na,</span>
                   <span className="block text-primary italic">musta na u?</span>
                 </h2>
@@ -80,7 +80,7 @@ export const PendingBanner: React.FC<PendingBannerProps> = ({
             </div>
 
             {/* Date / Venue / Time cards */}
-            <div className="flex gap-2.5">
+            <div className="flex gap-2.5 mb-5">
               <StatusPill icon={<Calendar className="w-3.5 h-3.5" />} label="Date" value={displayDate} />
               <StatusPill icon={<MapPin className="w-3.5 h-3.5" />} label="Venue" value={displayVenue} />
               {isFinalized && displayTime && (

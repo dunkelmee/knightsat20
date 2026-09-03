@@ -30,6 +30,8 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
   const [showExpressForm, setShowExpressForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Attending' | 'Maybe'>('All');
+  const [showAllRsvps, setShowAllRsvps] = useState(false);
+  const ROSTER_PREVIEW_COUNT = 6;
 
   // Roster express-RSVP form state
   const [fullName, setFullName] = useState('');
@@ -79,6 +81,9 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
     return matchesSearch && matchesStatus;
   });
 
+  const visibleRsvps = showAllRsvps ? filteredRsvps : filteredRsvps.slice(0, ROSTER_PREVIEW_COUNT);
+  const hiddenRsvpCount = filteredRsvps.length - visibleRsvps.length;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) {
@@ -126,13 +131,13 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
           </h2>
 
           {announcements.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1">
+            <div className="flex items-center gap-1 overflow-x-auto pb-0.5 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible scrollbar-none">
               {tags.map(tag => (
                 <button
                   key={tag}
                   type="button"
                   onClick={() => setSelectedTag(tag)}
-                  className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                  className={`flex-shrink-0 px-2.5 py-1 rounded text-xs font-medium transition-all ${
                     selectedTag === tag
                       ? 'bg-primary text-on-primary shadow-soft'
                       : 'bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container border border-outline-variant/30'
@@ -541,7 +546,7 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
                     type="text"
                     placeholder="Search batchmate..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => { setSearchQuery(e.target.value); setShowAllRsvps(false); }}
                     className="w-full pl-8 pr-3 py-1.5 rounded border border-secondary/30 text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-low"
                   />
                 </div>
@@ -552,7 +557,7 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
                     <button
                       key={filter}
                       type="button"
-                      onClick={() => setStatusFilter(filter)}
+                      onClick={() => { setStatusFilter(filter); setShowAllRsvps(false); }}
                       className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${
                         statusFilter === filter
                           ? 'bg-primary text-on-primary shadow-soft'
@@ -593,8 +598,8 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
                 : `No batchmates found matching "${searchQuery}".`}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin">
-              {filteredRsvps.map((r) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {visibleRsvps.map((r) => (
                 <div
                   key={r.id}
                   className="p-3.5 rounded bg-surface-container-low/70 hover:bg-surface-container-low border border-outline-variant/30 transition-all flex flex-col justify-between gap-2.5"
@@ -642,6 +647,16 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
                 </div>
               ))}
             </div>
+          )}
+
+          {hiddenRsvpCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowAllRsvps(true)}
+              className="w-full text-center py-2.5 rounded border border-dashed border-outline-variant/50 text-xs font-semibold text-primary hover:bg-primary-container/10 transition-colors"
+            >
+              View {hiddenRsvpCount} more batchmate{hiddenRsvpCount === 1 ? '' : 's'} <ChevronDown className="w-3.5 h-3.5 inline-block align-text-bottom" />
+            </button>
           )}
         </div>
       </section>
