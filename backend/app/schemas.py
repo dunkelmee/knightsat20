@@ -101,6 +101,27 @@ class RSVPPublicOut(CamelModel):
 
 
 # ---------------------------------------------------------------------------
+# Event-entrance QR check-in
+# ---------------------------------------------------------------------------
+
+
+class CheckInLookupOut(CamelModel):
+    user_id: str
+    full_name: str
+    now_photo_url: str | None = None
+    # Whether the attendee's survey response indicated a +1 — a hint for the
+    # organizer at the door, not a guarantee of who actually shows up.
+    expected_plus_one: bool | None = None
+    checked_in: bool
+    checked_in_at: datetime | None = None
+    checked_in_plus_one: bool = False
+
+
+class CheckInConfirmRequest(CamelModel):
+    plus_one: bool = False
+
+
+# ---------------------------------------------------------------------------
 # Announcements
 # ---------------------------------------------------------------------------
 

@@ -49,6 +49,14 @@ class User(Base):
     # passcode: every new account starts as a plain attendee.
     is_organizer: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    # --- Event-entrance QR check-in (see routers/checkin.py) ---
+    # Opaque per-user secret encoded into their QR code. Generated once at
+    # account creation and never changes; scanning it looks the user up.
+    checkin_code: Mapped[str] = mapped_column(String, unique=True, index=True, default=lambda: uuid.uuid4().hex)
+    # Set by an organizer scanning the code at the entrance on the day of the event.
+    checked_in_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    checked_in_plus_one: Mapped[bool] = mapped_column(Boolean, default=False)
+
 
 class AuditLog(Base):
     """Human-readable action log, viewable only by the superadmin."""

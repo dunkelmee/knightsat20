@@ -9,6 +9,7 @@ from app.routers import (
     albums,
     announcements,
     auth,
+    checkin,
     dashboard,
     directory,
     event_details,
@@ -52,6 +53,7 @@ app.include_router(dashboard.router)
 app.include_router(directory.router)
 app.include_router(albums.router)
 app.include_router(scouted_venues.router)
+app.include_router(checkin.router)
 
 # Photo Wall uploads — mounted before the SPA catch-all below so /uploads/*
 # requests are served from disk rather than falling through to index.html.

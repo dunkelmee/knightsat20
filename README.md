@@ -6,7 +6,8 @@ and a committee admin/treasury portal.
 
 The app is a React + Vite frontend backed by a FastAPI + PostgreSQL API, both shipped in a single
 Docker image. The whole site is gated behind a login: alumni register with their email, full name,
-and mobile/WhatsApp number, then log in with a 6-digit code emailed to them (no passwords).
+mobile/WhatsApp number, and a shared batch invite code, then log in with a 6-digit code emailed to
+them (no passwords).
 Organizer access to the admin/treasury portal is a permanent, per-account flag — every new account
 is a plain attendee, and only the superadmin can grant/revoke organizer access (see "Roles" below).
 
@@ -14,8 +15,9 @@ is a plain attendee, and only the superadmin can grant/revoke organizer access (
 
 ### For alumni
 
-- **Email-OTP login** — register with email, full name, and mobile/WhatsApp number; log in with a
-  6-digit code emailed to you, no password to remember.
+- **Email-OTP login** — register with email, full name, mobile/WhatsApp number, and a batch invite
+  code (shared in the reunion group chat, see `INVITE_CODE` below); log in with a 6-digit code
+  emailed to you, no password to remember.
 - **One-time profile setup** — confirm your name/mobile and optionally upload "Then" (high school)
   and "Now" (recent) photos, shown once right after your first login.
 - **Survey** — a 3-step form covering attendance intent, preferred month/venue type, willingness to
@@ -23,10 +25,15 @@ is a plain attendee, and only the superadmin can grant/revoke organizer access (
   free-text suggestions. Submitting can auto-create or update your RSVP.
 - **Batch Board** — announcements (filterable by tag, likeable, shareable, with pinned posts) plus a
   live attendee roster you can search/filter and a self-service "Express RSVP" form.
+- **Directory** — search and filter batchmates by RSVP status or by their 1st–4th year section, with
+  Then & Now photos where available.
+- **Photo Wall** — browse shared photo albums and contribute your own, including one flagged "live
+  on reunion day" for photos posted during the event.
 - **Operating Funds & Ledger** — a public transparency dashboard showing total pledges, planned
   expenses, running balance, headcount estimates, and the itemized expense list. No personal data
   shown.
-- **Edit profile** anytime from the header, plus logout.
+- **Edit profile** anytime from the header — update your contact info, Then & Now photos, and
+  1st–4th year sections — plus logout.
 
 ### For organizers
 
@@ -66,10 +73,11 @@ docker compose up --build
 This starts Postgres and the app (frontend + API in one container, migrations run automatically on
 boot). The app is served at http://localhost:8123.
 
-Set `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` / `SESSION_SECRET` in a `.env` file (see
-`.env.example`) before running if you want something other than the defaults. Without
-`RESEND_API_KEY` set, login/registration codes are
-logged to the app container's console instead of emailed — handy for local testing
+Set `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` / `SESSION_SECRET` / `INVITE_CODE` in a `.env` file
+(see `.env.example`) before running if you want something other than the defaults — `INVITE_CODE` is
+the shared secret alumni must enter to register (leave it blank to disable the check, not
+recommended once real people are registering). Without `RESEND_API_KEY` set, login/registration
+codes are logged to the app container's console instead of emailed — handy for local testing
 (`docker compose logs -f app`), but set a real key before anyone but you needs to log in.
 
 ## Run locally without Docker
@@ -101,11 +109,12 @@ http://localhost:3000.
    service.
 3. Set the app service's environment variables: `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` (the
    single superadmin identity — see "Roles" above), `SESSION_SECRET` (a long random string — e.g.
-   `python -c "import secrets; print(secrets.token_hex(32))"`), and `RESEND_API_KEY` (create an
+   `python -c "import secrets; print(secrets.token_hex(32))"`), `RESEND_API_KEY` (create an
    account at [resend.com](https://resend.com) and generate an API key — required for
    login/registration codes to actually reach alumni; verify a sending domain and set
    `RESEND_FROM_EMAIL` to it for reliable delivery instead of the `onboarding@resend.dev` test
-   sender).
+   sender), and `INVITE_CODE` (the shared secret alumni enter to register — share it via the
+   batch's group chat; leave unset and registration stays open to anyone, not recommended).
 4. Deploy. The container runs `alembic upgrade head` on boot, then serves both the API and the
    built frontend from one process — no separate frontend service or CORS config needed.
 
