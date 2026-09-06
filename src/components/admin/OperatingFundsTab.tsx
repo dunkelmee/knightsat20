@@ -49,14 +49,14 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
 
         {/* Total Pledges Card */}
         <div className="bg-surface-container-lowest rounded p-6 border border-primary-container/50 shadow-soft space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-on-primary-container uppercase tracking-wide">
+          <div className="flex items-center justify-between text-label font-bold text-on-primary-container uppercase tracking-wide">
             <span>Total Pledges (Q5 Auto-Computed)</span>
             <HeartHandshake className="w-4 h-4 text-primary" />
           </div>
-          <div className="text-3xl font-bold text-primary">
+          <div className="text-title font-bold text-primary">
             {formatPHP(totalPledges)}
           </div>
-          <div className="text-xs text-on-surface-variant flex justify-between pt-1 border-t border-outline-variant/20">
+          <div className="text-body text-on-surface-variant flex justify-between pt-1 border-t border-outline-variant/20">
             <span>Paid: <strong className="text-success">{formatPHP(collectedPledges)}</strong></span>
             <span>Pending: <strong className="text-primary">{formatPHP(pendingPledges)}</strong></span>
           </div>
@@ -64,14 +64,14 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
 
         {/* Total Planned Expenses Card */}
         <div className="bg-surface-container-lowest rounded p-6 border border-error-container shadow-soft space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-on-error-container uppercase tracking-wide">
+          <div className="flex items-center justify-between text-label font-bold text-on-error-container uppercase tracking-wide">
             <span>Total Planned Expenses</span>
             <Receipt className="w-4 h-4 text-error" />
           </div>
-          <div className="text-3xl font-bold text-error">
+          <div className="text-title font-bold text-error">
             {formatPHP(totalExpenses)}
           </div>
-          <p className="text-xs text-on-surface-variant pt-1 border-t border-outline-variant/20">
+          <p className="text-body text-on-surface-variant pt-1 border-t border-outline-variant/20">
             {expenses.length} budgeted ledger items
           </p>
         </div>
@@ -82,14 +82,14 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
             ? 'bg-inverse-surface text-inverse-on-surface border-inverse-surface'
             : 'bg-error text-on-error border-error'
         }`}>
-          <div className={`flex items-center justify-between text-xs font-bold uppercase tracking-wide ${runningBalance >= 0 ? 'text-success' : 'text-on-error'}`}>
+          <div className={`flex items-center justify-between text-label font-bold uppercase tracking-wide ${runningBalance >= 0 ? 'text-success' : 'text-on-error'}`}>
             <span>Net Running Balance</span>
             <Scale className="w-4 h-4" />
           </div>
-          <div className={`text-3xl font-bold ${runningBalance >= 0 ? 'text-success' : 'text-on-error'}`}>
+          <div className={`text-title font-bold ${runningBalance >= 0 ? 'text-success' : 'text-on-error'}`}>
             {formatPHP(runningBalance)}
           </div>
-          <p className={`text-xs pt-1 border-t ${runningBalance >= 0 ? 'text-inverse-on-surface/70 border-inverse-on-surface/20' : 'text-on-error/80 border-on-error/20'}`}>
+          <p className={`text-body pt-1 border-t ${runningBalance >= 0 ? 'text-inverse-on-surface/70 border-inverse-on-surface/20' : 'text-on-error/80 border-on-error/20'}`}>
             {runningBalance >= 0 ? 'Surplus Balance' : 'Budget Shortfall / Needs More Pledges'}
           </p>
         </div>
@@ -99,11 +99,11 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
       {/* Expense Management Header & Actions */}
       <div className="bg-surface-container-lowest rounded p-5 border border-outline-variant/30 shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-bold text-on-surface flex items-center gap-2">
+          <h3 className="text-heading font-bold text-on-surface flex items-center gap-2">
             <Receipt className="w-5 h-5 text-error" />
             <span>Planned Expenses Ledger</span>
           </h3>
-          <p className="text-xs text-on-surface-variant">
+          <p className="text-body text-on-surface-variant">
             Add supplier estimates, banquet quotas, and event operating costs
           </p>
         </div>
@@ -112,7 +112,7 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
           <button
             type="button"
             onClick={() => exportPledgesAndExpensesToCSV(responses, expenses)}
-            className="px-3.5 py-2 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            className="px-3.5 py-2 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-body font-semibold flex items-center gap-1.5 transition-colors"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 text-on-surface-variant" />
             <span>Export Financial Ledger</span>
@@ -125,7 +125,7 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
               setEditingExpense(null);
               setIsModalOpen(true);
             }}
-            className="px-4 py-2 rounded bg-error hover:opacity-90 text-on-error text-xs font-bold shadow-soft transition-all flex items-center gap-1.5"
+            className="px-4 py-2 rounded bg-error hover:opacity-90 text-on-error text-body font-bold shadow-soft transition-all flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
             <span>Add Planned Expense</span>
@@ -136,8 +136,8 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
       {/* Expenses Table — desktop/large screens only, see the card list below for mobile */}
       <div className="hidden lg:block bg-surface-container-lowest rounded border border-outline-variant/30 shadow-soft overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-on-surface-variant">
-            <thead className="bg-inverse-surface text-inverse-on-surface uppercase text-[10px] tracking-wider">
+          <table className="w-full text-left text-body text-on-surface-variant">
+            <thead className="bg-inverse-surface text-inverse-on-surface uppercase text-label tracking-wider">
               <tr>
                 <th className="py-3 px-4">Expense Item</th>
                 <th className="py-3 px-4">Category</th>
@@ -155,18 +155,18 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
                     {exp.name}
                   </td>
                   <td className="py-3.5 px-4">
-                    <span className="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant text-[10px] font-semibold">
+                    <span className="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant text-label font-semibold">
                       {exp.category}
                     </span>
                   </td>
-                  <td className="py-3.5 px-4 font-bold text-error text-sm">
+                  <td className="py-3.5 px-4 font-bold text-error text-heading">
                     {formatPHP(exp.amount)}
                   </td>
                   <td className="py-3.5 px-4 text-on-surface-variant">
                     {exp.targetDate || 'TBD'}
                   </td>
                   <td className="py-3.5 px-4">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    <span className={`px-2 py-0.5 rounded-full text-label font-bold ${
                       exp.status === 'Paid' ? 'bg-success-container text-on-success-container' :
                       exp.status === 'Approved' ? 'bg-tertiary-container/25 text-on-tertiary-container' :
                       exp.status === 'Quoted' ? 'bg-secondary-container text-on-secondary-container' :
@@ -213,10 +213,10 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
                 <td className="py-3.5 px-4" colSpan={2}>
                   Total Planned Expenses
                 </td>
-                <td className="py-3.5 px-4 text-error text-sm">
+                <td className="py-3.5 px-4 text-error text-heading">
                   {formatPHP(totalExpenses)}
                 </td>
-                <td colSpan={4} className="py-3.5 px-4 text-right text-xs text-on-surface-variant font-normal">
+                <td colSpan={4} className="py-3.5 px-4 text-right text-body text-on-surface-variant font-normal">
                   Net Balance: <strong className={runningBalance >= 0 ? 'text-success' : 'text-primary'}>{formatPHP(runningBalance)}</strong>
                 </td>
               </tr>
@@ -228,7 +228,7 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
       {/* Expense Cards — mobile/tablet only, mirrors the table above */}
       <div className="lg:hidden space-y-3">
         {expenses.length === 0 ? (
-          <div className="py-8 text-center text-xs text-on-surface-variant bg-surface-container-lowest rounded border border-outline-variant/30">
+          <div className="py-8 text-center text-body text-on-surface-variant bg-surface-container-lowest rounded border border-outline-variant/30">
             No planned expenses yet.
           </div>
         ) : (
@@ -238,8 +238,8 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
               className="bg-surface-container-lowest rounded p-4 border border-outline-variant/30 shadow-soft space-y-2.5"
             >
               <div className="flex items-start justify-between gap-2">
-                <div className="font-bold text-sm text-on-surface">{exp.name}</div>
-                <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                <div className="font-bold text-heading text-on-surface">{exp.name}</div>
+                <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-label font-bold ${
                   exp.status === 'Paid' ? 'bg-success-container text-on-success-container' :
                   exp.status === 'Approved' ? 'bg-tertiary-container/25 text-on-tertiary-container' :
                   exp.status === 'Quoted' ? 'bg-secondary-container text-on-secondary-container' :
@@ -250,18 +250,18 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant text-[10px] font-semibold">
+                <span className="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant text-label font-semibold">
                   {exp.category}
                 </span>
-                <span className="text-[11px] text-on-surface-variant">{exp.targetDate || 'TBD'}</span>
+                <span className="text-label text-on-surface-variant">{exp.targetDate || 'TBD'}</span>
               </div>
 
-              <div className="font-bold text-error text-base pt-2 border-t border-outline-variant/20">
+              <div className="font-bold text-error text-heading pt-2 border-t border-outline-variant/20">
                 {formatPHP(exp.amount)}
               </div>
 
               {exp.notes && (
-                <p className="text-[11px] text-on-surface-variant truncate" title={exp.notes}>
+                <p className="text-label text-on-surface-variant truncate" title={exp.notes}>
                   {exp.notes}
                 </p>
               )}
@@ -296,28 +296,28 @@ export const OperatingFundsTab: React.FC<OperatingFundsTabProps> = ({
         )}
 
         {expenses.length > 0 && (
-          <div className="bg-surface-container-low rounded p-4 border border-outline-variant/30 font-bold text-on-surface flex items-center justify-between text-xs">
+          <div className="bg-surface-container-low rounded p-4 border border-outline-variant/30 font-bold text-on-surface flex items-center justify-between text-body">
             <span>Total Planned Expenses</span>
-            <span className="text-error text-sm">{formatPHP(totalExpenses)}</span>
+            <span className="text-error text-heading">{formatPHP(totalExpenses)}</span>
           </div>
         )}
       </div>
 
       {/* Category Breakdown Cards */}
       <div className="bg-surface-container-lowest rounded p-6 border border-outline-variant/30 shadow-soft space-y-4">
-        <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-wide">
+        <h4 className="text-label font-bold text-on-surface-variant uppercase tracking-wide">
           Expense Category Allocations
         </h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Object.entries(categoryTotals).map(([cat, amount]) => (
             <div key={cat} className="p-3 bg-surface-container-low rounded border border-outline-variant/30 space-y-1">
-              <div className="text-[11px] text-on-surface-variant font-medium truncate" title={cat}>
+              <div className="text-label text-on-surface-variant font-medium truncate" title={cat}>
                 {cat}
               </div>
-              <div className="text-base font-bold text-on-surface">
+              <div className="text-heading font-bold text-on-surface">
                 {formatPHP(amount)}
               </div>
-              <div className="text-[10px] text-outline">
+              <div className="text-label text-outline">
                 {totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0}% of budget
               </div>
             </div>

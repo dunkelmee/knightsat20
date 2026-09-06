@@ -36,7 +36,7 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     for r in responses:
         for month in r.preferred_months or []:
             month_tally[month] += 1
-        for venue_type in r.preferred_venue_type or ["Hotel / function room"]:
+        for venue_type in r.preferred_venue_type or []:
             venue_tally[venue_type] += 1
 
     return DashboardStatsOut(

@@ -29,20 +29,20 @@ export const AdminPhotoWallTab: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center py-10 text-xs text-on-surface-variant">Loading albums…</div>;
+    return <div className="text-center py-10 text-body text-on-surface-variant">Loading albums…</div>;
   }
 
   return (
     <div className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 shadow-soft space-y-3">
       <div className="flex items-center gap-2 pb-3 border-b border-outline-variant/20">
         <Images className="w-4 h-4 text-primary" />
-        <h3 className="text-sm sm:text-base font-serif font-semibold text-on-surface">
+        <h3 className="text-heading font-serif font-semibold text-on-surface">
           Photo Wall Moderation ({albums.length})
         </h3>
       </div>
 
       {albums.length === 0 ? (
-        <p className="text-xs text-on-surface-variant text-center py-6">No albums yet.</p>
+        <p className="text-body text-on-surface-variant text-center py-6">No albums yet.</p>
       ) : (
         <div className="space-y-2">
           {albums.map((album) => (
@@ -52,14 +52,14 @@ export const AdminPhotoWallTab: React.FC = () => {
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-serif font-semibold text-xs text-on-surface truncate">{album.title}</span>
+                  <span className="font-serif font-semibold text-heading text-on-surface truncate">{album.title}</span>
                   {album.isLiveDay && (
-                    <span className="flex-shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary-container/15 text-primary">
+                    <span className="flex-shrink-0 text-label font-bold px-1.5 py-0.5 rounded-full bg-primary-container/15 text-primary">
                       LIVE
                     </span>
                   )}
                 </div>
-                <div className="text-[11px] text-on-surface-variant mt-0.5">
+                <div className="text-label text-on-surface-variant mt-0.5">
                   {album.photoCount} photos · {album.contributorCount} contributors
                 </div>
               </div>

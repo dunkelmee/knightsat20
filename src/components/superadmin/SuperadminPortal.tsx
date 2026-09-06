@@ -56,8 +56,8 @@ export const SuperadminPortal: React.FC<SuperadminPortalProps> = ({ onLogout }) 
             <ShieldCheck className="w-4 h-4" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="font-serif font-semibold text-base text-on-surface leading-none">Superadmin</h1>
-            <p className="text-[11px] text-on-surface-variant mt-0.5">Batch 2007 Reunion Hub</p>
+            <h1 className="font-serif font-semibold text-heading text-on-surface leading-none">Superadmin</h1>
+            <p className="text-label text-on-surface-variant mt-0.5">Batch 2007 Reunion Hub</p>
           </div>
 
           {/* Desktop nav — same DesktopNav used by the attendee/organizer
@@ -67,7 +67,7 @@ export const SuperadminPortal: React.FC<SuperadminPortalProps> = ({ onLogout }) 
           <button
             type="button"
             onClick={onLogout}
-            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container text-xs font-semibold transition-colors"
+            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container text-body font-semibold transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Log out</span>
@@ -80,7 +80,7 @@ export const SuperadminPortal: React.FC<SuperadminPortalProps> = ({ onLogout }) 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-5 pb-24 @min-[700px]/app:pb-5">
         {tab === 'responses' && (
           isLoadingResponses ? (
-            <div className="text-center py-10 text-xs text-on-surface-variant">Loading responses…</div>
+            <div className="text-center py-10 text-body text-on-surface-variant">Loading responses…</div>
           ) : (
             <SurveyResponsesTab
               responses={responses}

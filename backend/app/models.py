@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -159,12 +159,21 @@ class RSVPRecord(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
     submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
+    # Cards are matched to people by contact number / name everywhere else;
+    # user_id is the reliable link, and what the wall reads their profile
+    # photo through.
+    user_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     full_name: Mapped[str] = mapped_column(String, nullable=False)
     contact_number: Mapped[str | None] = mapped_column(String, nullable=True)
     email: Mapped[str | None] = mapped_column(String, nullable=True)
 
     status: Mapped[str] = mapped_column(String, nullable=False)
+    # bringing_plus_one is kept as the "any adult guest?" flag; plus_ones_count
+    # carries how many, so headcounts do not undercount a party of three.
     bringing_plus_one: Mapped[bool] = mapped_column(Boolean, default=False)
+    plus_ones_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
     kids_count: Mapped[int] = mapped_column(Integer, default=0)
     dietary_restrictions: Mapped[str | None] = mapped_column(String, nullable=True)
     message_to_batch: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -184,6 +193,22 @@ class Announcement(Base):
     likes_count: Mapped[int] = mapped_column(Integer, default=0)
     # Not exposed to clients — used only to order the feed newest-first,
     # since `date` is a free-text display string ("August 24, 2026").
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class AnnouncementLike(Base):
+    """One row per (announcement, user) like — lets an attendee like an
+    announcement at most once; liking again unlikes it (see
+    routers/announcements.py::like_announcement)."""
+
+    __tablename__ = "announcement_likes"
+    __table_args__ = (UniqueConstraint("announcement_id", "user_id", name="uq_announcement_likes_announcement_user"),)
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    announcement_id: Mapped[str] = mapped_column(
+        String, ForeignKey("announcements.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
@@ -227,6 +252,23 @@ class Photo(Base):
     width: Mapped[int | None] = mapped_column(Integer, nullable=True)
     height: Mapped[int | None] = mapped_column(Integer, nullable=True)
     caption: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class PhotoTag(Base):
+    """A batchmate marked as being in a photo. Written only by the photo's
+    uploader (see routers/albums.py::update_photo), one row per tagged person."""
+
+    __tablename__ = "photo_tags"
+    __table_args__ = (UniqueConstraint("photo_id", "user_id", name="uq_photo_tags_photo_user"),)
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    photo_id: Mapped[str] = mapped_column(
+        String, ForeignKey("photos.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[str] = mapped_column(
+        String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 

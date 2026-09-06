@@ -47,20 +47,20 @@ export const UsersTab: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center py-10 text-xs text-on-surface-variant">Loading users…</div>;
+    return <div className="text-center py-10 text-body text-on-surface-variant">Loading users…</div>;
   }
 
   return (
     <div className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 shadow-soft space-y-3">
       <div className="flex items-center gap-2 pb-3 border-b border-outline-variant/20">
         <Users className="w-4 h-4 text-primary" />
-        <h3 className="text-sm sm:text-base font-serif font-semibold text-on-surface">
+        <h3 className="text-heading font-serif font-semibold text-on-surface">
           All Users ({users.length})
         </h3>
       </div>
 
       {users.length === 0 ? (
-        <p className="text-xs text-on-surface-variant text-center py-6">No registered users yet.</p>
+        <p className="text-body text-on-surface-variant text-center py-6">No registered users yet.</p>
       ) : (
         <div className="space-y-2">
           {users.map((user) => (
@@ -70,20 +70,20 @@ export const UsersTab: React.FC = () => {
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-serif font-semibold text-xs text-on-surface truncate">{user.fullName}</span>
+                  <span className="font-serif font-semibold text-heading text-on-surface truncate">{user.fullName}</span>
                   {user.isOrganizer && (
-                    <span className="flex-shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary-container/15 text-primary">
+                    <span className="flex-shrink-0 text-label font-bold px-1.5 py-0.5 rounded-full bg-primary-container/15 text-primary">
                       ORGANIZER
                     </span>
                   )}
                   {!user.onboardingCompleted && (
-                    <span className="flex-shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant">
+                    <span className="flex-shrink-0 text-label font-semibold px-1.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant">
                       Setup pending
                     </span>
                   )}
                 </div>
-                <div className="text-[11px] text-on-surface-variant mt-0.5 truncate">{user.email}</div>
-                <div className="text-[10px] text-outline mt-0.5">
+                <div className="text-label text-on-surface-variant mt-0.5 truncate">{user.email}</div>
+                <div className="text-label text-outline mt-0.5">
                   Registered {new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                 </div>
               </div>
@@ -93,7 +93,7 @@ export const UsersTab: React.FC = () => {
                   type="button"
                   onClick={() => handleToggle(user)}
                   title={user.isOrganizer ? 'Revoke organizer access' : 'Grant organizer access'}
-                  className={`flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-colors ${
+                  className={`flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded text-body font-semibold transition-colors ${
                     user.isOrganizer
                       ? 'bg-error-container text-on-error-container hover:opacity-80'
                       : 'bg-primary text-on-primary hover:opacity-90'
@@ -108,7 +108,7 @@ export const UsersTab: React.FC = () => {
                   onClick={() => openDeleteModal(user)}
                   disabled={deletingId === user.id}
                   title="Delete user and all their data"
-                  className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold border border-error text-error hover:bg-error-container/40 disabled:opacity-60 transition-colors"
+                  className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded text-body font-semibold border border-error text-error hover:bg-error-container/40 disabled:opacity-60 transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>{deletingId === user.id ? 'Deleting…' : 'Delete'}</span>

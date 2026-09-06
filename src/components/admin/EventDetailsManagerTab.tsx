@@ -67,10 +67,10 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
       <div className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-sm sm:text-base font-semibold text-on-surface">
+            <h3 className="text-heading font-semibold text-on-surface">
               Event Schedule & Venue Settings
             </h3>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+            <span className={`px-2 py-0.5 rounded text-label font-semibold ${
               status === 'Finalized'
                 ? 'bg-success-container text-on-success-container border border-success-container'
                 : 'bg-primary-container/20 text-on-primary-container border border-primary-container/50'
@@ -78,8 +78,8 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
               {status === 'Finalized' ? '✓ Finalized' : '⏳ Pending / Planning'}
             </span>
           </div>
-          <p className="text-xs text-on-surface-variant mt-0.5">
-            Update date, venue, time, and address. Changes reflect immediately on the public banner and event pages.
+          <p className="text-body text-on-surface-variant mt-0.5">
+            Update date, venue, time, and address. Changes reflect immediately on the attendees' tickets.
           </p>
         </div>
 
@@ -87,34 +87,11 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
           <button
             type="button"
             onClick={handleSetPending}
-            className="px-3 py-1.5 rounded bg-background hover:bg-surface-container text-on-surface-variant font-semibold text-xs border border-secondary/30 flex items-center gap-1 transition-colors"
+            className="px-3 py-1.5 rounded bg-background hover:bg-surface-container text-on-surface-variant font-semibold text-body border border-secondary/30 flex items-center gap-1 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset to Pending</span>
           </button>
-        </div>
-      </div>
-
-      {/* Live Preview Card */}
-      <div className="bg-primary-container/10 rounded p-4 border border-primary-container/40 space-y-2">
-        <span className="text-[11px] font-semibold text-on-primary-container uppercase tracking-wider">
-          Live Public Banner Preview
-        </span>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-on-surface">
-          <div className="inline-flex items-center gap-1.5 bg-surface-container-lowest px-3 py-1.5 rounded border border-outline-variant/30 shadow-soft">
-            <Calendar className="w-3.5 h-3.5 text-on-surface-variant" />
-            <span>Date: <strong className="text-on-surface font-semibold">{date}</strong></span>
-          </div>
-          <div className="inline-flex items-center gap-1.5 bg-surface-container-lowest px-3 py-1.5 rounded border border-outline-variant/30 shadow-soft">
-            <MapPin className="w-3.5 h-3.5 text-on-surface-variant" />
-            <span>Venue: <strong className="text-on-surface font-semibold">{venue}</strong></span>
-          </div>
-          {status === 'Finalized' && time && (
-            <div className="inline-flex items-center gap-1.5 bg-surface-container-lowest px-3 py-1.5 rounded border border-outline-variant/30 shadow-soft">
-              <Clock className="w-3.5 h-3.5 text-on-surface-variant" />
-              <span>Time: <strong className="text-on-surface font-semibold">{time}</strong></span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -123,7 +100,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
 
         {/* Status Switcher */}
         <div>
-          <label className="block text-xs font-semibold text-on-surface-variant mb-1.5">
+          <label className="block text-label font-semibold text-on-surface-variant mb-1.5">
             Event Status
           </label>
           <div className="grid grid-cols-2 gap-2 max-w-md">
@@ -140,8 +117,8 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
                 className="w-3.5 h-3.5 text-primary"
               />
               <div>
-                <div className="text-xs font-semibold">Pending / Survey Phase</div>
-                <div className="text-[10px] text-on-surface-variant">Date & venue still being decided</div>
+                <div className="text-label font-semibold">Pending / Survey Phase</div>
+                <div className="text-label text-on-surface-variant">Date & venue still being decided</div>
               </div>
             </label>
 
@@ -158,8 +135,8 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
                 className="w-3.5 h-3.5 text-success"
               />
               <div>
-                <div className="text-xs font-semibold text-on-success-container">Finalized & Confirmed</div>
-                <div className="text-[10px] text-on-success-container">Contract signed / fixed date & venue</div>
+                <div className="text-label font-semibold text-on-success-container">Finalized & Confirmed</div>
+                <div className="text-label text-on-success-container">Contract signed / fixed date & venue</div>
               </div>
             </label>
           </div>
@@ -168,7 +145,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
         {/* Date & Time Fields */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-outline-variant/20">
           <div>
-            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Event Date <span className="text-error">*</span>
             </label>
             <div className="relative">
@@ -179,16 +156,16 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 placeholder="e.g. Saturday, December 5, 2026 or Pending / For finalization"
-                className="w-full pl-9 pr-3 py-2 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full pl-9 pr-3 py-2 rounded border border-secondary/30 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
-            <p className="text-[10px] text-on-surface-variant mt-1">
+            <p className="text-label text-on-surface-variant mt-1">
               Can be exact (e.g. "Saturday, Dec 12, 2026") or "Pending / For finalization".
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Event Time & Duration
             </label>
             <div className="relative">
@@ -198,7 +175,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
                 placeholder="e.g. 5:30 PM - 10:30 PM"
-                className="w-full pl-9 pr-3 py-2 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full pl-9 pr-3 py-2 rounded border border-secondary/30 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
@@ -207,7 +184,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
         {/* Venue & Address Fields */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-outline-variant/20">
           <div>
-            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Venue Name <span className="text-error">*</span>
             </label>
             <div className="relative">
@@ -218,13 +195,13 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
                 value={venue}
                 onChange={(e) => setVenue(e.target.value)}
                 placeholder="e.g. Grand Ballroom, Dusit Thani Manila or Pending / For finalization"
-                className="w-full pl-9 pr-3 py-2 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full pl-9 pr-3 py-2 rounded border border-secondary/30 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Venue Address / Area
             </label>
             <input
@@ -232,7 +209,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
               value={venueAddress}
               onChange={(e) => setVenueAddress(e.target.value)}
               placeholder="e.g. Ayala Center, Makati City"
-              className="w-full px-3 py-2 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full px-3 py-2 rounded border border-secondary/30 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
         </div>
@@ -240,7 +217,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
         {/* Dress Code & Theme */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-outline-variant/20">
           <div>
-            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Dress Code / Attire
             </label>
             <div className="relative">
@@ -250,13 +227,13 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
                 value={dressCode}
                 onChange={(e) => setDressCode(e.target.value)}
                 placeholder="e.g. Smart Casual / Semi-Formal"
-                className="w-full pl-9 pr-3 py-2 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full pl-9 pr-3 py-2 rounded border border-secondary/30 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Reunion Theme / Catchphrase
             </label>
             <input
@@ -264,14 +241,14 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
               placeholder="e.g. MakSci Batch 2007: 20 Years After"
-              className="w-full px-3 py-2 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full px-3 py-2 rounded border border-secondary/30 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
         </div>
 
         {/* Committee Notes */}
         <div className="pt-1 border-t border-outline-variant/20">
-          <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+          <label className="block text-label font-semibold text-on-surface-variant mb-1">
             Committee Notes / Special Instructions
           </label>
           <textarea
@@ -279,7 +256,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="e.g. Valet parking available, please arrive 15 minutes before opening remarks..."
-            className="w-full p-2.5 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full p-2.5 rounded border border-secondary/30 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
 
@@ -287,7 +264,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
         <div className="pt-2 flex items-center justify-between">
           <div>
             {isSaved && (
-              <span className="text-xs font-semibold text-success flex items-center gap-1">
+              <span className="text-body font-semibold text-success flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Saved successfully! Updated across the site.</span>
               </span>
@@ -296,10 +273,10 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
 
           <button
             type="submit"
-            className="px-5 py-2 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft flex items-center gap-1.5 transition-all"
+            className="px-5 py-2 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-body shadow-soft flex items-center gap-1.5 transition-all"
           >
             <Save className="w-3.5 h-3.5" />
-            <span>Save Event Details</span>
+            <span>Save event details</span>
           </button>
         </div>
 
@@ -308,7 +285,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
       {/* Scouted Venues Shortlist */}
       <div className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 shadow-soft space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-sm sm:text-base font-semibold text-on-surface flex items-center gap-2">
+          <h3 className="text-heading font-semibold text-on-surface flex items-center gap-2">
             <Landmark className="w-4 h-4 text-primary" />
             <span>Scouted Venues ({scoutedVenues.length})</span>
           </h3>
@@ -318,7 +295,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
               setEditingVenue(null);
               setIsVenueModalOpen(true);
             }}
-            className="px-3 py-1.5 rounded bg-primary hover:opacity-90 text-on-primary text-xs font-bold shadow-soft flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded bg-primary hover:opacity-90 text-on-primary text-body font-bold shadow-soft flex items-center gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Venue</span>
@@ -328,14 +305,14 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
         {scoutedVenues.length === 0 ? (
           <div className="text-center py-8 space-y-2">
             <Sparkles className="w-5 h-5 text-outline mx-auto" />
-            <p className="text-xs text-on-surface-variant">No scouted venues yet. Add one to start building the shortlist.</p>
+            <p className="text-body text-on-surface-variant">No scouted venues yet. Add one to start building the shortlist.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {scoutedVenues.map((v) => (
               <div key={v.id} className="p-3.5 rounded border border-outline-variant/30 bg-surface-container-low/60 space-y-1.5">
                 <div className="flex items-start justify-between gap-2">
-                  <h4 className="font-serif font-semibold text-sm text-on-surface">{v.name}</h4>
+                  <h4 className="font-serif font-semibold text-heading text-on-surface">{v.name}</h4>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button
                       type="button"
@@ -362,22 +339,22 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
                 </div>
 
                 {v.tentativeDate && (
-                  <div className="text-xs text-on-surface-variant flex items-center gap-1.5">
+                  <div className="text-body text-on-surface-variant flex items-center gap-1.5">
                     <Calendar className="w-3 h-3 flex-shrink-0" />
                     <span>{v.tentativeDate}</span>
                   </div>
                 )}
                 {v.address && (
-                  <div className="text-xs text-on-surface-variant flex items-center gap-1.5">
+                  <div className="text-body text-on-surface-variant flex items-center gap-1.5">
                     <MapPin className="w-3 h-3 flex-shrink-0" />
                     <span>{v.address}</span>
                   </div>
                 )}
                 {v.quotedCost != null && (
-                  <div className="text-sm font-bold text-primary">{formatPHP(v.quotedCost)}</div>
+                  <div className="text-heading font-bold text-primary">{formatPHP(v.quotedCost)}</div>
                 )}
                 {v.miscDetails && (
-                  <p className="text-[11px] text-on-surface-variant pt-1 border-t border-outline-variant/20">
+                  <p className="text-label text-on-surface-variant pt-1 border-t border-outline-variant/20">
                     {v.miscDetails}
                   </p>
                 )}

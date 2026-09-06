@@ -8,8 +8,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.audit import record_action
 from app.database import get_db
-from app.models import Album, Photo, User
-from app.schemas import AlbumCreate, AlbumDetailOut, AlbumOut, AlbumUpdate, ContributorOut, PhotoOut
+from app.models import Album, Photo, PhotoTag, User
+from app.schemas import (
+    AlbumCreate,
+    AlbumDetailOut,
+    AlbumOut,
+    AlbumUpdate,
+    ContributorOut,
+    PersonRefOut,
+    PhotoOut,
+    PhotoUpdate,
+)
 from app.security import get_current_user, is_organizer_or_superadmin
 from app.storage import delete_photo_files, resolve_url, save_photo_files
 from app.text_utils import initials
@@ -72,7 +81,13 @@ async def _build_album_out(db: AsyncSession, album: Album) -> tuple[AlbumOut, da
         seen_uploaders.add(photo.uploaded_by)
         uploader = await db.get(User, photo.uploaded_by)
         if uploader:
-            contributors.append(ContributorOut(initials=initials(uploader.full_name)))
+            contributors.append(
+                ContributorOut(
+                    initials=initials(uploader.full_name),
+                    full_name=uploader.full_name,
+                    now_photo_url=resolve_url(uploader.now_photo_url),
+                )
+            )
         if len(contributors) >= 3:
             break
 
@@ -91,7 +106,35 @@ async def _build_album_out(db: AsyncSession, album: Album) -> tuple[AlbumOut, da
     return album_out, last_activity
 
 
-def _to_photo_out(photo: Photo, uploader_name: str) -> PhotoOut:
+def _person_ref(user: User) -> PersonRefOut:
+    return PersonRefOut(
+        id=user.id,
+        full_name=user.full_name,
+        initials=initials(user.full_name),
+        now_photo_url=resolve_url(user.now_photo_url),
+    )
+
+
+async def _tags_by_photo(db: AsyncSession, photo_ids: list[str]) -> dict[str, list[PersonRefOut]]:
+    """Tagged people for a whole page of photos in one query, keyed by photo id."""
+    if not photo_ids:
+        return {}
+    rows = (
+        await db.execute(
+            select(PhotoTag.photo_id, User)
+            .join(User, User.id == PhotoTag.user_id)
+            .where(PhotoTag.photo_id.in_(photo_ids))
+            .order_by(User.full_name.asc())
+        )
+    ).all()
+
+    by_photo: dict[str, list[PersonRefOut]] = {}
+    for photo_id, user in rows:
+        by_photo.setdefault(photo_id, []).append(_person_ref(user))
+    return by_photo
+
+
+def _to_photo_out(photo: Photo, uploader_name: str, tags: list[PersonRefOut] | None = None) -> PhotoOut:
     return PhotoOut(
         id=photo.id,
         thumb_url=resolve_url(photo.thumb_key),
@@ -100,6 +143,7 @@ def _to_photo_out(photo: Photo, uploader_name: str) -> PhotoOut:
         uploader_initials=initials(uploader_name),
         uploaded_by=photo.uploaded_by,
         created_at=photo.created_at,
+        tags=tags or [],
     )
 
 
@@ -158,13 +202,16 @@ async def get_album(
         next_cursor = _encode_photo_cursor(last_kept.created_at, last_kept.id)
         photos = photos[:limit]
 
+    tags_by_photo = await _tags_by_photo(db, [p.id for p in photos])
     uploader_names: dict[str, str] = {}
     photo_outs: list[PhotoOut] = []
     for photo in photos:
         if photo.uploaded_by not in uploader_names:
             uploader = await db.get(User, photo.uploaded_by)
             uploader_names[photo.uploaded_by] = uploader.full_name if uploader else "?"
-        photo_outs.append(_to_photo_out(photo, uploader_names[photo.uploaded_by]))
+        photo_outs.append(
+            _to_photo_out(photo, uploader_names[photo.uploaded_by], tags_by_photo.get(photo.id, []))
+        )
 
     photo_count = (
         await db.execute(select(func.count()).select_from(Photo).where(Photo.album_id == album_id))
@@ -286,6 +333,65 @@ async def upload_photos(
         await db.refresh(photo)
 
     return [_to_photo_out(photo, current_user.full_name) for photo in created]
+
+
+@router.patch("/{album_id}/photos/{photo_id}", response_model=PhotoOut)
+async def update_photo(
+    album_id: str,
+    photo_id: str,
+    payload: PhotoUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    photo = await db.get(Photo, photo_id)
+    if not photo or photo.album_id != album_id:
+        raise HTTPException(status_code=404, detail="Photo not found")
+    # Uploader-only on purpose: an organizer can delete a photo outright but
+    # doesn't get to rewrite someone else's caption or tag list.
+    if photo.uploaded_by != current_user.id:
+        raise HTTPException(
+            status_code=403, detail="Only the person who uploaded this photo can edit it"
+        )
+
+    # `model_fields_set` distinguishes "clear the caption" (sent as null) from
+    # "leave the caption alone" (field omitted entirely).
+    sent = payload.model_fields_set
+
+    if "caption" in sent:
+        photo.caption = (payload.caption or "").strip() or None
+
+    if "tagged_user_ids" in sent:
+        wanted = list(dict.fromkeys(payload.tagged_user_ids or []))
+        if wanted:
+            known = set(
+                (await db.execute(select(User.id).where(User.id.in_(wanted)))).scalars().all()
+            )
+            if set(wanted) - known:
+                raise HTTPException(
+                    status_code=400, detail="One or more tagged people no longer have an account"
+                )
+
+        existing = (
+            await db.execute(select(PhotoTag).where(PhotoTag.photo_id == photo_id))
+        ).scalars().all()
+        already = {tag.user_id for tag in existing}
+        for tag in existing:
+            if tag.user_id not in wanted:
+                await db.delete(tag)
+        for user_id in wanted:
+            if user_id not in already:
+                db.add(PhotoTag(photo_id=photo_id, user_id=user_id))
+
+    album = await _get_album_or_404(db, album_id)
+    record_action(
+        db, f"{current_user.full_name} edited a photo in album \"{album.title}\"",
+        actor_name=current_user.full_name, actor_user_id=current_user.id,
+    )
+    await db.commit()
+    await db.refresh(photo)
+
+    tags = (await _tags_by_photo(db, [photo_id])).get(photo_id, [])
+    return _to_photo_out(photo, current_user.full_name, tags)
 
 
 @router.delete("/{album_id}/photos/{photo_id}", status_code=204)

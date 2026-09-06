@@ -25,11 +25,11 @@ export const AnnouncementsManagerTab: React.FC<AnnouncementsManagerTabProps> = (
       {/* Header & Add Button */}
       <div className="bg-surface-container-lowest rounded p-5 border border-outline-variant/30 shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-bold text-on-surface flex items-center gap-2">
+          <h3 className="text-heading font-bold text-on-surface flex items-center gap-2">
             <Bell className="w-5 h-5 text-tertiary" />
             <span>Announcements & Bulletin Manager</span>
           </h3>
-          <p className="text-xs text-on-surface-variant">
+          <p className="text-body text-on-surface-variant">
             Publish official updates, venue surveys, budget reports, and upload photos
           </p>
         </div>
@@ -41,7 +41,7 @@ export const AnnouncementsManagerTab: React.FC<AnnouncementsManagerTabProps> = (
             setEditingAnnouncement(null);
             setIsModalOpen(true);
           }}
-          className="px-4 py-2 rounded bg-primary hover:opacity-90 text-on-primary text-xs font-bold shadow-soft transition-all flex items-center gap-1.5"
+          className="px-4 py-2 rounded bg-primary hover:opacity-90 text-on-primary text-body font-bold shadow-soft transition-all flex items-center gap-1.5"
         >
           <Plus className="w-4 h-4" />
           <span>New Announcement</span>
@@ -60,17 +60,17 @@ export const AnnouncementsManagerTab: React.FC<AnnouncementsManagerTabProps> = (
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-tertiary-container/25 text-on-tertiary-container">
+                  <span className="text-label font-bold px-2 py-0.5 rounded bg-tertiary-container/25 text-on-tertiary-container">
                     {ann.tag}
                   </span>
                   {ann.isPinned && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-primary-container/20 text-on-primary-container flex items-center gap-1">
+                    <span className="text-label font-bold px-2 py-0.5 rounded bg-primary-container/20 text-on-primary-container flex items-center gap-1">
                       <Pin className="w-3 h-3 fill-current" />
                       <span>Pinned</span>
                     </span>
                   )}
                 </div>
-                <span className="text-[11px] text-outline">{ann.date}</span>
+                <span className="text-label text-outline">{ann.date}</span>
               </div>
 
               {ann.imageUrl && (
@@ -85,23 +85,23 @@ export const AnnouncementsManagerTab: React.FC<AnnouncementsManagerTabProps> = (
               )}
 
               <div>
-                <h4 className="font-serif font-bold text-on-surface text-sm">{ann.title}</h4>
-                <p className="text-xs text-on-surface-variant mt-1 line-clamp-3 leading-relaxed">
+                <h4 className="font-serif font-bold text-on-surface text-heading">{ann.title}</h4>
+                <p className="text-body text-on-surface-variant mt-1 line-clamp-3 leading-relaxed">
                   {ann.caption}
                 </p>
               </div>
 
-              <div className="text-[11px] text-outline">
+              <div className="text-label text-outline">
                 Author: <span className="text-on-surface-variant font-medium">{ann.author}</span> • Likes: {ann.likesCount}
               </div>
             </div>
 
             {/* Admin actions */}
-            <div className="flex items-center justify-between pt-3 border-t border-outline-variant/20 text-xs">
+            <div className="flex items-center justify-between pt-3 border-t border-outline-variant/20 text-body">
               <button
                 type="button"
                 onClick={() => onTogglePin(ann.id)}
-                className={`px-2.5 py-1 rounded border text-xs font-semibold flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 rounded border text-body font-semibold flex items-center gap-1.5 ${
                   ann.isPinned
                     ? 'bg-primary-container/20 text-on-primary-container border-primary-container/50'
                     : 'bg-surface-container-lowest text-on-surface-variant border-outline-variant/30 hover:bg-surface-container'

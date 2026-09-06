@@ -80,19 +80,19 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   return (
     <div
       id="profile-edit-modal-overlay"
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/45 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md max-h-[85vh] overflow-y-auto bg-surface-container-lowest rounded p-6 border border-outline-variant/30 shadow-soft space-y-4"
+        className="w-full max-w-md max-h-[85vh] overflow-y-auto bg-surface-container-lowest rounded-xl p-6 shadow-soft space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="font-serif font-semibold text-base text-on-surface">Edit Profile</h2>
+          <h2 className="font-serif text-heading text-on-surface">Edit Profile</h2>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
+            className="text-on-surface-variant/60 hover:text-on-surface transition-colors"
             title="Close"
           >
             <X className="w-4 h-4" />
@@ -101,7 +101,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Full name
             </label>
             <div className="relative">
@@ -110,13 +110,13 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+                className="w-full pl-9 pr-3 py-2 border-b-[1.5px] border-on-surface/30 bg-transparent text-on-surface text-body focus:outline-none focus:border-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Mobile / WhatsApp number
             </label>
             <div className="relative">
@@ -125,13 +125,13 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                 type="tel"
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+                className="w-full pl-9 pr-3 py-2 border-b-[1.5px] border-on-surface/30 bg-transparent text-on-surface text-body focus:outline-none focus:border-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-on-surface-variant mb-2">
+            <label className="block text-label font-semibold text-on-surface-variant mb-2">
               Then &amp; Now photos <span className="text-on-surface-variant font-normal">(optional)</span>
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -151,19 +151,19 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                 onPhotoChanged={setNowPhotoUrl}
               />
             </div>
-            <p className="text-[10px] text-on-surface-variant mt-1.5">
+            <p className="text-label text-on-surface-variant mt-1.5">
               Photos upload and resize automatically as soon as you pick them. Your "Now" photo is
               also used as your profile avatar.
             </p>
           </div>
 
-          <div className="pt-1 border-t border-outline-variant/30 space-y-3">
-            <p className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wide">
+          <div className="pt-3 border-t border-dashed border-on-surface/15 space-y-3">
+            <p className="text-label font-semibold text-on-surface-variant uppercase tracking-wide">
               Directory listing
             </p>
 
             <div>
-              <label className="block text-xs font-semibold text-on-surface-variant mb-1">City</label>
+              <label className="block text-label font-semibold text-on-surface-variant mb-1">City</label>
               <div className="relative">
                 <MapPin className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -171,13 +171,13 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                   value={currentCity}
                   onChange={(e) => setCurrentCity(e.target.value)}
                   placeholder="e.g. Makati"
-                  className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+                  className="w-full pl-9 pr-3 py-2 border-b-[1.5px] border-on-surface/30 bg-transparent text-on-surface text-body focus:outline-none focus:border-primary"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+              <label className="block text-label font-semibold text-on-surface-variant mb-1">
                 What are you currently up to?
               </label>
               <div className="relative">
@@ -187,25 +187,25 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                   value={currentRole}
                   onChange={(e) => setCurrentRole(e.target.value)}
                   placeholder="e.g. UX Director, married with 2 kids"
-                  className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+                  className="w-full pl-9 pr-3 py-2 border-b-[1.5px] border-on-surface/30 bg-transparent text-on-surface text-body focus:outline-none focus:border-primary"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-on-surface-variant mb-2">
+              <label className="block text-label font-semibold text-on-surface-variant mb-2">
                 High school section <span className="text-on-surface-variant font-normal">(optional)</span>
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {YEAR_SECTIONS.map(({ key, label, options }) => (
                   <div key={key}>
-                    <label className="block text-[10px] font-semibold text-on-surface-variant mb-1">
+                    <label className="block text-label font-semibold text-on-surface-variant mb-1">
                       {label}
                     </label>
                     <select
                       value={sections[key]}
                       onChange={(e) => setSections((prev) => ({ ...prev, [key]: e.target.value }))}
-                      className="w-full px-2.5 py-2 rounded border border-secondary/30 text-on-surface text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+                      className="w-full px-2.5 py-2 rounded-xl border border-outline-variant/40 text-on-surface text-body font-semibold focus:outline-none focus:ring-1 focus:ring-primary bg-white/50"
                     >
                       <option value="">Not set</option>
                       {options.map((opt) => (
@@ -226,24 +226,24 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                 onChange={(e) => setShowInDirectory(e.target.checked)}
                 className="w-4 h-4 accent-primary"
               />
-              <span className="text-xs text-on-surface-variant">Show me in the Directory</span>
+              <span className="text-body text-on-surface-variant">Show me in the Directory</span>
             </label>
           </div>
 
-          {error && <p className="text-xs text-error">{error}</p>}
+          {error && <p className="text-body text-error">{error}</p>}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded border border-outline-variant/40 text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-semibold text-sm transition-all"
+              className="flex-1 py-2.5 rounded-xl border border-on-surface/20 text-on-surface-variant hover:bg-black/5 font-semibold text-body transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-2.5 rounded bg-primary hover:opacity-90 disabled:opacity-60 text-on-primary font-semibold text-sm shadow-soft transition-all"
+              className="flex-1 py-2.5 rounded-xl bg-primary hover:opacity-90 disabled:opacity-60 text-on-primary font-bold text-body shadow-soft transition-all"
             >
               {isSubmitting ? 'Saving…' : 'Save changes'}
             </button>

@@ -34,7 +34,7 @@ export interface SurveyResponse {
 
   // Q7: Event Organizer Suggestion
   nominatedOrganizer?: string; // Recommended professional event organizer or coordination company
-  willingToOrganize: 'Yes, I’d be happy to help!' | 'Maybe, depending on what’s needed' | 'I can help occasionally' | 'I’d prefer not to be involved in organizing';
+  willingToOrganize: 'Yes, happy to help!' | 'Maybe, depending on tasks' | 'Can help occasionally' | 'Prefer to just attend & relax';
 
   // Q8: Guests
   plusOnesCount?: number;
@@ -64,11 +64,15 @@ export interface RSVPRecord {
   fullName: string;
   contactNumber?: string;
   email?: string;
-  status: 'Attending' | 'Maybe' | 'Decline';
+  status: 'Attending' | 'Most likely' | 'Maybe' | 'Decline';
   bringingPlusOne: boolean;
+  plusOnesCount: number;
   kidsCount: number;
   dietaryRestrictions?: string;
   messageToBatch?: string;
+  // Server-resolved profile photo of the account behind this card, when they
+  // have one and are listed in the directory.
+  photoUrl?: string | null;
 }
 
 export interface Announcement {
@@ -81,6 +85,7 @@ export interface Announcement {
   date: string;
   isPinned?: boolean;
   likesCount: number;
+  likedByMe: boolean;
 }
 
 export interface PlannedExpense {
@@ -145,7 +150,7 @@ export interface DashboardStats extends BatchStats {
 // public roster (GET /api/rsvps) — contactNumber/email are admin-only.
 export type PublicRSVP = Pick<
   RSVPRecord,
-  'id' | 'submittedAt' | 'fullName' | 'status' | 'bringingPlusOne' | 'kidsCount' | 'messageToBatch'
+  'id' | 'submittedAt' | 'fullName' | 'status' | 'bringingPlusOne' | 'plusOnesCount' | 'kidsCount' | 'messageToBatch' | 'photoUrl'
 >;
 
 // A logged-in alumnus's account. Organizer access is a permanent, per-account
@@ -203,7 +208,6 @@ export interface DirectoryPerson {
   thenPhotoUrl?: string | null;
   nowPhotoUrl?: string | null;
   status: DirectoryStatus;
-  lastSeenCity?: string | null;
 }
 
 export interface DirectoryCounts {
@@ -234,6 +238,16 @@ export interface DirectoryUpdatePayload {
 
 export interface Contributor {
   initials: string;
+  fullName: string;
+  nowPhotoUrl?: string | null;
+}
+
+/** A batchmate as shown in a photo tag chip or the tag lookup results. */
+export interface PersonRef {
+  id: string;
+  fullName: string;
+  initials: string;
+  nowPhotoUrl?: string | null;
 }
 
 export interface Album {
@@ -256,6 +270,7 @@ export interface Photo {
   uploaderInitials: string;
   uploadedBy: string;
   createdAt: string;
+  tags: PersonRef[];
 }
 
 export interface AlbumDetail {

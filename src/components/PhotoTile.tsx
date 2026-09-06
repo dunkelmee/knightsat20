@@ -72,7 +72,7 @@ export const PhotoTile: React.FC<PhotoTileProps> = ({
 
   return (
     <div className="space-y-1.5">
-      <div className="text-xs font-semibold text-on-surface-variant text-center">{label}</div>
+      <div className="text-label font-semibold text-on-surface-variant text-center">{label}</div>
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
@@ -89,7 +89,7 @@ export const PhotoTile: React.FC<PhotoTileProps> = ({
         ) : (
           <>
             <Upload className="w-5 h-5 text-outline" />
-            <span className="text-[10px] text-on-surface-variant px-2 text-center">{hint}</span>
+            <span className="text-label text-on-surface-variant px-2 text-center">{hint}</span>
           </>
         )}
         {isBusy && (
@@ -103,13 +103,13 @@ export const PhotoTile: React.FC<PhotoTileProps> = ({
         <button
           type="button"
           onClick={handleClear}
-          className="w-full text-[10px] text-on-surface-variant hover:text-error flex items-center justify-center gap-1"
+          className="w-full text-label text-on-surface-variant hover:text-error flex items-center justify-center gap-1"
         >
           <X className="w-3 h-3" />
           <span>Remove</span>
         </button>
       )}
-      {error && <p className="text-[10px] text-error text-center">{error}</p>}
+      {error && <p className="text-label text-error text-center">{error}</p>}
     </div>
   );
 };
