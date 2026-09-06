@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Search, Users, MapPin, SlidersHorizontal, X } from 'lucide-react';
-import { DirectoryCounts, DirectoryPerson, DirectoryStatus } from '../types';
+import { DirectoryCounts, DirectoryFilter, DirectoryPerson } from '../types';
 import { fetchDirectory } from '../api/client';
 import { SectionFieldKey, YEAR_SECTIONS } from '../utils/sections';
+import { DIRECTORY_DOT } from '../utils/statusColors';
 
 const getInitials = (fullName: string): string =>
   fullName
@@ -13,7 +14,7 @@ const getInitials = (fullName: string): string =>
     .join('')
     .toUpperCase();
 
-const FILTERS: { key: 'all' | DirectoryStatus; label: string }[] = [
+const FILTERS: { key: DirectoryFilter; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'attending', label: 'Attending' },
   { key: 'missing', label: 'Tentative' },
@@ -90,14 +91,10 @@ const DirectoryCardSkeleton: React.FC = () => (
   </div>
 );
 
-const STATUS_DOT: Record<DirectoryStatus, string> = {
-  attending: '#1f7a4d',
-  faculty: '#6b5a9e',
-  missing: '#b0564f',
-};
-
 const DirectoryCard: React.FC<{ person: DirectoryPerson }> = ({ person }) => {
   const initials = getInitials(person.displayName);
+  // Falls back for any status string an older API build may still return.
+  const status = DIRECTORY_DOT[person.status] ?? DIRECTORY_DOT.no_response;
   // 1st → 4th year section names only, in order; unset years are skipped so
   // no empty gap appears between separators.
   const sectionTags = YEAR_SECTIONS.map(({ key }) => person[key]).filter(
@@ -107,7 +104,10 @@ const DirectoryCard: React.FC<{ person: DirectoryPerson }> = ({ person }) => {
     <div className="relative p-3 bg-surface-container-lowest shadow-soft flex flex-col gap-2.5">
       <span
         className="absolute top-2 right-2 z-10 w-2.5 h-2.5 rounded-full"
-        style={{ background: STATUS_DOT[person.status], boxShadow: '0 0 0 2px #fdfaf2' }}
+        style={{ background: status.dot, boxShadow: '0 0 0 2px #fdfaf2' }}
+        title={status.label}
+        role="img"
+        aria-label={status.label}
       />
       <div className="flex gap-2">
         <div className="flex-1 flex flex-col gap-1.5">
@@ -150,7 +150,7 @@ const DirectoryCard: React.FC<{ person: DirectoryPerson }> = ({ person }) => {
 
 export const DirectorySection: React.FC = () => {
   const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState<'all' | DirectoryStatus>('all');
+  const [filter, setFilter] = useState<DirectoryFilter>('all');
   const [sectionFilters, setSectionFilters] = useState<Record<SectionFieldKey, string>>(EMPTY_SECTION_FILTERS);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [people, setPeople] = useState<DirectoryPerson[]>([]);

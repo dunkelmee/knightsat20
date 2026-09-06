@@ -4,6 +4,7 @@ import {
   MessageSquare, UserPlus, Search, Sparkles, Megaphone, UsersRound,
 } from 'lucide-react';
 import { Announcement, PublicRSVP } from '../types';
+import { STATUS_EDGE } from '../utils/statusColors';
 
 interface BatchBoardSectionProps {
   announcements: Announcement[];
@@ -38,16 +39,6 @@ const CardAvatar: React.FC<{ url?: string | null; fullName: string; bg: string }
       )}
     </span>
   );
-};
-
-// Card treatment per RSVP status — mirrors the four survey attendance answers
-// (see _RSVP_STATUS_BY_ATTENDANCE in backend/app/routers/survey_responses.py):
-// green = definite, purple = most likely, yellow = undecided, red = declined.
-const STATUS_EDGE: Record<PublicRSVP['status'], { edge: string; avBg: string; label: string }> = {
-  Attending: { edge: '#1f7a4d', avBg: '#0e5a4d', label: 'Attending' },
-  'Most likely': { edge: '#7a68b0', avBg: '#6b5a9e', label: 'Most likely' },
-  Maybe: { edge: '#d6982d', avBg: '#8f6112', label: 'Maybe' },
-  Decline: { edge: '#c2564f', avBg: '#98443e', label: "Can't join" },
 };
 
 export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({

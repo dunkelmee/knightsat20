@@ -42,18 +42,69 @@ def _decode_cursor(cursor: str) -> tuple[str, str] | None:
         return None
 
 
-def _status_expr():
-    attending_subq = (
+def _attending_subq():
+    return (
         select(SurveyResponse.user_id)
         .where(SurveyResponse.user_id.isnot(None))
         .where(SurveyResponse.attendance.in_(_ATTENDING_ANSWERS))
         .distinct()
     )
+
+
+def _bucket_expr():
+    """The coarse three-way bucket the filter pills and counts work in."""
     return case(
         (User.is_faculty.is_(True), "faculty"),
-        (User.id.in_(attending_subq), "attending"),
+        (User.id.in_(_attending_subq()), "attending"),
         else_="missing",
     )
+
+
+def _status_expr():
+    """The card's status dot — the survey answer itself, not the bucket.
+
+    The bucket collapses "most likely" into plain attending and lumps "not sure
+    yet" in with people who never answered, so a dot drawn from it cannot line
+    up with the attendance wall. This keeps each answer distinct and mirrors
+    _RSVP_STATUS_BY_ATTENDANCE (routers/survey_responses.py) one-for-one, so a
+    colour means the same thing on both tabs. Faculty still wins over any
+    answer, matching the bucket and the Faculty pill.
+    """
+    answer = (
+        select(SurveyResponse.attendance)
+        .where(SurveyResponse.user_id == User.id)
+        .limit(1)
+        .scalar_subquery()
+    )
+    return case(
+        (User.is_faculty.is_(True), "faculty"),
+        (answer == "Yes, definitely!", "attending"),
+        (answer == "Most likely, but still confirming", "most_likely"),
+        (answer == "Not sure yet", "maybe"),
+        (answer == "Unfortunately, I won’t be able to attend", "declined"),
+        else_="no_response",
+    )
+
+
+# Mirrors _status_expr for a single already-loaded user, so the row a profile
+# save echoes back carries the same dot the listing would give it.
+_STATUS_BY_ANSWER = {
+    "Yes, definitely!": "attending",
+    "Most likely, but still confirming": "most_likely",
+    "Not sure yet": "maybe",
+    "Unfortunately, I won’t be able to attend": "declined",
+}
+
+
+async def _status_for(db: AsyncSession, user: User) -> str:
+    if user.is_faculty:
+        return "faculty"
+    answer = (
+        await db.execute(
+            select(SurveyResponse.attendance).where(SurveyResponse.user_id == user.id)
+        )
+    ).scalars().first()
+    return _STATUS_BY_ANSWER.get(answer, "no_response")
 
 
 @router.get("/api/directory", response_model=DirectoryListOut)
@@ -69,6 +120,7 @@ async def list_directory(
     db: AsyncSession = Depends(get_db),
 ):
     status_col = _status_expr().label("status")
+    bucket_col = _bucket_expr().label("bucket")
     base = select(User, status_col).where(User.show_in_directory.is_(True))
 
     if q:
@@ -86,7 +138,7 @@ async def list_directory(
         )
 
     if filter != "all":
-        base = base.where(status_col == filter)
+        base = base.where(bucket_col == filter)
 
     if y1:
         base = base.where(User.section_year1 == y1)
@@ -226,5 +278,5 @@ async def update_directory_profile(
         section_hs=current_user.section_hs,
         then_photo_url=resolve_url(current_user.then_photo_url),
         now_photo_url=resolve_url(current_user.now_photo_url),
-        status="faculty" if current_user.is_faculty else "missing",
+        status=await _status_for(db, current_user),
     )

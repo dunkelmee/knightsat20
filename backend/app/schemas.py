@@ -362,7 +362,11 @@ class DirectoryPersonOut(CamelModel):
     section_hs: str | None = None
     then_photo_url: str | None = None
     now_photo_url: str | None = None
-    status: str  # "attending" | "missing" | "faculty"
+    # The survey answer behind the card's status dot, sharing the attendance
+    # wall's palette: "attending" | "most_likely" | "maybe" | "declined" |
+    # "faculty" | "no_response". The coarser bucket the filter pills work in
+    # ("attending" | "missing" | "faculty") stays in DirectoryCountsOut.
+    status: str
 
 
 class DirectoryCountsOut(CamelModel):

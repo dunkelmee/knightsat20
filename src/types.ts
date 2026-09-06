@@ -194,7 +194,20 @@ export interface AuditLogEntry {
 
 // --- Directory --------------------------------------------------------------
 
-export type DirectoryStatus = 'attending' | 'missing' | 'faculty';
+// The survey answer behind a directory card's status dot — the same axis the
+// attendance wall colours by (see utils/statusColors.ts).
+export type DirectoryStatus =
+  | 'attending'
+  | 'most_likely'
+  | 'maybe'
+  | 'declined'
+  | 'faculty'
+  | 'no_response';
+
+// The coarser bucket the directory's filter pills and counts work in. Kept
+// separate from DirectoryStatus: 'missing' spans everyone from "not sure yet"
+// to "never answered", which is too blunt to colour a dot by.
+export type DirectoryFilter = 'all' | 'attending' | 'missing' | 'faculty';
 
 export interface DirectoryPerson {
   id: string;

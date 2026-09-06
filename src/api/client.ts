@@ -5,6 +5,7 @@ import {
   Announcement,
   AuditLogEntry,
   DashboardStats,
+  DirectoryFilter,
   DirectoryListResponse,
   DirectoryUpdatePayload,
   EventDetails,
@@ -163,7 +164,7 @@ export const fetchAuditLogs = () => apiFetch<AuditLogEntry[]>('/superadmin/audit
 
 export const fetchDirectory = (params: {
   q?: string;
-  filter?: 'all' | 'attending' | 'missing' | 'faculty';
+  filter?: DirectoryFilter;
   y1?: string;
   y2?: string;
   y3?: string;
