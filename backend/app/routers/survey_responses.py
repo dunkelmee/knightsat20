@@ -14,11 +14,11 @@ from app.security import Actor, get_current_user, get_organizer_actor
 
 router = APIRouter(prefix="/api/survey-responses", tags=["survey-responses"])
 
-_ATTENDING_TRIGGERS = {"Yes, definitely!", "Most likely, but still confirming"}
-
-# Survey answer -> attendance-wall card status. Every answer is mapped (not just
-# the attending ones) so that editing the survey moves an existing card instead
-# of leaving a stale "Attending" behind.
+# Survey answer -> attendance-wall card status. Every answer is mapped, and
+# every mapped answer earns a card: editing the survey moves an existing card
+# instead of leaving a stale "Attending" behind, and a first-time "not sure" or
+# "can't join" still shows up on the wall (as "Maybe" / "Can't join") rather
+# than silently going missing.
 _RSVP_STATUS_BY_ATTENDANCE = {
     "Yes, definitely!": "Attending",
     "Most likely, but still confirming": "Most likely",
@@ -58,9 +58,7 @@ async def _sync_rsvp_from_survey(db: AsyncSession, response: SurveyResponse) -> 
         existing.plus_ones_count = plus_one_count(response)
         existing.kids_count = kids_count
         existing.message_to_batch = message
-    elif response.attendance in _ATTENDING_TRIGGERS:
-        # A brand-new card is only worth adding for people who say they are
-        # coming; a first-time "no" leaves the wall untouched.
+    else:
         db.add(
             RSVPRecord(
                 submitted_at=datetime.now(timezone.utc),

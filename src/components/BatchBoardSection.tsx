@@ -62,7 +62,7 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
   // Roster state — cards come from the survey only (see
   // _sync_rsvp_from_survey in backend/app/routers/survey_responses.py).
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'All' | 'Attending' | 'Most likely' | 'Maybe'>('All');
+  const [statusFilter, setStatusFilter] = useState<'All' | PublicRSVP['status']>('All');
   const [showAllRsvps, setShowAllRsvps] = useState(false);
   const ROSTER_PREVIEW_COUNT = 6;
 
@@ -229,8 +229,8 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
                 className="w-full pl-8 pr-3 py-2 rounded-full border border-outline-variant/40 text-body text-on-surface focus:outline-none focus:ring-1 focus:ring-primary bg-white/60"
               />
             </div>
-            <div className="flex items-center @min-[640px]/app:flex-wrap gap-1">
-              {(['All', 'Attending', 'Most likely', 'Maybe'] as const).map((filter) => (
+            <div className="flex flex-wrap items-center gap-1">
+              {(['All', 'Attending', 'Most likely', 'Maybe', 'Decline'] as const).map((filter) => (
                 <button
                   key={filter}
                   type="button"
@@ -241,7 +241,7 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
                       : 'bg-white/50 text-on-surface-variant border border-white/80'
                   }`}
                 >
-                  {filter}
+                  {filter === 'All' ? 'All' : STATUS_EDGE[filter].label}
                 </button>
               ))}
             </div>
