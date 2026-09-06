@@ -78,6 +78,7 @@ class RSVPCreate(CamelModel):
     email: str | None = None
     status: str
     bringing_plus_one: bool = False
+    plus_ones_count: int = 0
     kids_count: int = 0
     dietary_restrictions: str | None = None
     message_to_batch: str | None = None
@@ -86,6 +87,7 @@ class RSVPCreate(CamelModel):
 class RSVPOut(RSVPCreate):
     id: str
     submitted_at: datetime
+    photo_url: str | None = None
 
 
 class RSVPPublicOut(CamelModel):
@@ -96,8 +98,10 @@ class RSVPPublicOut(CamelModel):
     full_name: str
     status: str
     bringing_plus_one: bool
+    plus_ones_count: int
     kids_count: int
     message_to_batch: str | None = None
+    photo_url: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -139,6 +143,9 @@ class AnnouncementCreate(CamelModel):
 class AnnouncementOut(AnnouncementCreate):
     id: str
     likes_count: int
+    # Whether the requesting user has liked this announcement — drives the
+    # like button's toggle state (see routers/announcements.py).
+    liked_by_me: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -356,7 +363,6 @@ class DirectoryPersonOut(CamelModel):
     then_photo_url: str | None = None
     now_photo_url: str | None = None
     status: str  # "attending" | "missing" | "faculty"
-    last_seen_city: str | None = None
 
 
 class DirectoryCountsOut(CamelModel):
@@ -391,6 +397,9 @@ class AlbumUpdate(CamelModel):
 
 class ContributorOut(CamelModel):
     initials: str
+    full_name: str
+    # "Now" profile photo, so album cards can stack real faces instead of initials.
+    now_photo_url: str | None = None
 
 
 class AlbumOut(CamelModel):
@@ -405,6 +414,15 @@ class AlbumOut(CamelModel):
     contributors: list[ContributorOut] = Field(default_factory=list)
 
 
+class PersonRefOut(CamelModel):
+    """A batchmate as shown in a tag chip or a lookup result."""
+
+    id: str
+    full_name: str
+    initials: str
+    now_photo_url: str | None = None
+
+
 class PhotoOut(CamelModel):
     id: str
     thumb_url: str
@@ -413,6 +431,16 @@ class PhotoOut(CamelModel):
     uploader_initials: str
     uploaded_by: str
     created_at: datetime
+    tags: list[PersonRefOut] = Field(default_factory=list)
+
+
+class PhotoUpdate(CamelModel):
+    """Caption/tag edit. Both fields are optional and only applied when the
+    client actually sends them — `caption: null` clears the caption, whereas
+    omitting it leaves the existing one alone (see routers/albums.py)."""
+
+    caption: str | None = Field(default=None, max_length=300)
+    tagged_user_ids: list[str] | None = Field(default=None, max_length=50)
 
 
 class AlbumDetailOut(CamelModel):

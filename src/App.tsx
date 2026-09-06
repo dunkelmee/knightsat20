@@ -5,11 +5,8 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Header
-} from './components/Header';
-import {
-  PendingBanner
-} from './components/PendingBanner';
+  TabHero
+} from './components/nav/TabHero';
 import {
   SurveySection
 } from './components/SurveySection';
@@ -261,40 +258,6 @@ export default function App() {
     if (currentUser?.isOrganizer) setAdminRsvps(await api.fetchAdminRsvps());
   };
 
-  // Handler: Direct RSVP Submitted
-  const handleRsvpSubmitted = async (newRsvp: RSVPRecord) => {
-    const saved = await api.createOrUpdateRsvp(newRsvp);
-    const publicVersion: PublicRSVP = {
-      id: saved.id,
-      submittedAt: saved.submittedAt,
-      fullName: saved.fullName,
-      status: saved.status,
-      bringingPlusOne: saved.bringingPlusOne,
-      kidsCount: saved.kidsCount,
-      messageToBatch: saved.messageToBatch,
-    };
-    setPublicRsvps(prev => {
-      const idx = prev.findIndex(r => r.id === publicVersion.id);
-      if (idx >= 0) {
-        const updated = [...prev];
-        updated[idx] = publicVersion;
-        return updated;
-      }
-      return [publicVersion, ...prev];
-    });
-    if (currentUser?.isOrganizer) {
-      setAdminRsvps(prev => {
-        const idx = prev.findIndex(r => r.id === saved.id);
-        if (idx >= 0) {
-          const updated = [...prev];
-          updated[idx] = saved;
-          return updated;
-        }
-        return [saved, ...prev];
-      });
-    }
-  };
-
   // Handler: Delete Survey Response
   const handleDeleteResponse = async (id: string) => {
     await api.deleteSurveyResponse(id);
@@ -394,7 +357,7 @@ export default function App() {
   if (!isBootstrapped) {
     return (
       <div className="min-h-screen bg-background text-on-background flex items-center justify-center font-sans">
-        <div className="text-sm text-on-surface-variant">Loading Batch 2007 Reunion Hub…</div>
+        <div className="text-body text-on-surface-variant">Loading Batch 2007 Reunion Hub…</div>
       </div>
     );
   }
@@ -440,22 +403,49 @@ export default function App() {
   const navOnSelect = adminViewActive ? navigateToAdminTab : navigateToTab;
 
   return (
-    <div className="@container/app min-h-screen bg-background text-on-background flex flex-col font-sans selection:bg-primary-container selection:text-on-primary-container">
+    <div className="isolate min-h-screen bg-background text-on-background">
+      {/* `isolate` matters here: without it, this div isn't itself a
+          stacking context, so ITS OWN background paints as ordinary
+          sibling-level content in the page's root stacking context — which
+          comes AFTER (on top of) its z-index:-1 children below, hiding
+          them. `isolate` makes this div own its stacking context so its
+          background and those children are ordered correctly against each
+          other instead of against the wrong context. */}
 
-      {/* Paper-grain texture overlay */}
+      {/* Memory Desk background: color wash, grid lines, paper-grain texture.
+          Rendered outside the @container/app wrapper below — `container-type`
+          makes an element the containing block for its `position: fixed`
+          descendants too, which broke these full-viewport layers when they
+          lived inside it. Kept here, as true viewport-fixed siblings. */}
+      <div className="desk-wash" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <div className="desk-grid" aria-hidden="true" />
       <div className="paper-grain" aria-hidden="true" />
 
-      {/* Header */}
-      <Header
+    <div className="@container/app min-h-screen flex flex-col font-sans selection:bg-primary-container selection:text-on-primary-container">
+
+      {/* Dark hero band: crest/nav/avatar + per-tab title/subtitle, and
+          (Board tab only) the headcount card + ticket button */}
+      <TabHero
         navTabs={navTabs}
         navActiveKey={navActiveKey}
         onNavSelect={navOnSelect}
+        activeTab={activeTab}
         adminViewActive={adminViewActive}
         canAccessOrganizerView={currentUser.isOrganizer}
         onToggleAdminView={handleToggleAdminView}
         currentUser={currentUser}
         onLogout={handleLogout}
         onEditProfile={() => setShowProfileEdit(true)}
+        totalPledges={stats.totalPledges}
+        totalSurveys={stats.totalSurveys}
+        eventDetails={eventDetails}
+        mySurveyResponse={mySurveyResponse}
+        rsvps={publicRsvps}
+        onNavigateToSurvey={() => setActiveTab('survey')}
       />
 
       {/* Edit-Profile Modal (full name & mobile number) */}
@@ -467,22 +457,6 @@ export default function App() {
           onSaved={(user) => {
             setCurrentUser(user);
             setShowProfileEdit(false);
-          }}
-        />
-      )}
-
-      {/* Prominent Pending Date & Venue Banner — only on the Batch Board tab,
-          which is the hero-carrying landing page once a survey's been
-          answered. Survey/Funds/Directory/Photos all get their own headers. */}
-      {activeTab === 'board' && (
-        <PendingBanner
-          totalSurveys={stats.totalSurveys}
-          totalPledges={stats.totalPledges}
-          eventDetails={eventDetails}
-          onTakeSurveyClick={() => {
-            setActiveTab('survey');
-            const el = document.getElementById('survey-form-container');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
           }}
         />
       )}
@@ -501,14 +475,14 @@ export default function App() {
           />
         )}
 
-        {/* Tab 2: Batch Board — Announcements + Attendee Roster, combined */}
+        {/* Tab 2: Batch Board — Announcements + Attendance Wall (headcount and
+            ticket now live in the TabHero above) */}
         {activeTab === 'board' && (
           <BatchBoardSection
             announcements={announcements}
             onLikeAnnouncement={handleLikeAnnouncement}
             onOpenAdminToPost={() => setActiveTab('admin')}
             rsvps={publicRsvps}
-            onRsvpSubmitted={handleRsvpSubmitted}
           />
         )}
 
@@ -553,7 +527,7 @@ export default function App() {
               onDeleteVenue={handleDeleteVenue}
             />
           ) : (
-            <div className="max-w-sm mx-auto py-16 px-4 text-center text-sm text-on-surface-variant">
+            <div className="max-w-sm mx-auto py-16 px-4 text-center text-body text-on-surface-variant">
               You don't have organizer access.
             </div>
           )
@@ -561,17 +535,10 @@ export default function App() {
 
       </main>
 
-      {/* Footer */}
-      <footer className="relative bg-surface-container text-on-surface-variant border-t border-outline-variant/40 text-xs py-6 px-4 sm:px-6 mt-12">
-        <div className="max-w-7xl mx-auto text-center flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2">
-          <span>Excellence & Service • MakSci 2007 Forever</span>
-          <span>Designed with love for the Makati Science High School Batch 2007 Reunion</span>
-        </div>
-      </footer>
-
       {/* Floating bottom nav (mobile only — see AppNav.tsx) */}
       <MobileNav tabs={navTabs} activeTab={navActiveKey} setActiveTab={navOnSelect} />
 
+    </div>
     </div>
   );
 }

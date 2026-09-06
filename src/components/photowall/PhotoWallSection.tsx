@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Images } from 'lucide-react';
 import { Album, UserProfile } from '../../types';
 import { fetchAlbums } from '../../api/client';
+import { AvatarStack } from '../Avatar';
 import { CreateAlbumModal } from './CreateAlbumModal';
 import { AlbumDetail } from './AlbumDetail';
 
@@ -12,56 +13,45 @@ interface PhotoWallSectionProps {
 
 const AlbumCard: React.FC<{ album: Album; onOpen: () => void }> = ({ album, onOpen }) => {
   const [big, ...small] = album.recentThumbUrls;
-  const extraContributors = album.contributorCount - album.contributors.length;
 
   return (
-    <button type="button" onClick={onOpen} className="text-left bg-surface-container-lowest rounded overflow-hidden border border-outline-variant/30 shadow-soft">
-      <div className="relative h-36 grid grid-cols-[2fr_1fr] grid-rows-2 gap-0.5 bg-surface-container-high">
-        {big ? (
-          <img src={big} alt="" className="w-full h-full object-cover row-span-2" />
-        ) : (
-          <div className="row-span-2 flex items-center justify-center text-outline">
-            <Images className="w-6 h-6" />
-          </div>
+    <button
+      type="button"
+      onClick={onOpen}
+      className="relative text-left p-3.5 bg-surface-container-lowest rounded-sm shadow-soft flex flex-col gap-3"
+    >
+      <div className="flex items-start gap-2.5">
+        <span className="flex-1 font-serif text-heading leading-[1.15] text-on-surface">{album.title}</span>
+        {album.isLiveDay && (
+          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full font-mono text-label font-semibold tracking-[0.12em] uppercase" style={{ background: 'rgba(176,86,79,.12)', border: '1px solid rgba(176,86,79,.34)', color: '#98443e' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ff5f4e] animate-pulse" />
+            Live
+          </span>
         )}
-        {[0, 1].map((i) => (
-          <div key={i} className="bg-surface-container-high">
-            {small[i] && <img src={small[i]} alt="" className="w-full h-full object-cover" />}
-          </div>
-        ))}
       </div>
 
-      <div className="p-3">
-        {album.isLiveDay && (
-          <div className="inline-flex items-center gap-1.5 bg-primary-container/15 text-primary text-[9px] font-bold px-2 py-0.5 rounded-full mb-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-            LIVE ON REUNION DAY
-          </div>
-        )}
-        <h4 className="font-serif font-semibold text-sm text-on-surface">{album.title}</h4>
-        <div className="flex items-center justify-between mt-1.5">
-          <span className="text-[10.5px] text-on-surface-variant">
-            {album.photoCount} photos · {album.contributorCount} contributor{album.contributorCount === 1 ? '' : 's'}
-          </span>
-          {album.contributors.length > 0 && (
-            <div className="flex">
-              {album.contributors.map((c, i) => (
-                <span
-                  key={i}
-                  style={{ marginLeft: i === 0 ? 0 : -6 }}
-                  className="w-5 h-5 rounded-full border-2 border-surface-container-lowest bg-tertiary text-on-tertiary flex items-center justify-center text-[8px] font-bold"
-                >
-                  {c.initials}
-                </span>
-              ))}
-              {extraContributors > 0 && (
-                <span style={{ marginLeft: -6 }} className="w-5 h-5 rounded-full border-2 border-surface-container-lowest bg-outline text-surface flex items-center justify-center text-[8px] font-bold">
-                  +{extraContributors}
-                </span>
-              )}
-            </div>
+      <div className="flex gap-1.5 h-36">
+        <div className="flex-[1.6] aspect-[4/3] bg-surface-container-high overflow-hidden">
+          {big ? <img src={big} alt="" className="w-full h-full object-cover" /> : (
+            <div className="w-full h-full flex items-center justify-center text-outline"><Images className="w-6 h-6" /></div>
           )}
         </div>
+        <div className="flex-1 flex flex-col gap-1.5">
+          {[0, 1].map((i) => (
+            <div key={i} className="flex-1 bg-surface-container-high overflow-hidden">
+              {small[i] && <img src={small[i]} alt="" className="w-full h-full object-cover" />}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-2.5 pt-2.5 border-t border-dashed border-on-surface/15">
+        <span className="font-mono text-label tracking-[0.1em] uppercase text-on-surface-variant/60">
+          {album.photoCount} photos · {album.contributorCount} contributor{album.contributorCount === 1 ? '' : 's'}
+        </span>
+        {album.contributors.length > 0 && (
+          <AvatarStack people={album.contributors} total={album.contributorCount} size={22} />
+        )}
       </div>
     </button>
   );
@@ -98,40 +88,36 @@ export const PhotoWallSection: React.FC<PhotoWallSectionProps> = ({ currentUser,
   }
 
   return (
-    <div id="photowall-container" className="max-w-5xl mx-auto py-5 px-4 space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h2 className="text-lg sm:text-xl font-serif font-semibold text-on-surface">Photo Wall</h2>
-          <p className="text-xs text-on-surface-variant mt-1">Build albums together — shown live on reunion day.</p>
-        </div>
+    <div id="photowall-container" className="max-w-5xl @min-[700px]/app:max-w-[1180px] mx-auto py-6 px-4 @min-[700px]/app:px-8 space-y-5">
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={() => setShowCreateModal(true)}
-          className="flex-shrink-0 px-3.5 py-2 rounded-full bg-primary text-on-primary text-xs font-bold shadow-soft whitespace-nowrap"
+          className="flex-shrink-0 px-4.5 py-2.5 rounded-full bg-primary text-on-primary text-body font-bold shadow-soft whitespace-nowrap"
         >
-          + Album
+          + New album
         </button>
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12 text-xs text-on-surface-variant">Loading albums…</div>
+        <div className="text-center py-12 text-body text-on-surface-variant">Loading albums…</div>
       ) : albums.length === 0 ? (
-        <div className="text-center py-10 px-4 space-y-2.5">
-          <div className="w-10 h-10 rounded-full bg-primary-container/20 text-on-primary-container flex items-center justify-center mx-auto border border-primary-container/50">
-            <Images className="w-5 h-5" />
-          </div>
-          <h3 className="text-sm font-semibold text-on-surface">No albums yet</h3>
-          <p className="text-xs text-on-surface-variant max-w-sm mx-auto">Start the first one for the batch to fill together.</p>
+        <div className="text-center py-13 px-5 rounded border-[1.5px] border-dashed border-on-surface/25 bg-white/40 space-y-2.5">
+          <Images className="w-6 h-6 mx-auto text-on-surface-variant/60" />
+          <h3 className="font-serif text-title text-on-surface">No albums yet</h3>
+          <p className="text-body text-on-surface-variant max-w-[40ch] mx-auto">
+            Start the first one for the batch to fill together.
+          </p>
           <button
             type="button"
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded bg-primary hover:opacity-90 text-on-primary text-xs font-semibold shadow-soft"
+            className="mt-1 inline-flex items-center gap-1.5 px-4.5 py-2.5 rounded-full bg-primary hover:opacity-90 text-on-primary text-body font-bold shadow-soft"
           >
-            + Create an Album
+            + Create an album
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 @min-[640px]/app:grid-cols-2 @min-[700px]/app:grid-cols-[repeat(auto-fit,minmax(258px,1fr))] gap-4 @min-[700px]/app:gap-5">
           {albums.map((album) => (
             <AlbumCard key={album.id} album={album} onOpen={() => setSelectedAlbumId(album.id)} />
           ))}

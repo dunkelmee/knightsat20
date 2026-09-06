@@ -40,12 +40,24 @@ interface AppNavProps {
   setActiveTab: (tab: string) => void;
 }
 
-// Desktop placement — rendered inline in Header.tsx, between the brand block
-// and the profile avatar. Hidden below the 700px container-query breakpoint.
+// Desktop placement — rendered inline in TabHero.tsx's dark hero band,
+// between the brand block and the profile chip. Hidden below the 700px
+// container-query breakpoint. Colors are tuned for the dark hero background
+// (cream active pill, translucent-cream inactive text) rather than a light
+// surface, since the hero replaced the old light header bar.
 export const DesktopNav: React.FC<AppNavProps> = ({ tabs, activeTab, setActiveTab }) => {
   if (tabs.length === 0) return null;
   return (
-    <nav aria-label="Primary" className="hidden @min-[700px]/app:flex items-center gap-1">
+    <nav
+      aria-label="Primary"
+      // `mx-auto` only centres the pill group in the space LEFT OVER between
+      // the brand block and the profile chip, and the brand is much the wider
+      // of the two — so the group lands visibly right of the page's centre
+      // line. Above 1040px there's room to take it out of flow and centre it
+      // on the row itself; below that the flow version still fits better than
+      // an absolute one, which would run under the brand.
+      className="hidden @min-[700px]/app:flex mx-auto @min-[1040px]/app:mx-0 @min-[1040px]/app:absolute @min-[1040px]/app:left-1/2 @min-[1040px]/app:top-1/2 @min-[1040px]/app:-translate-x-1/2 @min-[1040px]/app:-translate-y-1/2 items-center gap-1 p-1.5 rounded-full bg-white/[0.11] backdrop-blur-xl border border-white/20"
+    >
       {tabs.map(({ key, label, icon: Icon }) => {
         const active = activeTab === key;
         return (
@@ -54,11 +66,10 @@ export const DesktopNav: React.FC<AppNavProps> = ({ tabs, activeTab, setActiveTa
             type="button"
             aria-current={active ? 'page' : undefined}
             onClick={() => setActiveTab(key)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-              active
-                ? 'bg-primary-container/15 text-primary'
-                : 'text-on-surface-variant hover:bg-surface-container-low'
+            className={`flex items-center gap-1.5 px-3 @min-[1040px]/app:px-4 py-2.5 rounded-full text-label font-semibold whitespace-nowrap transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+              active ? 'text-[#0d2620]' : 'text-white/70 hover:text-white'
             }`}
+            style={active ? { background: '#f6e6bf' } : undefined}
           >
             <Icon className="w-4 h-4 flex-shrink-0" />
             <span>{label}</span>
@@ -77,7 +88,7 @@ export const MobileNav: React.FC<AppNavProps> = ({ tabs, activeTab, setActiveTab
   return (
     <nav
       aria-label="Primary"
-      className="@min-[700px]/app:hidden fixed left-3 right-3 bottom-3 z-40 h-[62px] rounded-[20px] bg-surface-container-lowest border border-outline-variant/40 shadow-soft flex items-stretch justify-around px-1.5"
+      className="@min-[700px]/app:hidden fixed left-3 right-3 bottom-3 z-40 h-[62px] rounded-[26px] bg-surface-container-lowest/85 backdrop-blur-xl border border-white/60 shadow-soft flex items-stretch justify-around px-1.5"
     >
       {tabs.map(({ key, label, icon: Icon }) => {
         const active = activeTab === key;
@@ -87,20 +98,27 @@ export const MobileNav: React.FC<AppNavProps> = ({ tabs, activeTab, setActiveTab
             type="button"
             aria-current={active ? 'page' : undefined}
             onClick={() => setActiveTab(key)}
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-2xl"
+            className="flex-1 flex flex-col items-center justify-center gap-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-2xl"
           >
             <span
-              className={`flex items-center justify-center rounded-full transition-all motion-reduce:transition-none ${
+              className="flex items-center justify-center rounded-full transition-all motion-reduce:transition-none"
+              style={
                 active
-                  ? 'w-14 h-14 -translate-y-5 bg-primary-container text-on-primary shadow-soft border-4 border-surface'
-                  : 'w-11 h-11 text-outline'
-              }`}
+                  ? {
+                      width: 34, height: 34, borderRadius: '50%',
+                      background: 'linear-gradient(155deg,#f6e6bf,#e6cf98)',
+                      border: '1px solid rgba(255,255,255,.9)',
+                      boxShadow: '0 8px 16px -8px rgba(14,44,37,.5)',
+                      color: '#0b4a3f',
+                    }
+                  : { width: 30, height: 30, color: 'var(--color-outline)' }
+              }
             >
-              <Icon className={active ? 'w-[26px] h-[26px]' : 'w-[23px] h-[23px]'} />
+              <Icon className={active ? 'w-[18px] h-[18px]' : 'w-[17px] h-[17px]'} />
             </span>
             <span
-              className={`text-[9px] font-bold tracking-wide uppercase transition-all motion-reduce:transition-none ${
-                active ? 'text-primary -translate-y-3.5' : 'text-transparent h-0 overflow-hidden'
+              className={`font-sans text-nav font-bold tracking-wide uppercase transition-colors motion-reduce:transition-none ${
+                active ? 'text-primary' : 'text-on-surface-variant/50'
               }`}
             >
               {label}

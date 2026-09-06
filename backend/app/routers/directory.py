@@ -13,9 +13,11 @@ from app.schemas import (
     DirectoryListOut,
     DirectoryPersonOut,
     DirectoryUpdateRequest,
+    PersonRefOut,
 )
 from app.security import get_current_user
 from app.storage import resolve_url
+from app.text_utils import initials
 
 router = APIRouter(tags=["directory"], dependencies=[Depends(get_current_user)])
 
@@ -128,7 +130,6 @@ async def list_directory(
             then_photo_url=resolve_url(user.then_photo_url),
             now_photo_url=resolve_url(user.now_photo_url),
             status=status,
-            last_seen_city=user.current_city if status == "missing" and not user.now_photo_url else None,
         )
         for user, status in rows
     ]
@@ -160,6 +161,38 @@ async def list_directory(
         counts.missing = counts.all - faculty_count - attending_count
 
     return DirectoryListOut(total=counts.all, counts=counts, next_cursor=next_cursor, people=people)
+
+
+@router.get("/api/people/search", response_model=list[PersonRefOut])
+async def search_people(
+    q: str = Query(default="", max_length=100),
+    limit: int = Query(default=8, ge=1, le=25),
+    db: AsyncSession = Depends(get_db),
+):
+    """Name lookup behind the photo-tagging picker.
+
+    Unlike /api/directory this ignores `show_in_directory`: that flag hides
+    someone from the browsable directory, but a batchmate who is visibly in a
+    photo still needs to be taggable. Only onboarded accounts are returned.
+    """
+    query = select(User).where(User.onboarding_completed_at.isnot(None))
+
+    term = q.strip()
+    if term:
+        query = query.where(User.full_name.ilike(f"%{term}%"))
+
+    query = query.order_by(User.full_name.asc(), User.id.asc()).limit(limit)
+    users = (await db.execute(query)).scalars().all()
+
+    return [
+        PersonRefOut(
+            id=user.id,
+            full_name=user.full_name,
+            initials=initials(user.full_name),
+            now_photo_url=resolve_url(user.now_photo_url),
+        )
+        for user in users
+    ]
 
 
 @router.patch("/api/profile/directory", response_model=DirectoryPersonOut)
@@ -194,5 +227,4 @@ async def update_directory_profile(
         then_photo_url=resolve_url(current_user.then_photo_url),
         now_photo_url=resolve_url(current_user.now_photo_url),
         status="faculty" if current_user.is_faculty else "missing",
-        last_seen_city=None,
     )

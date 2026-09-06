@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { GraduationCap, Mail, Phone, User as UserIcon, ArrowLeft, Send, ShieldCheck, Lock, KeyRound } from 'lucide-react';
+import { Mail, ArrowLeft, Lock } from 'lucide-react';
 import { UserProfile } from '../../types';
 import { ApiError, registerAccount, requestLogin, superadminLogin, verifyOtp } from '../../api/client';
+import { AuthShell, FIELD_CLASS, OTP_CLASS, BTN_CLASS, LINK_CLASS, KICK_LABEL_CLASS } from './AuthShell';
 
 interface AuthGateProps {
   onAuthenticated: (user: UserProfile, hasSubmittedSurvey: boolean) => Promise<void> | void;
@@ -12,6 +13,29 @@ type Mode = 'login' | 'register' | 'verify' | 'superadmin-password';
 
 const RESEND_COOLDOWN_SECONDS = 60;
 const OTP_LENGTH = 6;
+
+const SCREEN_COPY: Record<Mode, { kicker: string; title: string; sub: string }> = {
+  login: {
+    kicker: 'Sign in',
+    title: 'Welcome to our reunion hub!',
+    sub: 'Enter your email address. You will be automatically redirected to the registration page if you do not have an account yet.',
+  },
+  register: {
+    kicker: 'New account',
+    title: 'Create an account',
+    sub: 'Batch 2007 alumni only. The invite code is posted on our Messenger group.',
+  },
+  verify: {
+    kicker: 'Verify',
+    title: 'Enter your code',
+    sub: '',
+  },
+  'superadmin-password': {
+    kicker: 'Restricted · superadmin',
+    title: 'Superadmin password',
+    sub: 'This identity skips OTP entirely.',
+  },
+};
 
 export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onSuperadminAuthenticated }) => {
   const [mode, setMode] = useState<Mode>('login');
@@ -195,269 +219,189 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onSuperadmi
     setInviteCode('');
   };
 
+  const copy = SCREEN_COPY[mode];
+  const verifySub = infoMessage || `We sent a 6-digit code to ${pendingEmail}`;
+
   return (
-    <div className="min-h-screen bg-background text-on-background flex items-center justify-center font-sans px-4 py-10">
-      <div className="paper-grain" aria-hidden="true" />
-
-      <div className="w-full max-w-sm space-y-5">
-        <div className="flex flex-col items-center text-center gap-2">
-          <div className="w-12 h-12 rounded bg-primary text-on-primary flex items-center justify-center shadow-soft">
-            <GraduationCap className="w-6 h-6 text-on-primary" />
+    <AuthShell kicker={copy.kicker} title={copy.title} sub={mode === 'verify' ? verifySub : copy.sub}>
+      {mode === 'superadmin-password' ? (
+        <form onSubmit={handleSuperadminSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col items-center gap-2.5">
+            <span className="w-[46px] h-[46px] rounded-2xl grid place-items-center bg-[rgba(20,33,29,.06)] border border-[rgba(20,33,29,.16)]">
+              <Lock className="w-5 h-5 text-on-surface-variant" />
+            </span>
+            {pendingEmail && (
+              <span className="font-mono text-label text-on-surface-variant">{pendingEmail}</span>
+            )}
           </div>
-          <h1 className="font-serif font-semibold text-lg text-on-surface">
-            Makati Science High School
-          </h1>
-          <p className="text-xs text-on-surface-variant">
-            Batch 2007 Reunion Hub — sign in to continue
-          </p>
-        </div>
 
-        <div className="bg-surface-container-lowest rounded p-6 border border-outline-variant/30 shadow-soft space-y-4">
-          {mode === 'superadmin-password' ? (
-            <form onSubmit={handleSuperadminSubmit} className="space-y-4">
-              <div className="text-center space-y-1">
-                <div className="w-10 h-10 rounded-full bg-primary-container/20 text-on-primary-container flex items-center justify-center mx-auto border border-primary-container/50 mb-1">
-                  <Lock className="w-5 h-5" />
-                </div>
-                <h2 className="font-serif font-semibold text-base text-on-surface">
-                  Superadmin password
-                </h2>
-                <p className="text-xs text-on-surface-variant">{pendingEmail}</p>
-              </div>
+          <input
+            type="password"
+            autoComplete="current-password"
+            autoFocus
+            placeholder="Superadmin password"
+            value={superadminPassword}
+            onChange={(e) => setSuperadminPassword(e.target.value)}
+            className={`${FIELD_CLASS} text-center`}
+          />
 
-              <div>
-                <input
-                  type="password"
-                  autoComplete="current-password"
-                  autoFocus
-                  placeholder="Password"
-                  value={superadminPassword}
-                  onChange={(e) => setSuperadminPassword(e.target.value)}
-                  className="w-full text-center px-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
-                />
-              </div>
+          {error && <p className="text-body text-error text-center">{error}</p>}
 
-              {error && <p className="text-xs text-error text-center">{error}</p>}
+          <button type="submit" disabled={isSubmitting} className={BTN_CLASS}>
+            {isSubmitting ? 'Verifying…' : 'Log in'}
+          </button>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-2.5 rounded bg-primary hover:opacity-90 disabled:opacity-60 text-on-primary font-semibold text-sm shadow-soft transition-all flex items-center justify-center gap-1.5"
-              >
-                <ShieldCheck className="w-4 h-4" />
-                <span>{isSubmitting ? 'Verifying…' : 'Log in'}</span>
-              </button>
+          <button type="button" onClick={resetToLogin} className={`${LINK_CLASS} self-center flex items-center gap-1`}>
+            <ArrowLeft className="w-3 h-3" />
+            <span>Use a different email</span>
+          </button>
+        </form>
+      ) : mode === 'verify' ? (
+        <form onSubmit={handleVerify} className="flex flex-col gap-[17px]">
+          <div className="flex gap-[7px]" onPaste={handleOtpPaste}>
+            {otp.map((digit, i) => (
+              <input
+                key={i}
+                ref={el => { otpRefs.current[i] = el; }}
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleOtpChange(i, e.target.value)}
+                onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                className={OTP_CLASS}
+              />
+            ))}
+          </div>
 
-              <button
-                type="button"
-                onClick={resetToLogin}
-                className="w-full text-xs text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Use a different email</span>
-              </button>
-            </form>
-          ) : mode === 'verify' ? (
-            <form onSubmit={handleVerify} className="space-y-4">
-              <div className="text-center space-y-1">
-                <h2 className="font-serif font-semibold text-base text-on-surface">
-                  Enter your code
-                </h2>
-                <p className="text-xs text-on-surface-variant">
-                  {infoMessage || `We sent a 6-digit code to ${pendingEmail}`}
-                </p>
-              </div>
+          {error && <p className="text-body text-error text-center">{error}</p>}
 
-              <div className="flex items-center justify-center gap-2" onPaste={handleOtpPaste}>
-                {otp.map((digit, i) => (
-                  <input
-                    key={i}
-                    ref={el => { otpRefs.current[i] = el; }}
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(i, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                    className="w-11 h-12 sm:w-12 sm:h-14 text-center text-xl font-semibold rounded border border-secondary/30 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-                  />
-                ))}
-              </div>
+          <button type="submit" disabled={isSubmitting} className={BTN_CLASS}>
+            {isSubmitting ? 'Verifying…' : 'Verify & Continue'}
+          </button>
 
-              {error && <p className="text-xs text-error text-center">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-2.5 rounded bg-primary hover:opacity-90 disabled:opacity-60 text-on-primary font-semibold text-sm shadow-soft transition-all flex items-center justify-center gap-1.5"
-              >
-                <ShieldCheck className="w-4 h-4" />
-                <span>{isSubmitting ? 'Verifying…' : 'Verify & Continue'}</span>
-              </button>
-
-              <div className="flex items-center justify-between text-xs pt-1">
-                <button
-                  type="button"
-                  onClick={resetToLogin}
-                  className="text-on-surface-variant hover:text-on-surface flex items-center gap-1"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Use a different email</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleResend}
-                  disabled={cooldown > 0 || isSubmitting}
-                  className="text-secondary hover:opacity-80 disabled:text-on-surface-variant disabled:opacity-60 font-semibold"
-                >
-                  {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
-                </button>
-              </div>
-            </form>
-          ) : mode === 'login' ? (
-            <form onSubmit={handleSendLoginCode} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
-                  Email address
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
-                  />
-                </div>
-              </div>
-
-              {error && <p className="text-xs text-error">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-2.5 rounded bg-primary hover:opacity-90 disabled:opacity-60 text-on-primary font-semibold text-sm shadow-soft transition-all flex items-center justify-center gap-1.5"
-              >
-                <Send className="w-4 h-4" />
-                <span>{isSubmitting ? 'Sending…' : 'Send login code'}</span>
-              </button>
-
-              <p className="text-center text-xs text-on-surface-variant">
-                New here?{' '}
-                <button
-                  type="button"
-                  onClick={() => { setMode('register'); setError(''); setInfoMessage(''); }}
-                  className="text-secondary font-semibold hover:opacity-80"
-                >
-                  Create an account
-                </button>
-              </p>
-            </form>
-          ) : (
-            <form onSubmit={handleRegister} className="space-y-3.5">
-              {infoMessage && (
-                <p className="text-xs text-center text-on-primary-container bg-primary-container/20 border border-primary-container/50 rounded px-3 py-2">
-                  {infoMessage}
-                </p>
+          <div className="flex items-center justify-between gap-2.5">
+            <button type="button" onClick={resetToLogin} className={LINK_CLASS}>
+              Use a different email
+            </button>
+            <button type="button" onClick={handleResend} disabled={cooldown > 0 || isSubmitting} className={LINK_CLASS}>
+              {cooldown > 0 ? (
+                <span className="font-mono text-label no-underline text-on-surface-variant">Resend in {cooldown}s</span>
+              ) : (
+                'Resend code'
               )}
+            </button>
+          </div>
+        </form>
+      ) : mode === 'login' ? (
+        <form onSubmit={handleSendLoginCode} className="flex flex-col gap-4">
+          <label className="flex flex-col gap-2">
+            <span className={KICK_LABEL_CLASS}>Email address</span>
+            <span className="flex items-center gap-2.5 rounded-xl border border-[rgba(20,33,29,.16)] bg-white/70 px-3.5 py-3 focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary/10">
+              <Mail className="w-4 h-4 text-on-surface-variant flex-shrink-0" />
+              <input
+                type="email"
+                autoComplete="email"
+                placeholder="juan.delacruz@gmail.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 min-w-0 bg-transparent text-body text-on-background placeholder:italic placeholder:font-serif placeholder:text-[#3d4d47] focus:outline-none"
+              />
+            </span>
+          </label>
 
-              <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
-                  Email address
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
-                  />
-                </div>
-              </div>
+          {error && <p className="text-body text-error">{error}</p>}
 
-              <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
-                  Full name
-                </label>
-                <div className="relative">
-                  <UserIcon className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    autoComplete="name"
-                    placeholder="e.g. Juan dela Cruz (IV-Curie)"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
-                  />
-                </div>
-              </div>
+          <button type="submit" disabled={isSubmitting} className={BTN_CLASS}>
+            {isSubmitting ? 'Sending…' : 'Send login code'}
+          </button>
 
-              <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
-                  Mobile / WhatsApp number
-                </label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="tel"
-                    autoComplete="tel"
-                    placeholder="e.g. 09171234567"
-                    value={mobileNumber}
-                    onChange={(e) => setMobileNumber(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
-                  Invite code
-                </label>
-                <div className="relative">
-                  <KeyRound className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    autoComplete="off"
-                    placeholder="From the batch Messenger group"
-                    value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
-                  />
-                </div>
-              </div>
-
-              {error && <p className="text-xs text-error">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-2.5 rounded bg-primary hover:opacity-90 disabled:opacity-60 text-on-primary font-semibold text-sm shadow-soft transition-all flex items-center justify-center gap-1.5"
-              >
-                <Send className="w-4 h-4" />
-                <span>{isSubmitting ? 'Sending…' : 'Create account'}</span>
-              </button>
-
-              <p className="text-center text-xs text-on-surface-variant">
-                Already registered?{' '}
-                <button
-                  type="button"
-                  onClick={() => { setMode('login'); setError(''); setInfoMessage(''); }}
-                  className="text-secondary font-semibold hover:opacity-80"
-                >
-                  Log in
-                </button>
-              </p>
-            </form>
+          <p className="text-center text-body text-on-surface-variant/85">
+            New here?{' '}
+            <button
+              type="button"
+              onClick={() => { setMode('register'); setError(''); setInfoMessage(''); }}
+              className={LINK_CLASS}
+            >
+              Create an account
+            </button>
+          </p>
+        </form>
+      ) : (
+        <form onSubmit={handleRegister} className="flex flex-col gap-4">
+          {infoMessage && (
+            <p className="text-body text-center text-primary bg-[rgba(14,90,77,.08)] border border-[rgba(14,90,77,.25)] rounded-xl px-3 py-2">
+              {infoMessage}
+            </p>
           )}
-        </div>
-      </div>
-    </div>
+
+          <label className="flex flex-col gap-2">
+            <span className={KICK_LABEL_CLASS}>Email address</span>
+            <input
+              type="email"
+              autoComplete="email"
+              placeholder="juan.delacruz@gmail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={FIELD_CLASS}
+            />
+          </label>
+
+          <label className="flex flex-col gap-2">
+            <span className={KICK_LABEL_CLASS}>Full name</span>
+            <input
+              type="text"
+              autoComplete="name"
+              placeholder="e.g. Juan dela Cruz"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className={FIELD_CLASS}
+            />
+          </label>
+
+          <label className="flex flex-col gap-2">
+            <span className={KICK_LABEL_CLASS}>Mobile / WhatsApp number</span>
+            <input
+              type="tel"
+              autoComplete="tel"
+              placeholder="e.g. 09171234567"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+              className={FIELD_CLASS}
+            />
+          </label>
+
+          <label className="flex flex-col gap-2">
+            <span className={KICK_LABEL_CLASS}>Invite code</span>
+            <input
+              type="text"
+              autoComplete="off"
+              placeholder="From the batch Messenger group"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              className={FIELD_CLASS}
+            />
+          </label>
+
+          {error && <p className="text-body text-error">{error}</p>}
+
+          <button type="submit" disabled={isSubmitting} className={BTN_CLASS}>
+            {isSubmitting ? 'Sending…' : 'Create account'}
+          </button>
+
+          <p className="text-center text-body text-on-surface-variant/85">
+            Already registered?{' '}
+            <button
+              type="button"
+              onClick={() => { setMode('login'); setError(''); setInfoMessage(''); }}
+              className={LINK_CLASS}
+            >
+              Log in
+            </button>
+          </p>
+        </form>
+      )}
+    </AuthShell>
   );
 };

@@ -61,10 +61,10 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
               <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-serif font-bold text-on-surface">
+              <h2 className="text-heading font-serif font-bold text-on-surface">
                 {existingVenue ? 'Edit Scouted Venue' : 'Add Scouted Venue'}
               </h2>
-              <p className="text-xs text-on-surface-variant">
+              <p className="text-body text-on-surface-variant">
                 Committee-internal shortlist — not shown to attendees
               </p>
             </div>
@@ -80,7 +80,7 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
         </div>
 
         {error && (
-          <div className="p-3 bg-error-container text-on-error-container text-xs font-medium rounded border border-error-container">
+          <div className="p-3 bg-error-container text-on-error-container text-body font-medium rounded border border-error-container">
             {error}
           </div>
         )}
@@ -88,7 +88,7 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
 
           <div>
-            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+            <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
               Name <span className="text-error">*</span>
             </label>
             <input
@@ -97,13 +97,13 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
               placeholder="e.g. Dusit Thani Manila (Grand Ballroom)"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full px-3.5 py-2.5 rounded border border-secondary/30 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+              <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
                 Tentative Date
               </label>
               <input
@@ -111,12 +111,12 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
                 placeholder="e.g. Saturday, April 24, 2027"
                 value={tentativeDate}
                 onChange={(e) => setTentativeDate(e.target.value)}
-                className="w-full px-3 py-2.5 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full px-3 py-2.5 rounded border border-secondary/30 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+              <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
                 Quoted Cost (₱)
               </label>
               <div className="relative">
@@ -128,14 +128,14 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
                   placeholder="140000"
                   value={quotedCost}
                   onChange={(e) => setQuotedCost(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm font-bold focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full pl-8 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-body font-bold focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+            <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
               Address
             </label>
             <input
@@ -143,12 +143,12 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
               placeholder="e.g. Ayala Center, San Lorenzo, Makati City"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full px-3.5 py-2.5 rounded border border-secondary/30 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+            <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
               Miscellaneous Details <span className="text-outline font-normal">(Optional)</span>
             </label>
             <textarea
@@ -156,7 +156,7 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
               placeholder="e.g. Includes 5-hour rental, in-house catering minimum of 70 pax, free parking for 30 cars."
               value={miscDetails}
               onChange={(e) => setMiscDetails(e.target.value)}
-              className="w-full p-3 rounded border border-secondary/30 text-xs text-on-surface focus:outline-none"
+              className="w-full p-3 rounded border border-secondary/30 text-body text-on-surface focus:outline-none"
             />
           </div>
 
@@ -164,13 +164,13 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded border border-secondary/30 text-on-surface-variant text-xs font-semibold hover:bg-surface-container"
+              className="px-4 py-2.5 rounded border border-secondary/30 text-on-surface-variant text-body font-semibold hover:bg-surface-container"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded bg-primary hover:opacity-90 text-on-primary text-xs font-bold shadow-soft"
+              className="px-5 py-2.5 rounded bg-primary hover:opacity-90 text-on-primary text-body font-bold shadow-soft"
             >
               {existingVenue ? 'Save Changes' : 'Add to Shortlist'}
             </button>

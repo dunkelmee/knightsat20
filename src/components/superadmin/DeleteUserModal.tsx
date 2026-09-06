@@ -39,10 +39,10 @@ export const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
             <AlertTriangle className="w-5 h-5 text-on-error-container" />
           </div>
           <div className="min-w-0">
-            <h2 className="font-serif font-semibold text-base text-on-surface">
+            <h2 className="font-serif font-semibold text-heading text-on-surface">
               Delete {user.fullName}?
             </h2>
-            <p className="text-xs text-on-surface-variant mt-1.5 leading-relaxed">
+            <p className="text-body text-on-surface-variant mt-1.5 leading-relaxed">
               This permanently removes their account, survey response, RSVP, and every photo they
               uploaded, plus any albums they created — including other people's photos in those
               albums. This can't be undone.
@@ -52,7 +52,7 @@ export const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Confirm your superadmin password
             </label>
             <input
@@ -61,25 +61,25 @@ export const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Superadmin password"
-              className="w-full px-3.5 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-error bg-background"
+              className="w-full px-3.5 py-2.5 rounded border border-secondary/30 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-error bg-background"
             />
           </div>
 
-          {error && <p className="text-xs text-error">{error}</p>}
+          {error && <p className="text-body text-error">{error}</p>}
 
           <div className="flex items-center gap-2 pt-1">
             <button
               type="button"
               onClick={onCancel}
               disabled={isDeleting}
-              className="flex-1 py-2.5 rounded border border-outline-variant/40 text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-semibold text-sm disabled:opacity-60 transition-all"
+              className="flex-1 py-2.5 rounded border border-outline-variant/40 text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-semibold text-body disabled:opacity-60 transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isDeleting || !password}
-              className="flex-1 py-2.5 rounded bg-error hover:opacity-90 disabled:opacity-60 text-on-error font-semibold text-sm shadow-soft transition-all"
+              className="flex-1 py-2.5 rounded bg-error hover:opacity-90 disabled:opacity-60 text-on-error font-semibold text-body shadow-soft transition-all"
             >
               {isDeleting ? 'Deleting…' : 'Delete permanently'}
             </button>

@@ -8,6 +8,7 @@ import {
   DirectoryListResponse,
   DirectoryUpdatePayload,
   EventDetails,
+  PersonRef,
   Photo,
   PlannedExpense,
   PublicRSVP,
@@ -200,6 +201,17 @@ export const updateAlbum = (
 export const deleteAlbum = (id: string) => del(`/albums/${id}`);
 export const deletePhoto = (albumId: string, photoId: string) =>
   del(`/albums/${albumId}/photos/${photoId}`);
+
+// Only the uploader may call this. Omit a field to leave it untouched; send
+// `caption: null` to clear it.
+export const updatePhoto = (
+  albumId: string,
+  photoId: string,
+  payload: { caption?: string | null; taggedUserIds?: string[] }
+) => patch<Photo>(`/albums/${albumId}/photos/${photoId}`, payload);
+
+export const searchPeople = (q: string) =>
+  apiFetch<PersonRef[]>(`/people/search?q=${encodeURIComponent(q)}`);
 
 // Bypasses the JSON-only apiFetch wrapper — multipart uploads can't set a
 // Content-Type header manually (the browser needs to add the boundary).

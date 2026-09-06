@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.audit import record_action
+from app.companions import has_plus_one, plus_one_count
 from app.database import get_db
 from app.models import RSVPRecord, SurveyResponse, User
 from app.pledge import parse_pledge_amount
@@ -15,9 +16,20 @@ router = APIRouter(prefix="/api/survey-responses", tags=["survey-responses"])
 
 _ATTENDING_TRIGGERS = {"Yes, definitely!", "Most likely, but still confirming"}
 
+# Survey answer -> attendance-wall card status. Every answer is mapped (not just
+# the attending ones) so that editing the survey moves an existing card instead
+# of leaving a stale "Attending" behind.
+_RSVP_STATUS_BY_ATTENDANCE = {
+    "Yes, definitely!": "Attending",
+    "Most likely, but still confirming": "Most likely",
+    "Not sure yet": "Maybe",
+    "Unfortunately, I won’t be able to attend": "Decline",
+}
+
 
 async def _sync_rsvp_from_survey(db: AsyncSession, response: SurveyResponse) -> None:
-    if response.attendance not in _ATTENDING_TRIGGERS:
+    status = _RSVP_STATUS_BY_ATTENDANCE.get(response.attendance)
+    if status is None:
         return
 
     result = await db.execute(
@@ -33,27 +45,32 @@ async def _sync_rsvp_from_survey(db: AsyncSession, response: SurveyResponse) -> 
         if response.bringing_kids == "Yes" and isinstance(response.kids_count, int)
         else 0
     )
-    message = response.other_suggestions[:100] if response.other_suggestions else None
-    status = "Attending" if response.attendance == "Yes, definitely!" else "Maybe"
+    message = response.other_suggestions or None
 
     if existing:
         existing.submitted_at = datetime.now(timezone.utc)
+        existing.user_id = response.user_id
         existing.full_name = response.full_name
         existing.contact_number = response.contact_number
         existing.email = response.email
         existing.status = status
-        existing.bringing_plus_one = response.bringing_plus_one == "Yes, 1 +1"
+        existing.bringing_plus_one = has_plus_one(response)
+        existing.plus_ones_count = plus_one_count(response)
         existing.kids_count = kids_count
         existing.message_to_batch = message
-    else:
+    elif response.attendance in _ATTENDING_TRIGGERS:
+        # A brand-new card is only worth adding for people who say they are
+        # coming; a first-time "no" leaves the wall untouched.
         db.add(
             RSVPRecord(
                 submitted_at=datetime.now(timezone.utc),
+                user_id=response.user_id,
                 full_name=response.full_name,
                 contact_number=response.contact_number,
                 email=response.email,
                 status=status,
-                bringing_plus_one=response.bringing_plus_one == "Yes, 1 +1",
+                bringing_plus_one=has_plus_one(response),
+                plus_ones_count=plus_one_count(response),
                 kids_count=kids_count,
                 message_to_batch=message,
             )

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   CheckCircle2, Send, ChevronRight, ChevronLeft,
-  Sparkles, HeartHandshake, ClipboardList,
   Minus, Plus
 } from 'lucide-react';
 import { SurveyResponse, SurveyResponseCreate } from '../types';
@@ -28,6 +27,72 @@ const splitOtherEntries = (values: string[]): { normalized: string[]; otherText:
   });
   return { normalized, otherText };
 };
+
+// Paper-card option / tile / pill styles shared across the survey's question
+// types — mirrors the Memory Desk design's opt()/tile()/pill() helpers.
+const optClass = (active: boolean) =>
+  `flex items-center gap-2.5 text-left p-3 rounded-xl cursor-pointer transition-all text-body font-medium ${
+    active
+      ? 'bg-primary/10 border-[1.5px] border-primary/50 text-primary'
+      : 'bg-black/[0.025] border-[1.5px] border-outline-variant/40 text-on-surface-variant hover:border-outline-variant'
+  }`;
+
+const tileClass = (active: boolean) =>
+  `flex flex-col items-start gap-0.5 p-3 rounded-xl cursor-pointer min-w-[88px] transition-all ${
+    active
+      ? 'bg-primary border-[1.5px] border-primary text-white shadow-soft'
+      : 'bg-black/[0.025] border-[1.5px] border-outline-variant/40 text-on-surface'
+  }`;
+
+// Size is a branch here rather than utilities appended at the call site, since
+// px-*/py-*/rounded-*/text-* overrides would collide with the defaults and the
+// winner would come down to Tailwind's emit order. Two variants, both carrying
+// the same 12px `body` type — they differ only in shape: 'snug' trades the full
+// pill radius for less padding and a tighter corner, because in a two-column
+// grid (Q05 skills, Q07 sponsorships) a rounded-full pill stretches to the full
+// column and reads as an inflated lozenge.
+type PillSize = 'default' | 'snug';
+
+const PILL_SIZE: Record<PillSize, string> = {
+  default: 'px-3 py-1.5 rounded-full text-body',
+  snug: 'px-3 py-1 rounded-lg text-body',
+};
+
+const pillClass = (active: boolean, size: PillSize = 'default') =>
+  `${PILL_SIZE[size]} cursor-pointer font-medium transition-all ${
+    active
+      ? 'bg-primary/10 border border-primary/50 text-primary'
+      : 'bg-black/[0.025] border border-outline-variant/40 text-on-surface-variant'
+  }`;
+
+const cardClass = 'bg-surface-container-lowest rounded p-4.5 sm:p-5 @min-[700px]/app:px-5 @min-[700px]/app:py-4.5 shadow-soft space-y-3';
+
+// Every numbered question renders its heading through this, so the type stays
+// identical across all three steps — serif for the question, mono for a badge,
+// and the option labels below it are sans throughout (see optClass/tileClass).
+const QuestionHeading: React.FC<{
+  n: string;
+  required?: boolean;
+  badge?: string;
+  children: React.ReactNode;
+}> = ({ n, required, badge, children }) => (
+  // Not flex-wrap: with the badge pushed right by `ml-auto`, a title long
+  // enough to crowd it (Q06) dropped the pill onto its own line, stranded at
+  // the far right. Instead the title takes the remaining space and wraps
+  // inside its own column, so the pill stays pinned beside the first line.
+  <div className="flex items-baseline gap-2.5">
+    <span className="flex-none font-serif text-heading leading-none text-on-surface/40">{n}</span>
+    <span className="flex-1 min-w-0 font-serif text-heading leading-[1.18] text-on-surface">
+      {children}
+      {required && <span className="text-error"> *</span>}
+    </span>
+    {badge && (
+      <span className="flex-none px-2.5 py-1 rounded-full font-mono text-label font-semibold tracking-wide uppercase bg-black/[0.05] text-on-surface-variant/70">
+        {badge}
+      </span>
+    )}
+  </div>
+);
 
 export const SurveySection: React.FC<SurveySectionProps> = ({
   submitterName,
@@ -245,6 +310,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
       otherSponsorshipDetails: otherSponsorshipDetails.trim() || undefined,
       bringingPlusOne: plusOnesCount > 0 ? (plusOnesCount === 1 ? 'Yes, 1 +1' : `Yes, ${plusOnesCount} guests`) : 'No +1',
       bringingKids: kidsCount > 0 ? 'Yes' : 'No kids',
+      plusOnesCount: plusOnesCount,
       kidsCount: kidsCount,
       otherSuggestions: otherSuggestions.trim() || undefined,
     };
@@ -265,24 +331,22 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
 
   if (isSubmitted) {
     return (
-      <div id="survey-success-container" className="max-w-xl mx-auto py-12 px-4 text-center">
-        <div className="bg-surface-container-lowest rounded p-8 border border-outline-variant/30 shadow-soft space-y-4">
-          <div className="w-12 h-12 rounded-full bg-success-container text-on-success-container flex items-center justify-center mx-auto border border-success-container">
-            <CheckCircle2 className="w-6 h-6" />
-          </div>
+      <div id="survey-success-container" className="max-w-lg mx-auto py-10 px-4">
+        <div className="relative bg-surface-container-lowest rounded-xl shadow-soft p-7 text-center space-y-3.5">
+          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 -rotate-3 w-20 h-6 bg-[#f6e6bf]/75 border border-white/50" />
 
-          <h2 className="text-xl font-serif font-semibold text-on-surface">
-            Thank you, {submitterName}!
+          <h2 className="font-serif text-display leading-none text-on-surface">
+            Salamat, <em className="text-primary not-italic italic">{submitterName.split(' ')[0]}!</em>
           </h2>
 
-          <p className="text-xs text-on-surface-variant max-w-md mx-auto leading-relaxed">
-            Your survey responses and pledge have been recorded. You have also been automatically registered on the public <strong>Attendee Roster</strong>!
+          <p className="text-body text-on-surface-variant max-w-md mx-auto leading-relaxed">
+            Your response and pledge are on record, and your card is now on the board. You can edit your response anytime.
           </p>
 
           {computedPledge > 0 && (
-            <div className="p-3 bg-primary-container/20 rounded border border-primary-container/50 inline-block text-xs text-on-surface">
-              <span>Pledged Batch Fund: </span>
-              <strong className="text-primary font-semibold">{formatPHP(computedPledge)}</strong>
+            <div className="flex items-baseline justify-center gap-2.5 pt-3 border-t border-dashed border-on-surface/20">
+              <span className="font-mono text-label tracking-[0.16em] uppercase text-on-surface-variant/70">Pledged</span>
+              <span className="font-serif text-title text-primary">{formatPHP(computedPledge)}</span>
             </div>
           )}
 
@@ -291,9 +355,9 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
               id="btn-survey-submitted-rsvp"
               type="button"
               onClick={onNavigateToRsvp}
-              className="w-full sm:w-auto px-5 py-2.5 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft transition-all flex items-center justify-center gap-1.5"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-primary hover:opacity-90 text-on-primary font-bold text-body shadow-soft transition-all flex items-center justify-center gap-1.5"
             >
-              <span>View Attendee Roster</span>
+              <span>To the Batch Board</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
 
@@ -301,9 +365,9 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
               id="btn-survey-submit-another"
               type="button"
               onClick={handleEditResponse}
-              className="w-full sm:w-auto px-4 py-2.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-semibold text-xs transition-all border border-outline-variant/30"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-full bg-white/60 hover:bg-white/80 text-on-surface font-semibold text-body transition-all"
             >
-              Edit My Response
+              Edit my response
             </button>
           </div>
         </div>
@@ -311,70 +375,46 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
     );
   }
 
+  const stepDefs = [
+    { n: 1, label: 'Attendance' },
+    { n: 2, label: 'Help & Skills' },
+    { n: 3, label: 'Pledges' },
+  ];
+
   return (
-    <div id="survey-form-container" className="max-w-2xl mx-auto py-6 px-4">
+    <div id="survey-form-container" className="max-w-2xl @min-[700px]/app:max-w-[1180px] mx-auto py-6 px-4 @min-[700px]/app:px-8">
 
-      {/* Section Title — matches the icon + serif headline pattern used by
-          the Batch Board / Funds tabs, rather than a standalone card */}
+      {/* Step navigation */}
       <div className="mb-5">
-        <div className="flex items-center gap-2">
-          <ClipboardList className="w-4 h-4 text-primary" />
-          <h2 className="text-base sm:text-lg font-serif font-semibold text-on-surface">
-            Reunion Planning Survey
-          </h2>
+        {/* 3-Step Navigation */}
+        <div id="survey-step-tabs" className="flex flex-nowrap gap-1.5">
+          {stepDefs.map((s) => {
+            const active = currentStep === s.n;
+            return (
+              <button
+                key={s.n}
+                type="button"
+                onClick={() => setCurrentStep(s.n)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-full text-label font-semibold transition-all ${
+                  active
+                    ? 'bg-on-surface text-background'
+                    : 'bg-black/[0.03] text-on-surface-variant border border-outline-variant/40'
+                }`}
+              >
+                <span
+                  className="w-[19px] h-[19px] rounded-full flex items-center justify-center font-mono text-label font-bold flex-shrink-0"
+                  style={{
+                    background: active ? 'rgba(246,230,191,.22)' : 'rgba(20,33,29,.08)',
+                    color: active ? '#f6e6bf' : 'rgba(20,33,29,.6)',
+                  }}
+                >
+                  {s.n}
+                </span>
+                <span>{s.label}</span>
+              </button>
+            );
+          })}
         </div>
-        <p className="text-xs text-on-surface-variant mt-1">
-          Help us choose the best date, venue style, and batch fund target.
-        </p>
-      </div>
-      <div className="border-t border-outline-variant/30 mb-5" />
-
-      {/* 3-Step Sleek Navigation Bar */}
-      <div id="survey-step-tabs" className="mb-5 bg-surface-container-low p-1 rounded border border-outline-variant/30 grid grid-cols-3 gap-1">
-        <button
-          type="button"
-          onClick={() => setCurrentStep(1)}
-          className={`py-2 px-2.5 rounded text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-            currentStep === 1
-              ? 'bg-surface-container-lowest text-primary shadow-soft border border-outline-variant/30'
-              : 'text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
-            currentStep === 1 ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant'
-          }`}>1</span>
-          <span>Attendance & Dates</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setCurrentStep(2)}
-          className={`py-2 px-2.5 rounded text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-            currentStep === 2
-              ? 'bg-surface-container-lowest text-primary shadow-soft border border-outline-variant/30'
-              : 'text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
-            currentStep === 2 ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant'
-          }`}>2</span>
-          <span>Help & Skills</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setCurrentStep(3)}
-          className={`py-2 px-2.5 rounded text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-            currentStep === 3
-              ? 'bg-surface-container-lowest text-primary shadow-soft border border-outline-variant/30'
-              : 'text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
-            currentStep === 3 ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant'
-          }`}>3</span>
-          <span>Pledges & Guests</span>
-        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -384,49 +424,38 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
           <div className="space-y-4">
 
             {/* 1. Attendance */}
-            <div id="q2-attendance-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                  1. Can you attend? <span className="text-error">*</span>
-                </h3>
-                <span className="text-[10px] text-on-primary-container bg-primary-container/20 px-2 py-0.5 rounded border border-primary-container/50 font-semibold">
-                  Auto-adds to Roster
-                </span>
-              </div>
+            <div id="q2-attendance-card" className={cardClass}>
+              <QuestionHeading n="01" required>Can you attend?</QuestionHeading>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid gap-2 @min-[640px]/app:grid-cols-2 @min-[700px]/app:grid-cols-[repeat(auto-fit,minmax(212px,1fr))]">
                 {[
                   { label: 'Yes, definitely!', icon: '🎉' },
                   { label: 'Most likely, but still confirming', icon: '👍' },
                   { label: 'Not sure yet', icon: '🤔' },
                   { label: 'Unfortunately, I won’t be able to attend', icon: '✈️' },
                 ].map((opt) => (
-                  <label
-                    key={opt.label}
-                    className={`flex items-center justify-between p-3 rounded border cursor-pointer transition-all ${
-                      attendance === opt.label
-                        ? 'border-primary bg-primary-container/15 ring-1 ring-primary text-on-surface font-semibold'
-                        : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="attendance"
-                        checked={attendance === opt.label}
-                        onChange={() => setAttendance(opt.label as any)}
-                        className="w-3.5 h-3.5 text-primary focus:ring-primary"
-                      />
-                      <span className="text-sm">{opt.icon}</span>
-                      <span className="text-xs font-medium">{opt.label}</span>
-                    </div>
+                  <label key={opt.label} className={optClass(attendance === opt.label)}>
+                    <input
+                      type="radio"
+                      name="attendance"
+                      checked={attendance === opt.label}
+                      onChange={() => setAttendance(opt.label as any)}
+                      className="sr-only"
+                    />
+                    <span
+                      className="w-4 h-4 flex-none rounded-full flex items-center justify-center text-label font-bold text-white"
+                      style={{ background: attendance === opt.label ? '#0e5a4d' : 'transparent', border: `1.5px solid ${attendance === opt.label ? '#0e5a4d' : 'rgba(20,33,29,.3)'}` }}
+                    >
+                      {attendance === opt.label ? '·' : ''}
+                    </span>
+                    <span>{opt.icon} {opt.label}</span>
                   </label>
                 ))}
               </div>
 
               {attendance === 'Not sure yet' && (
-                <div className="pt-2 space-y-1">
-                  <label className="block text-xs font-semibold text-on-surface-variant">
+                <div className="pt-1 space-y-1">
+                  <label className="block text-label font-semibold text-on-surface-variant">
                     What would help you decide?
                   </label>
                   <input
@@ -435,29 +464,17 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                     placeholder="e.g. final date, exact budget, venue location"
                     value={attendanceReason}
                     onChange={(e) => setAttendanceReason(e.target.value)}
-                    className="w-full p-2 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full py-1.5 border-b-[1.5px] border-on-surface/30 bg-transparent text-on-surface text-body focus:outline-none focus:border-primary"
                   />
                 </div>
               )}
             </div>
 
-            {/* 3. Dates */}
-            <div id="q3-date-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                    2. Preferred Month (2027)
-                  </h3>
-                  <span className="text-[10px] text-on-primary-container bg-primary-container/20 px-2 py-0.5 rounded border border-primary-container/50 font-semibold">
-                    2027 Planning
-                  </span>
-                </div>
-                <p className="text-[11px] text-on-surface-variant">
-                  Select your preferred month(s), or suggest specific dates or other options in the custom field.
-                </p>
-              </div>
+            {/* 2. Dates */}
+            <div id="q3-date-card" className={cardClass}>
+              <QuestionHeading n="02">Preferred Month</QuestionHeading>
 
-              <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="flex flex-wrap gap-2.5">
                 {monthsList.map((month) => {
                   const isSelected = preferredMonths.includes(month);
                   return (
@@ -465,21 +482,17 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                       key={month}
                       type="button"
                       onClick={() => handleMonthToggle(month)}
-                      className={`p-3 rounded border text-sm font-semibold transition-all flex items-center justify-between ${
-                        isSelected
-                          ? 'border-primary bg-primary-container/15 text-on-primary-container ring-1 ring-primary shadow-soft'
-                          : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
-                      }`}
+                      className={tileClass(isSelected)}
                     >
-                      <span>{month}</span>
-                      {isSelected && <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 ml-2" />}
+                      <span className="text-body font-medium leading-none">{month}</span>
+                      <span className="font-mono text-label uppercase tracking-wide opacity-70">2027</span>
                     </button>
                   );
                 })}
               </div>
 
-              <div className="pt-1">
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+              <div>
+                <label className="block text-label font-semibold text-on-surface-variant mb-1">
                   Other month / specific date suggestions:
                 </label>
                 <input
@@ -488,55 +501,51 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                   placeholder="e.g. Easter week in April, Christmas holidays in December, or another month..."
                   value={specificDateNotes}
                   onChange={(e) => setSpecificDateNotes(e.target.value)}
-                  className="w-full px-3 py-2 rounded border border-secondary/30 focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs"
+                  className="w-full py-1.5 border-b-[1.5px] border-on-surface/30 bg-transparent focus:outline-none focus:border-primary text-on-surface text-body"
                 />
               </div>
             </div>
 
-            {/* 4. Venue */}
-            <div id="q4-venue-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
-              <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                3. Venue & Vibe
-              </h3>
+            {/* 3. Venue */}
+            <div id="q4-venue-card" className={cardClass}>
+              <QuestionHeading n="03">Venue &amp; vibe</QuestionHeading>
 
-              <div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  {venueTypeOptions.map((type) => (
-                    <label
-                      key={type}
-                      className={`flex items-center gap-2 p-2.5 rounded border cursor-pointer transition-all ${
-                        preferredVenueType.includes(type)
-                          ? 'border-primary bg-primary-container/15 text-on-surface font-semibold ring-1 ring-primary'
-                          : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
-                      }`}
-                    >
+              <div className="grid gap-2 @min-[640px]/app:grid-cols-2 @min-[700px]/app:grid-cols-[repeat(auto-fit,minmax(212px,1fr))]">
+                {venueTypeOptions.map((type) => {
+                  const isSelected = preferredVenueType.includes(type);
+                  return (
+                    <label key={type} className={optClass(isSelected)}>
                       <input
                         type="checkbox"
-                        checked={preferredVenueType.includes(type)}
+                        checked={isSelected}
                         onChange={() => handleVenueTypeToggle(type)}
-                        className="w-3.5 h-3.5 text-primary focus:ring-primary"
+                        className="sr-only"
                       />
-                      <span className="text-xs font-medium">{type}</span>
+                      <span
+                        className="w-4 h-4 flex-none rounded flex items-center justify-center text-label font-bold text-white"
+                        style={{ background: isSelected ? '#0e5a4d' : 'transparent', border: `1.5px solid ${isSelected ? '#0e5a4d' : 'rgba(20,33,29,.3)'}` }}
+                      >
+                        {isSelected ? '✓' : ''}
+                      </span>
+                      <span>{type}</span>
                     </label>
-                  ))}
-                </div>
-
-                {preferredVenueType.includes('Other') && (
-                  <div className="mt-2">
-                    <input
-                      id="input-venueTypeOther"
-                      type="text"
-                      placeholder="Specify venue type..."
-                      value={venueTypeOther}
-                      onChange={(e) => setVenueTypeOther(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded border border-primary-container focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs"
-                    />
-                  </div>
-                )}
+                  );
+                })}
               </div>
 
+              {preferredVenueType.includes('Other') && (
+                <input
+                  id="input-venueTypeOther"
+                  type="text"
+                  placeholder="Specify venue type..."
+                  value={venueTypeOther}
+                  onChange={(e) => setVenueTypeOther(e.target.value)}
+                  className="w-full py-1.5 border-b-[1.5px] border-primary/40 bg-transparent focus:outline-none focus:border-primary text-on-surface text-body"
+                />
+              )}
+
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                <label className="block text-label font-semibold text-on-surface-variant mb-1">
                   Venue suggestions:
                 </label>
                 <input
@@ -545,17 +554,16 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                   placeholder="e.g. Hotel in Makati / BGC, private events place"
                   value={venueSuggestion}
                   onChange={(e) => setVenueSuggestion(e.target.value)}
-                  className="w-full px-3 py-2 rounded border border-secondary/30 focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs"
+                  className="w-full py-1.5 border-b-[1.5px] border-on-surface/30 bg-transparent focus:outline-none focus:border-primary text-on-surface text-body"
                 />
               </div>
             </div>
 
-            {/* Next Button */}
-            <div className="pt-2 flex justify-end">
+            <div className="pt-1 flex justify-end">
               <button
                 type="button"
                 onClick={handleGoToStep2}
-                className="px-6 py-2.5 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft flex items-center gap-1.5 transition-all"
+                className="px-6 py-2.5 rounded-full bg-primary hover:opacity-90 text-on-primary font-bold text-body shadow-soft flex items-center gap-1.5 transition-all"
               >
                 <span>Next</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -569,81 +577,68 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
         {currentStep === 2 && (
           <div className="space-y-4">
 
-            {/* Willingness to help */}
-            <div id="q-willingness-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
-              <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                4. Volunteer & Organizing
-              </h3>
+            {/* 4. Willingness to help */}
+            <div id="q-willingness-card" className={cardClass}>
+              <QuestionHeading n="04">Volunteer &amp; organizing</QuestionHeading>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {[
+              <div className="grid gap-2 @min-[640px]/app:grid-cols-2 @min-[700px]/app:grid-cols-[repeat(auto-fit,minmax(212px,1fr))]">
+                {([
                   'Yes, happy to help!',
                   'Maybe, depending on tasks',
                   'Can help occasionally',
                   'Prefer to just attend & relax'
-                ].map((opt) => (
-                  <label
-                    key={opt}
-                    className={`p-2.5 rounded border cursor-pointer transition-all flex items-center gap-2 ${
-                      willingToOrganize === opt
-                        ? 'border-primary bg-primary-container/15 text-on-surface font-semibold ring-1 ring-primary'
-                        : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
-                    }`}
-                  >
+                ] as const).map((opt) => (
+                  <label key={opt} className={optClass(willingToOrganize === opt)}>
                     <input
                       type="radio"
                       name="willingToOrganize"
                       checked={willingToOrganize === opt}
-                      onChange={() => setWillingToOrganize(opt as any)}
-                      className="w-3.5 h-3.5 text-primary focus:ring-primary"
+                      onChange={() => setWillingToOrganize(opt)}
+                      className="sr-only"
                     />
-                    <span className="text-xs font-medium">{opt}</span>
+                    <span
+                      className="w-4 h-4 flex-none rounded-full flex items-center justify-center text-label font-bold text-white"
+                      style={{ background: willingToOrganize === opt ? '#0e5a4d' : 'transparent', border: `1.5px solid ${willingToOrganize === opt ? '#0e5a4d' : 'rgba(20,33,29,.3)'}` }}
+                    >
+                      {willingToOrganize === opt ? '·' : ''}
+                    </span>
+                    <span>{opt}</span>
                   </label>
                 ))}
               </div>
             </div>
 
-            {/* Skills & Services */}
-            <div id="q6-skills-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
-              <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                5. Skills to Share
-              </h3>
+            {/* 5. Skills & Services */}
+            <div id="q6-skills-card" className={cardClass}>
+              <QuestionHeading n="05">Skills to share</QuestionHeading>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                {skillsList.map((skill) => {
-                  const isSelected = skillsOffered.includes(skill);
-                  return (
-                    <button
-                      key={skill}
-                      type="button"
-                      onClick={() => handleSkillToggle(skill)}
-                      className={`p-2 rounded border text-xs text-left flex items-center justify-between transition-all font-medium ${
-                        isSelected
-                          ? 'border-primary bg-primary-container/15 text-on-primary-container font-semibold ring-1 ring-primary'
-                          : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
-                      } ${skill.includes('Prefer to just attend') ? 'col-span-2 sm:col-span-3 text-center justify-center bg-surface-container-low' : ''}`}
-                    >
-                      <span>{skill}</span>
-                      {isSelected && <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />}
-                    </button>
-                  );
-                })}
+              {/* Two per row like the pledge tiles and sponsorships;
+                  auto-rows-fr keeps them level when a longer label wraps. */}
+              <div className="grid grid-cols-2 auto-rows-fr gap-1.5">
+                {skillsList.map((skill) => (
+                  <button
+                    key={skill}
+                    type="button"
+                    onClick={() => handleSkillToggle(skill)}
+                    className={pillClass(skillsOffered.includes(skill), 'snug')}
+                  >
+                    {skill}
+                  </button>
+                ))}
               </div>
 
               {skillsOffered.includes('Other') && (
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Specify other skill..."
-                    value={skillsOtherText}
-                    onChange={(e) => setSkillsOtherText(e.target.value)}
-                    className="w-full px-3 py-1.5 rounded border border-primary-container text-xs text-on-surface"
-                  />
-                </div>
+                <input
+                  type="text"
+                  placeholder="Specify other skill..."
+                  value={skillsOtherText}
+                  onChange={(e) => setSkillsOtherText(e.target.value)}
+                  className="w-full py-1.5 border-b-[1.5px] border-primary/40 bg-transparent text-body text-on-surface focus:outline-none focus:border-primary"
+                />
               )}
 
-              <div className="pt-1">
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+              <div>
+                <label className="block text-label font-semibold text-on-surface-variant mb-1">
                   Notes on what you can help with:
                 </label>
                 <textarea
@@ -652,48 +647,36 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                   placeholder="e.g. photography, logo design, catering contacts..."
                   value={skillsDetails}
                   onChange={(e) => setSkillsDetails(e.target.value)}
-                  className="w-full p-2 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full p-2.5 rounded-xl border border-outline-variant/40 bg-white/50 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
 
-            {/* Event Organizer / Coordination Company Recommendation */}
-            <div id="q7-organization-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                    6. Recommend an Event Organizer / Coordination Company
-                  </h3>
-                  <span className="text-[10px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded border border-outline-variant/30 font-medium">
-                    Optional
-                  </span>
-                </div>
-                <p className="text-[11px] text-on-surface-variant">
-                  Suggest a professional event organizer or coordination agency (outside the batch) that we can hire to manage the program, styling, and supplier logistics.
-                </p>
-              </div>
+            {/* 6. Event Organizer / Coordination Company Recommendation */}
+            <div id="q7-organization-card" className={cardClass}>
+              <QuestionHeading n="06" badge="Optional">Recommend an event organizer</QuestionHeading>
+              <p className="text-label text-on-surface-variant -mt-1.5">
+                Suggest a professional event organizer or coordination agency (outside the batch) we could hire for the program, styling, and supplier logistics.
+              </p>
 
-              <div>
-                <input
-                  id="input-nominatedOrganizer"
-                  type="text"
-                  placeholder="e.g. Events by [Company Name], Wedding & Events Planner contact, etc."
-                  value={nominatedOrganizer}
-                  onChange={(e) => setNominatedOrganizer(e.target.value)}
-                  className="w-full px-3 py-2 rounded border border-secondary/30 focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs"
-                />
-              </div>
+              <input
+                id="input-nominatedOrganizer"
+                type="text"
+                placeholder="Name of a coordination company (non-batch)…"
+                value={nominatedOrganizer}
+                onChange={(e) => setNominatedOrganizer(e.target.value)}
+                className="w-full py-1.5 border-b-[1.5px] border-on-surface/30 bg-transparent focus:outline-none focus:border-primary text-on-surface text-body"
+              />
             </div>
 
-            {/* Back & Next */}
-            <div className="pt-2 flex items-center justify-between">
+            <div className="pt-1 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => {
                   setCurrentStep(1);
                   window.scrollTo({ top: 80, behavior: 'smooth' });
                 }}
-                className="px-4 py-2 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-semibold text-xs border border-outline-variant/30 flex items-center gap-1"
+                className="px-4 py-2 rounded-full bg-white/60 hover:bg-white/80 text-on-surface-variant font-semibold text-body flex items-center gap-1"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
                 <span>Back</span>
@@ -702,7 +685,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
               <button
                 type="button"
                 onClick={handleGoToStep3}
-                className="px-6 py-2.5 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft flex items-center gap-1.5 transition-all"
+                className="px-6 py-2.5 rounded-full bg-primary hover:opacity-90 text-on-primary font-bold text-body shadow-soft flex items-center gap-1.5 transition-all"
               >
                 <span>Next</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -716,287 +699,215 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
         {currentStep === 3 && (
           <div className="space-y-4">
 
-            {/* Financial Pledge */}
-            <div id="q5-contributions-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
-              <div className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
-                <div>
-                  <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                    7. Financial Pledge
-                  </h3>
-                  <p className="text-[11px] text-on-surface-variant mt-0.5">
-                    Minimum contribution is <strong>₱2,000</strong>.
-                  </p>
+            {/* 7. Financial Pledge */}
+            <div id="q5-contributions-card" className={cardClass}>
+              <QuestionHeading n="07">Financial pledge</QuestionHeading>
+
+              {/* Two per row, equal-width columns and `auto-rows-fr` so every
+                  tile is the same size — otherwise the one tile that still
+                  carries a subtitle (₱2,000) would be taller than the rest. */}
+              <div className="grid grid-cols-2 auto-rows-fr gap-2.5">
+                {[
+                  { val: '₱2,000', label: '₱2,000', subtitle: 'Standard (min)' },
+                  { val: '₱3,000', label: '₱3,000' },
+                  { val: '₱5,000', label: '₱5,000' },
+                  { val: '₱10,000+', label: '₱10,000+' },
+                  { val: 'Custom Amount', label: 'Custom amount' },
+                ].map((tier) => (
+                  // justify-center (tileClass leaves justify-content unset, so
+                  // this doesn't fight it): every tile is stretched to the
+                  // tallest by auto-rows-fr, and without centring the ones
+                  // with no subtitle left their amount stranded at the top.
+                  <label key={tier.val} className={`${tileClass(pledgeOption === tier.val)} justify-center`}>
+                    <input
+                      type="radio"
+                      name="pledgeTier"
+                      checked={pledgeOption === tier.val}
+                      onChange={() => {
+                        setPledgeOption(tier.val as any);
+                        setErrors(prev => ({ ...prev, pledge: undefined }));
+                      }}
+                      className="sr-only"
+                    />
+                    <span className="text-body font-medium leading-none">{tier.label}</span>
+                    {tier.subtitle && (
+                      <span className="font-mono text-label uppercase tracking-wide opacity-70">{tier.subtitle}</span>
+                    )}
+                  </label>
+                ))}
+              </div>
+
+              {(pledgeOption === 'Custom Amount' || pledgeOption === 'Other' || pledgeOption === '₱10,000+') && (
+                <div className="p-3 rounded-xl bg-primary/[0.06] space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-label font-semibold text-on-surface">
+                      Enter custom amount (₱):
+                    </label>
+                    <span className="text-label text-on-surface-variant font-medium">Min. ₱2,000</span>
+                  </div>
+                  <div className="relative max-w-xs">
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 font-semibold text-on-surface-variant text-body">₱</span>
+                    <input
+                      id="input-customPledgeAmount"
+                      type="text"
+                      placeholder="2500"
+                      value={customPledgeAmount}
+                      onChange={(e) => {
+                        setCustomPledgeAmount(e.target.value);
+                        setErrors(prev => ({ ...prev, pledge: undefined }));
+                      }}
+                      className={`w-full pl-4 pr-3 py-1.5 border-b-[1.5px] bg-transparent text-on-surface font-semibold text-body focus:outline-none ${
+                        errors.pledge || (customPledgeAmount.trim() && parseRawAmountString(customPledgeAmount) < 2000)
+                          ? 'border-error'
+                          : 'border-primary/50 focus:border-primary'
+                      }`}
+                    />
+                  </div>
+
+                  {customPledgeAmount.trim() && parseRawAmountString(customPledgeAmount) < 2000 && (
+                    <p className="text-label text-error font-semibold">
+                      ⚠️ The minimum pledge amount is ₱2,000. Please enter ₱2,000 or higher.
+                    </p>
+                  )}
+                  {errors.pledge && (
+                    <p className="text-label text-error font-semibold">{errors.pledge}</p>
+                  )}
+                  {customPledgeAmount.trim() && parseRawAmountString(customPledgeAmount) >= 2000 && (
+                    <p className="text-label text-success font-medium">
+                      ✓ Valid pledge: {formatPHP(parseRawAmountString(customPledgeAmount))}
+                    </p>
+                  )}
                 </div>
-                <span className="text-[11px] font-semibold text-on-primary-container bg-primary-container/20 px-2 py-0.5 rounded border border-primary-container/50">
-                  Operating Fund
+              )}
+
+              <div className="flex flex-wrap items-center justify-between gap-2.5 p-3.5 rounded-2xl bg-[#14211d]">
+                <span className="font-mono text-label tracking-[0.14em] uppercase text-white/55">Total pledge recorded</span>
+                <span className="font-serif text-heading text-[#f6e6bf]">
+                  {formatPHP(Math.max(2000, computedPledge))}
                 </span>
               </div>
 
-              <div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mb-2">
-                  {[
-                    { val: '₱2,000', label: '₱2,000', subtitle: 'Standard (Min)' },
-                    { val: '₱3,000', label: '₱3,000', subtitle: 'Recommended' },
-                    { val: '₱5,000', label: '₱5,000', subtitle: 'Silver' },
-                    { val: '₱10,000+', label: '₱10,000+', subtitle: 'Gold / Patron' },
-                    { val: 'Custom Amount', label: 'Custom Amount', subtitle: 'Min. ₱2,000' },
-                  ].map((tier) => (
-                    <label
-                      key={tier.val}
-                      className={`p-2.5 rounded border cursor-pointer transition-all flex flex-col justify-between ${
-                        pledgeOption === tier.val
-                          ? 'border-primary bg-primary-container/15 ring-1 ring-primary text-on-surface font-semibold'
-                          : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
-                      }`}
+              {/* In-Kind Sponsorship */}
+              <div className="pt-1 space-y-2">
+                <label className="block text-label font-semibold text-on-surface-variant">
+                  In-kind sponsorships:
+                </label>
+
+                {/* Two per row, matching the pledge tiles above. `auto-rows-fr`
+                    keeps the pills level with each other when a longer label
+                    ("Dessert / Cake / Grazing table") wraps to a second line. */}
+                <div className="grid grid-cols-2 auto-rows-fr gap-1.5">
+                  {sponsorshipOptions.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => handleSponsorshipToggle(item)}
+                      className={pillClass(otherSponsorships.includes(item), 'snug')}
                     >
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          type="radio"
-                          name="pledgeTier"
-                          checked={pledgeOption === tier.val}
-                          onChange={() => {
-                            setPledgeOption(tier.val as any);
-                            setErrors(prev => ({ ...prev, pledge: undefined }));
-                          }}
-                          className="w-3 h-3 text-primary focus:ring-primary"
-                        />
-                        <span className="text-xs font-semibold">{tier.label}</span>
-                      </div>
-                      <span className="text-[10px] text-on-surface-variant pl-4 mt-0.5">{tier.subtitle}</span>
-                    </label>
+                      {item}
+                    </button>
                   ))}
                 </div>
 
-                {(pledgeOption === 'Custom Amount' || pledgeOption === 'Other' || pledgeOption === '₱10,000+') && (
-                  <div className="mt-2 p-3 bg-primary-container/15 rounded border border-primary-container/50 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs font-semibold text-on-surface">
-                        Enter Custom Amount (₱):
-                      </label>
-                      <span className="text-[10px] text-on-surface-variant font-medium">Min. ₱2,000</span>
-                    </div>
-                    <div className="relative max-w-xs">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 font-semibold text-on-surface-variant text-xs">₱</span>
-                      <input
-                        id="input-customPledgeAmount"
-                        type="text"
-                        placeholder="2500"
-                        value={customPledgeAmount}
-                        onChange={(e) => {
-                          setCustomPledgeAmount(e.target.value);
-                          setErrors(prev => ({ ...prev, pledge: undefined }));
-                        }}
-                        className={`w-full pl-6 pr-3 py-1.5 rounded border bg-surface-container-lowest text-on-surface font-semibold text-xs focus:outline-none focus:ring-1 ${
-                          errors.pledge || (customPledgeAmount.trim() && parseRawAmountString(customPledgeAmount) < 2000)
-                            ? 'border-error focus:ring-error'
-                            : 'border-primary-container focus:ring-primary'
-                        }`}
-                      />
-                    </div>
-
-                    {/* Validation warnings */}
-                    {customPledgeAmount.trim() && parseRawAmountString(customPledgeAmount) < 2000 && (
-                      <p className="text-[11px] text-error font-semibold">
-                        ⚠️ The minimum pledge amount is ₱2,000. Please enter ₱2,000 or higher.
-                      </p>
-                    )}
-                    {errors.pledge && (
-                      <p className="text-[11px] text-error font-semibold">
-                        {errors.pledge}
-                      </p>
-                    )}
-                    {customPledgeAmount.trim() && parseRawAmountString(customPledgeAmount) >= 2000 && (
-                      <p className="text-[11px] text-success font-medium">
-                        ✓ Valid pledge: {formatPHP(parseRawAmountString(customPledgeAmount))}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Computed Display */}
-                <div className="mt-2 flex items-center justify-between p-2.5 rounded bg-inverse-surface text-inverse-on-surface text-xs">
-                  <span className="text-inverse-on-surface/70">Total pledge recorded:</span>
-                  <span className="font-semibold text-primary-container text-sm">
-                    {formatPHP(Math.max(2000, computedPledge))}
-                  </span>
-                </div>
-              </div>
-
-              {/* In-Kind Sponsorship */}
-              <div className="pt-3 border-t border-outline-variant/20">
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1.5">
-                  In-Kind Sponsorships:
-                </label>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mb-2">
-                  {sponsorshipOptions.map((item) => {
-                    const isSelected = otherSponsorships.includes(item);
-                    return (
-                      <button
-                        key={item}
-                        type="button"
-                        onClick={() => handleSponsorshipToggle(item)}
-                        className={`p-1.5 rounded border text-xs text-left flex items-center justify-between transition-all font-medium ${
-                          isSelected
-                            ? 'border-primary bg-primary-container/15 text-on-primary-container font-semibold ring-1 ring-primary'
-                            : 'border-outline-variant/30 hover:border-outline-variant bg-surface-container-lowest text-on-surface-variant'
-                        } ${item === 'None for now' ? 'col-span-2 sm:col-span-3 text-center justify-center bg-surface-container-low' : ''}`}
-                      >
-                        <span>{item}</span>
-                        {isSelected && <CheckCircle2 className="w-3 h-3 text-primary flex-shrink-0" />}
-                      </button>
-                    );
-                  })}
-                </div>
-
                 {otherSponsorships.includes('Other') && (
-                  <div className="mb-2">
-                    <input
-                      type="text"
-                      placeholder="Specify sponsorship..."
-                      value={otherSponsorshipsOtherText}
-                      onChange={(e) => setOtherSponsorshipsOtherText(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded border border-primary-container text-xs text-on-surface"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    placeholder="Specify sponsorship..."
+                    value={otherSponsorshipsOtherText}
+                    onChange={(e) => setOtherSponsorshipsOtherText(e.target.value)}
+                    className="w-full py-1.5 border-b-[1.5px] border-primary/40 bg-transparent text-body text-on-surface focus:outline-none focus:border-primary"
+                  />
                 )}
 
-                <div>
-                  <textarea
-                    id="input-otherSponsorshipDetails"
-                    rows={2}
-                    placeholder="Details on food, drinks, prizes, or services..."
-                    value={otherSponsorshipDetails}
-                    onChange={(e) => setOtherSponsorshipDetails(e.target.value)}
-                    className="w-full p-2 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Guests & Kids: Steppers (0 if none) */}
-            <div id="q8-guests-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-3">
-              <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                8. Companions (0 if none)
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Plus-Ones Number Stepper */}
-                <div className="p-3 rounded bg-surface-container-low border border-outline-variant/30 space-y-2">
-                  <div className="text-xs font-semibold text-on-surface">Adult Guests (+1s)</div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPlusOnesCount(Math.max(0, plusOnesCount - 1))}
-                      className="w-7 h-7 rounded bg-surface-container-lowest border border-secondary/30 font-semibold text-on-surface-variant flex items-center justify-center hover:bg-surface-container active:scale-95 transition-all shadow-soft"
-                      aria-label="Decrease adult guests"
-                    >
-                      <Minus className="w-3.5 h-3.5" />
-                    </button>
-
-                    <input
-                      type="number"
-                      min="0"
-                      max="10"
-                      value={plusOnesCount}
-                      onChange={(e) => setPlusOnesCount(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                      className="w-14 py-1 text-center font-semibold text-sm rounded border border-secondary/30 bg-surface-container-lowest text-on-surface"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setPlusOnesCount(plusOnesCount + 1)}
-                      className="w-7 h-7 rounded bg-surface-container-lowest border border-secondary/30 font-semibold text-on-surface-variant flex items-center justify-center hover:bg-surface-container active:scale-95 transition-all shadow-soft"
-                      aria-label="Increase adult guests"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Kids Number Stepper */}
-                <div className="p-3 rounded bg-surface-container-low border border-outline-variant/30 space-y-2">
-                  <div className="text-xs font-semibold text-on-surface">Kids</div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setKidsCount(Math.max(0, kidsCount - 1))}
-                      className="w-7 h-7 rounded bg-surface-container-lowest border border-secondary/30 font-semibold text-on-surface-variant flex items-center justify-center hover:bg-surface-container active:scale-95 transition-all shadow-soft"
-                      aria-label="Decrease kids count"
-                    >
-                      <Minus className="w-3.5 h-3.5" />
-                    </button>
-
-                    <input
-                      type="number"
-                      min="0"
-                      max="10"
-                      value={kidsCount}
-                      onChange={(e) => setKidsCount(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                      className="w-14 py-1 text-center font-semibold text-sm rounded border border-secondary/30 bg-surface-container-lowest text-on-surface"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setKidsCount(kidsCount + 1)}
-                      className="w-7 h-7 rounded bg-surface-container-lowest border border-secondary/30 font-semibold text-on-surface-variant flex items-center justify-center hover:bg-surface-container active:scale-95 transition-all shadow-soft"
-                      aria-label="Increase kids count"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Other Suggestions */}
-            <div id="q9-suggestions-card" className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 space-y-2">
-              <h3 className="text-sm sm:text-base font-semibold text-on-surface">
-                9. Ideas or Suggestions
-              </h3>
-
-              <div>
                 <textarea
-                  id="input-otherSuggestions"
+                  id="input-otherSponsorshipDetails"
                   rows={2}
-                  placeholder="e.g. invite teachers, 2000s playlist, livestream..."
-                  value={otherSuggestions}
-                  onChange={(e) => setOtherSuggestions(e.target.value)}
-                  className="w-full p-2.5 rounded border border-secondary/30 focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-xs"
+                  placeholder="Details on food, drinks, prizes, or services..."
+                  value={otherSponsorshipDetails}
+                  onChange={(e) => setOtherSponsorshipDetails(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-outline-variant/40 bg-white/50 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
 
-            {/* Submission Bar */}
-            <div className="bg-surface-container-low text-on-surface rounded p-3.5 flex items-center justify-between gap-3 border border-outline-variant/30">
-              <div className="text-xs text-on-surface-variant">
-                <span>Pledge: </span>
-                <strong className="text-primary font-semibold">{formatPHP(computedPledge)}</strong>
+            {/* 8. Guests & Kids: Steppers */}
+            <div id="q8-guests-card" className={cardClass}>
+              <QuestionHeading n="08">Companions</QuestionHeading>
+
+              {/* One full-width row per companion type, each closed by a
+                  hairline — the steppers never sit side by side. */}
+              <div className="flex flex-col">
+                {[
+                  { label: 'Adult guests (+1s)', v: plusOnesCount, dec: () => setPlusOnesCount(Math.max(0, plusOnesCount - 1)), inc: () => setPlusOnesCount(plusOnesCount + 1) },
+                  { label: 'Kids', v: kidsCount, dec: () => setKidsCount(Math.max(0, kidsCount - 1)), inc: () => setKidsCount(kidsCount + 1) },
+                ].map((st) => (
+                  <div key={st.label} className="flex items-center justify-between gap-3 py-3 border-b border-on-surface/15">
+                    <span className="text-body font-medium text-on-surface-variant">{st.label}</span>
+                    <span className="flex items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={st.dec}
+                        aria-label={`Decrease ${st.label}`}
+                        className="w-6.5 h-6.5 rounded-full border border-on-surface/25 bg-transparent flex items-center justify-center hover:bg-black/5"
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="min-w-[22px] text-center text-body font-medium tabular-nums text-on-surface">{st.v}</span>
+                      <button
+                        type="button"
+                        onClick={st.inc}
+                        aria-label={`Increase ${st.label}`}
+                        className="w-6.5 h-6.5 rounded-full bg-primary text-on-primary flex items-center justify-center"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 9. Other Suggestions */}
+            <div id="q9-suggestions-card" className={cardClass}>
+              <QuestionHeading n="09">Ideas or suggestions</QuestionHeading>
+
+              <textarea
+                id="input-otherSuggestions"
+                rows={2}
+                placeholder="Sana may Then & Now photo wall at open mic…"
+                value={otherSuggestions}
+                onChange={(e) => setOtherSuggestions(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-outline-variant/40 bg-white/50 focus:outline-none focus:ring-1 focus:ring-primary text-on-surface text-body"
+              />
+            </div>
+
+            {/* Sticky submission bar */}
+            <div className="sticky bottom-3.5 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/85 shadow-soft p-3.5 flex flex-wrap items-center gap-3">
+              <div className="flex flex-col gap-0.5 mr-auto">
+                <span className="font-mono text-label tracking-[0.14em] uppercase text-on-surface-variant/70">Running pledge</span>
+                <span className="font-serif text-heading text-primary">{formatPHP(computedPledge)}</span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCurrentStep(2);
-                    window.scrollTo({ top: 80, behavior: 'smooth' });
-                  }}
-                  className="px-3.5 py-1.5 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface-variant font-semibold text-xs border border-secondary/30"
-                >
-                  Back
-                </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentStep(2);
+                  window.scrollTo({ top: 80, behavior: 'smooth' });
+                }}
+                className="px-4 py-2.5 rounded-full bg-transparent text-on-surface-variant font-semibold text-body"
+                style={{ border: '1px solid rgba(20,33,29,.22)' }}
+              >
+                Back
+              </button>
 
-                <button
-                  id="btn-submit-survey-main"
-                  type="submit"
-                  className="px-5 py-2 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-xs shadow-soft flex items-center justify-center gap-1.5 transition-all"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Submit Survey</span>
-                </button>
-              </div>
+              <button
+                id="btn-submit-survey-main"
+                type="submit"
+                className="px-5 py-3 rounded-full bg-primary hover:opacity-90 text-on-primary font-bold text-body shadow-soft flex items-center justify-center gap-1.5 transition-all"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Submit survey</span>
+              </button>
             </div>
 
           </div>

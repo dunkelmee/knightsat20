@@ -65,6 +65,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
       date: existingAnnouncement ? existingAnnouncement.date : new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
       isPinned,
       likesCount: existingAnnouncement?.likesCount || 0,
+      likedByMe: existingAnnouncement?.likedByMe || false,
     };
 
     onSaveAnnouncement(ann);
@@ -77,10 +78,10 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
 
         <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
           <div>
-            <h2 className="text-lg font-serif font-bold text-on-surface">
+            <h2 className="text-heading font-serif font-bold text-on-surface">
               {existingAnnouncement ? 'Edit Announcement' : 'Create Batch Announcement'}
             </h2>
-            <p className="text-xs text-on-surface-variant">
+            <p className="text-body text-on-surface-variant">
               Broadcast updates to all MSHS Batch 2007 visitors
             </p>
           </div>
@@ -95,7 +96,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
         </div>
 
         {error && (
-          <div className="p-3 bg-error-container text-on-error-container text-xs font-medium rounded border border-error-container">
+          <div className="p-3 bg-error-container text-on-error-container text-body font-medium rounded border border-error-container">
             {error}
           </div>
         )}
@@ -103,7 +104,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
 
           <div>
-            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+            <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
               Title <span className="text-error">*</span>
             </label>
             <input
@@ -112,19 +113,19 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
               placeholder="e.g. 📢 Save the Date: Venue Finalist Selection"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded border border-secondary/30 text-on-surface text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full px-3.5 py-2.5 rounded border border-secondary/30 text-on-surface text-body font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+              <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
                 Category Tag
               </label>
               <select
                 value={tag}
                 onChange={(e) => setTag(e.target.value as any)}
-                className="w-full px-3 py-2.5 rounded border border-secondary/30 text-on-surface text-xs font-semibold focus:outline-none"
+                className="w-full px-3 py-2.5 rounded border border-secondary/30 text-on-surface text-body font-semibold focus:outline-none"
               >
                 <option value="Important">Important</option>
                 <option value="Survey">Survey</option>
@@ -136,7 +137,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+              <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
                 Author / Department
               </label>
               <input
@@ -144,13 +145,13 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
                 placeholder="e.g. Logistics Team / Finance Comm"
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
-                className="w-full px-3 py-2.5 rounded border border-secondary/30 text-on-surface text-xs focus:outline-none"
+                className="w-full px-3 py-2.5 rounded border border-secondary/30 text-on-surface text-body focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+            <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
               Caption & Body Content <span className="text-error">*</span>
             </label>
             <textarea
@@ -159,13 +160,13 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
               placeholder="Write the announcement description or update message here..."
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              className="w-full p-3 rounded border border-secondary/30 text-xs text-on-surface leading-relaxed focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full p-3 rounded border border-secondary/30 text-body text-on-surface leading-relaxed focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
           {/* Image Upload & Presets */}
           <div className="space-y-2 p-4 bg-surface-container-low rounded border border-outline-variant/30">
-            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wide">
+            <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide">
               Cover Image (Upload or Pick Preset)
             </label>
 
@@ -198,7 +199,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3 py-2 rounded bg-surface-container-lowest border border-secondary/30 hover:bg-surface-container text-on-surface-variant text-xs font-semibold flex items-center gap-1.5 shadow-soft"
+                className="px-3 py-2 rounded bg-surface-container-lowest border border-secondary/30 hover:bg-surface-container text-on-surface-variant text-body font-semibold flex items-center gap-1.5 shadow-soft"
               >
                 <Upload className="w-3.5 h-3.5 text-secondary" />
                 <span>Upload From Device</span>
@@ -209,20 +210,20 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
                 placeholder="Or paste image URL..."
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                className="flex-1 min-w-[180px] px-3 py-2 rounded border border-secondary/30 text-xs text-on-surface bg-surface-container-lowest"
+                className="flex-1 min-w-[180px] px-3 py-2 rounded border border-secondary/30 text-body text-on-surface bg-surface-container-lowest"
               />
             </div>
 
             {/* Quick presets */}
             <div className="pt-2">
-              <div className="text-[11px] text-on-surface-variant mb-1">Or pick a themed preset:</div>
+              <div className="text-label text-on-surface-variant mb-1">Or pick a themed preset:</div>
               <div className="flex flex-wrap gap-1.5">
                 {presets.map(p => (
                   <button
                     key={p.label}
                     type="button"
                     onClick={() => setImageUrl(p.url)}
-                    className="text-[10px] px-2 py-1 bg-surface-container-lowest border border-outline-variant/40 hover:border-secondary rounded text-on-surface-variant"
+                    className="text-label px-2 py-1 bg-surface-container-lowest border border-outline-variant/40 hover:border-secondary rounded text-on-surface-variant"
                   >
                     {p.label}
                   </button>
@@ -235,7 +236,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
           <div className="flex items-center justify-between p-3 rounded bg-primary-container/15 border border-primary-container/40">
             <div className="flex items-center gap-2">
               <Pin className="w-4 h-4 text-primary" />
-              <span className="text-xs font-bold text-on-primary-container">Pin Announcement to Top</span>
+              <span className="text-body font-bold text-on-primary-container">Pin Announcement to Top</span>
             </div>
             <input
               type="checkbox"
@@ -249,13 +250,13 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded border border-secondary/30 text-on-surface-variant text-xs font-semibold hover:bg-surface-container"
+              className="px-4 py-2.5 rounded border border-secondary/30 text-on-surface-variant text-body font-semibold hover:bg-surface-container"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded bg-primary hover:opacity-90 text-on-primary text-xs font-bold shadow-soft"
+              className="px-5 py-2.5 rounded bg-primary hover:opacity-90 text-on-primary text-body font-bold shadow-soft"
             >
               {existingAnnouncement ? 'Save Announcement' : 'Publish Announcement'}
             </button>

@@ -59,9 +59,9 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-surface-container-lowest rounded p-5 border border-outline-variant/30 shadow-soft flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Total Submissions</span>
-            <div className="text-2xl font-bold text-on-surface mt-1">{responses.length}</div>
-            <p className="text-[11px] text-on-surface-variant">Batchmates responded</p>
+            <span className="text-label font-bold text-on-surface-variant uppercase tracking-wider">Total Submissions</span>
+            <div className="text-title font-bold text-on-surface mt-1">{responses.length}</div>
+            <p className="text-label text-on-surface-variant">Batchmates responded</p>
           </div>
           <div className="w-10 h-10 rounded bg-tertiary-container/25 text-on-tertiary-container flex items-center justify-center font-bold">
             <Users className="w-5 h-5" />
@@ -70,9 +70,9 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
 
         <div className="bg-surface-container-lowest rounded p-5 border border-primary-container/50 shadow-soft flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-on-primary-container uppercase tracking-wider">Total Pledges Extracted</span>
-            <div className="text-2xl font-bold text-primary mt-1">{formatPHP(totalPledges)}</div>
-            <p className="text-[11px] text-on-surface-variant">{pledgingCount} batchmates pledging</p>
+            <span className="text-label font-bold text-on-primary-container uppercase tracking-wider">Total Pledges Extracted</span>
+            <div className="text-title font-bold text-primary mt-1">{formatPHP(totalPledges)}</div>
+            <p className="text-label text-on-surface-variant">{pledgingCount} batchmates pledging</p>
           </div>
           <div className="w-10 h-10 rounded bg-primary-container/20 text-primary flex items-center justify-center font-bold">
             <HeartHandshake className="w-5 h-5" />
@@ -81,11 +81,11 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
 
         <div className="bg-surface-container-lowest rounded p-5 border border-success-container shadow-soft flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-on-success-container uppercase tracking-wider">Pledges Collected</span>
-            <div className="text-2xl font-bold text-success mt-1">
+            <span className="text-label font-bold text-on-success-container uppercase tracking-wider">Pledges Collected</span>
+            <div className="text-title font-bold text-success mt-1">
               {formatPHP(responses.filter(r => r.pledgePaidStatus === 'Fully Paid').reduce((a, b) => a + b.computedPledgeAmount, 0))}
             </div>
-            <p className="text-[11px] text-on-surface-variant">Marked as Fully Paid</p>
+            <p className="text-label text-on-surface-variant">Marked as Fully Paid</p>
           </div>
           <div className="w-10 h-10 rounded bg-success-container text-success flex items-center justify-center font-bold">
             <Check className="w-5 h-5" />
@@ -105,7 +105,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
               placeholder="Search by name, contact, section, skill, venue..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded border border-secondary/30 text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full pl-9 pr-4 py-2 rounded border border-secondary/30 text-body text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -115,7 +115,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
               id="btn-export-survey-csv"
               type="button"
               onClick={() => exportSurveyResponsesToCSV(responses)}
-              className="px-3.5 py-2 rounded bg-success hover:opacity-90 text-on-success text-xs font-bold shadow-soft transition-all flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded bg-success hover:opacity-90 text-on-success text-body font-bold shadow-soft transition-all flex items-center gap-1.5"
             >
               <FileSpreadsheet className="w-3.5 h-3.5" />
               <span>Export Full CSV</span>
@@ -125,7 +125,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
               id="btn-export-financials-csv"
               type="button"
               onClick={() => exportPledgesAndExpensesToCSV(responses, expenses)}
-              className="px-3.5 py-2 rounded bg-secondary hover:opacity-90 text-on-secondary text-xs font-bold shadow-soft transition-all flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded bg-secondary hover:opacity-90 text-on-secondary text-body font-bold shadow-soft transition-all flex items-center gap-1.5"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export Pledges & Ledger CSV</span>
@@ -134,7 +134,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
         </div>
 
         {/* Filter chips */}
-        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-outline-variant/20 text-xs">
+        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-outline-variant/20 text-body">
           <div className="flex items-center gap-2 text-on-surface-variant font-medium">
             <Filter className="w-3.5 h-3.5" />
             <span>Filters:</span>
@@ -145,7 +145,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
             <select
               value={attendanceFilter}
               onChange={(e) => setAttendanceFilter(e.target.value)}
-              className="px-2.5 py-1 rounded border border-secondary/30 bg-surface-container-lowest text-on-surface-variant text-xs"
+              className="px-2.5 py-1 rounded border border-secondary/30 bg-surface-container-lowest text-on-surface-variant text-body"
             >
               <option value="All">All Statuses</option>
               <option value="Yes, definitely!">Yes, definitely!</option>
@@ -160,7 +160,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
             <select
               value={pledgeFilter}
               onChange={(e) => setPledgeFilter(e.target.value)}
-              className="px-2.5 py-1 rounded border border-secondary/30 bg-surface-container-lowest text-on-surface-variant text-xs"
+              className="px-2.5 py-1 rounded border border-secondary/30 bg-surface-container-lowest text-on-surface-variant text-body"
             >
               <option value="All">All Amounts</option>
               <option value="Pledged">With Pledges (&gt; ₱0)</option>
@@ -179,8 +179,8 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
       {/* Responses Table — desktop/large screens only, see the card list below for mobile */}
       <div className="hidden lg:block bg-surface-container-lowest rounded border border-outline-variant/30 shadow-soft overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-on-surface-variant">
-            <thead className="bg-inverse-surface text-inverse-on-surface uppercase text-[10px] tracking-wider">
+          <table className="w-full text-left text-body text-on-surface-variant">
+            <thead className="bg-inverse-surface text-inverse-on-surface uppercase text-label tracking-wider">
               <tr>
                 <th className="py-3 px-4">Batchmate</th>
                 <th className="py-3 px-4">Contact</th>
@@ -204,9 +204,9 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
 
                     {/* Batchmate & Section */}
                     <td className="py-3.5 px-4 font-semibold text-on-surface">
-                      <div className="font-serif">{r.fullName}</div>
+                      <div className="font-serif text-heading">{r.fullName}</div>
                       {r.section2007 && (
-                        <span className="text-[10px] text-tertiary font-normal">
+                        <span className="text-label text-tertiary font-normal">
                           {r.section2007}
                         </span>
                       )}
@@ -215,12 +215,12 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
                     {/* Contact */}
                     <td className="py-3.5 px-4">
                       <div>{r.contactNumber}</div>
-                      {r.email && <div className="text-[10px] text-outline">{r.email}</div>}
+                      {r.email && <div className="text-label text-outline">{r.email}</div>}
                     </td>
 
                     {/* Attendance */}
                     <td className="py-3.5 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      <span className={`px-2 py-0.5 rounded-full text-label font-bold ${
                         r.attendance.includes('Yes') ? 'bg-success-container text-on-success-container' :
                         r.attendance.includes('Most likely') ? 'bg-tertiary-container/25 text-on-tertiary-container' :
                         r.attendance.includes('Not sure') ? 'bg-primary-container/20 text-on-primary-container' :
@@ -235,7 +235,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
                       {r.computedPledgeAmount > 0 ? (
                         <div className="text-primary font-bold">
                           {formatPHP(r.computedPledgeAmount)}
-                          <div className="text-[10px] text-on-surface-variant font-normal">
+                          <div className="text-label text-on-surface-variant font-normal">
                             {r.pledgeOption} {r.customPledgeAmount ? `(${r.customPledgeAmount})` : ''}
                           </div>
                         </div>
@@ -250,7 +250,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
                         <select
                           value={r.pledgePaidStatus || 'Unpaid / Pledged'}
                           onChange={(e) => onUpdatePaymentStatus(r.id, e.target.value as any)}
-                          className={`text-[11px] font-semibold px-2 py-1 rounded border focus:outline-none ${
+                          className={`text-label font-semibold px-2 py-1 rounded border focus:outline-none ${
                             r.pledgePaidStatus === 'Fully Paid' ? 'bg-success-container text-on-success-container border-success' :
                             r.pledgePaidStatus === 'Partially Paid' ? 'bg-tertiary-container/25 text-on-tertiary-container border-tertiary' :
                             'bg-primary-container/20 text-on-primary-container border-primary-container'
@@ -261,7 +261,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
                           <option value="Fully Paid">Fully Paid</option>
                         </select>
                       ) : (
-                        <span className="text-outline text-[11px]">N/A</span>
+                        <span className="text-outline text-label">N/A</span>
                       )}
                     </td>
 
@@ -271,7 +271,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
                         {r.skillsOffered.length > 0 ? r.skillsOffered.join(', ') : 'None'}
                       </div>
                       {r.otherSponsorships.length > 0 && !r.otherSponsorships.includes('None for now') && (
-                        <div className="text-[10px] text-primary truncate" title={r.otherSponsorships.join(', ')}>
+                        <div className="text-label text-primary truncate" title={r.otherSponsorships.join(', ')}>
                           🎁 {r.otherSponsorships.join(', ')}
                         </div>
                       )}
@@ -314,7 +314,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
       {/* Responses Cards — mobile/tablet only, mirrors the table above */}
       <div className="lg:hidden space-y-3">
         {filteredResponses.length === 0 ? (
-          <div className="py-8 text-center text-xs text-on-surface-variant bg-surface-container-lowest rounded border border-outline-variant/30">
+          <div className="py-8 text-center text-body text-on-surface-variant bg-surface-container-lowest rounded border border-outline-variant/30">
             No survey responses match your filter criteria.
           </div>
         ) : (
@@ -325,12 +325,12 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="font-serif font-semibold text-sm text-on-surface">{r.fullName}</div>
+                  <div className="font-serif font-semibold text-heading text-on-surface">{r.fullName}</div>
                   {r.section2007 && (
-                    <span className="text-[10px] text-tertiary font-normal">{r.section2007}</span>
+                    <span className="text-label text-tertiary font-normal">{r.section2007}</span>
                   )}
                 </div>
-                <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-label font-bold ${
                   r.attendance.includes('Yes') ? 'bg-success-container text-on-success-container' :
                   r.attendance.includes('Most likely') ? 'bg-tertiary-container/25 text-on-tertiary-container' :
                   r.attendance.includes('Not sure') ? 'bg-primary-container/20 text-on-primary-container' :
@@ -340,22 +340,22 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
                 </span>
               </div>
 
-              <div className="text-xs text-on-surface-variant">
+              <div className="text-body text-on-surface-variant">
                 <div>{r.contactNumber}</div>
-                {r.email && <div className="text-[10px] text-outline">{r.email}</div>}
+                {r.email && <div className="text-label text-outline">{r.email}</div>}
               </div>
 
               <div className="flex items-center justify-between gap-2 pt-2 border-t border-outline-variant/20">
                 <div>
                   {r.computedPledgeAmount > 0 ? (
-                    <div className="text-primary font-bold text-sm">
+                    <div className="text-primary font-bold text-heading">
                       {formatPHP(r.computedPledgeAmount)}
-                      <div className="text-[10px] text-on-surface-variant font-normal">
+                      <div className="text-label text-on-surface-variant font-normal">
                         {r.pledgeOption} {r.customPledgeAmount ? `(${r.customPledgeAmount})` : ''}
                       </div>
                     </div>
                   ) : (
-                    <span className="text-outline text-sm">₱0</span>
+                    <span className="text-outline text-heading">₱0</span>
                   )}
                 </div>
 
@@ -363,7 +363,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
                   <select
                     value={r.pledgePaidStatus || 'Unpaid / Pledged'}
                     onChange={(e) => onUpdatePaymentStatus(r.id, e.target.value as any)}
-                    className={`text-[11px] font-semibold px-2 py-1 rounded border focus:outline-none ${
+                    className={`text-label font-semibold px-2 py-1 rounded border focus:outline-none ${
                       r.pledgePaidStatus === 'Fully Paid' ? 'bg-success-container text-on-success-container border-success' :
                       r.pledgePaidStatus === 'Partially Paid' ? 'bg-tertiary-container/25 text-on-tertiary-container border-tertiary' :
                       'bg-primary-container/20 text-on-primary-container border-primary-container'
@@ -374,12 +374,12 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
                     <option value="Fully Paid">Fully Paid</option>
                   </select>
                 ) : (
-                  <span className="text-outline text-[11px]">N/A</span>
+                  <span className="text-outline text-label">N/A</span>
                 )}
               </div>
 
               {(r.skillsOffered.length > 0 || r.otherSponsorships.length > 0) && (
-                <div className="text-[11px] text-on-surface-variant truncate">
+                <div className="text-label text-on-surface-variant truncate">
                   {r.skillsOffered.length > 0 ? r.skillsOffered.join(', ') : 'None'}
                   {r.otherSponsorships.length > 0 && !r.otherSponsorships.includes('None for now') && (
                     <span className="text-primary"> · 🎁 {r.otherSponsorships.join(', ')}</span>

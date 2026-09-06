@@ -17,6 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.audit import record_action
+from app.companions import has_plus_one
 from app.database import get_db
 from app.models import SurveyResponse, User
 from app.schemas import CheckInConfirmRequest, CheckInLookupOut
@@ -47,7 +48,7 @@ async def _expected_plus_one(db: AsyncSession, user_id: str) -> bool | None:
     response = result.scalars().first()
     if not response:
         return None
-    return response.bringing_plus_one == "Yes, 1 +1"
+    return has_plus_one(response)
 
 
 def _to_lookup_out(user: User, expected_plus_one: bool | None) -> CheckInLookupOut:

@@ -24,6 +24,13 @@ export default defineConfig(() => {
           target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000',
           changeOrigin: true,
         },
+        // Photo Wall / profile images are served off the backend's uploads
+        // mount, not from src/ — without this they fall through to the SPA
+        // catch-all and every avatar renders as index.html.
+        '/uploads': {
+          target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000',
+          changeOrigin: true,
+        },
       },
     },
   };

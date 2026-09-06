@@ -33,56 +33,56 @@ export const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, onC
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="w-full max-w-sm bg-surface-container-lowest rounded p-6 border border-outline-variant/30 shadow-soft space-y-4"
+        className="w-full max-w-sm bg-surface-container-lowest rounded-xl p-6 shadow-soft space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="font-serif font-semibold text-base text-on-surface">New Album</h2>
-          <button type="button" onClick={onClose} className="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
+          <h2 className="font-serif text-heading text-on-surface">New Album</h2>
+          <button type="button" onClick={onClose} className="text-on-surface-variant/60 hover:text-on-surface">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-on-surface-variant mb-1">Title</label>
+            <label className="block text-label font-semibold text-on-surface-variant mb-1.5">Title</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Batch Trips & Reunions"
-              className="w-full px-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+              className="w-full py-2 border-b-[1.5px] border-on-surface/30 bg-transparent text-on-surface text-body focus:outline-none focus:border-primary"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1.5">
               Description <span className="font-normal">(optional)</span>
             </label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2.5 rounded border border-secondary/30 text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-background"
+              className="w-full p-2.5 rounded-xl border border-outline-variant/40 bg-white/50 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
-          {error && <p className="text-xs text-error">{error}</p>}
+          {error && <p className="text-body text-error">{error}</p>}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container font-semibold text-sm transition-all"
+              className="flex-1 py-2.5 rounded-xl border border-on-surface/20 text-on-surface-variant hover:bg-black/5 font-semibold text-body transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-2.5 rounded bg-primary hover:opacity-90 disabled:opacity-60 text-on-primary font-semibold text-sm shadow-soft transition-all"
+              className="flex-1 py-2.5 rounded-xl bg-primary hover:opacity-90 disabled:opacity-60 text-on-primary font-bold text-body shadow-soft transition-all"
             >
               {isSubmitting ? 'Creating…' : 'Create Album'}
             </button>

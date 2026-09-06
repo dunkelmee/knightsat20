@@ -18,10 +18,10 @@ export const RsvpSummaryTab: React.FC<RsvpSummaryTabProps> = ({
 
   // Headcount computations
   const attendingRsvps = rsvps.filter(r => r.status === 'Attending');
-  const maybeRsvps = rsvps.filter(r => r.status === 'Maybe');
+  const maybeRsvps = rsvps.filter(r => r.status === 'Most likely' || r.status === 'Maybe');
   const declineRsvps = rsvps.filter(r => r.status === 'Decline');
 
-  const plusOnes = attendingRsvps.filter(r => r.bringingPlusOne).length;
+  const plusOnes = attendingRsvps.reduce((acc, r) => acc + (r.plusOnesCount ?? (r.bringingPlusOne ? 1 : 0)), 0);
   const kidsTotal = attendingRsvps.reduce((acc, r) => acc + (r.kidsCount || 0), 0);
   const totalHeadcount = attendingRsvps.length + plusOnes + kidsTotal;
 
@@ -59,47 +59,47 @@ export const RsvpSummaryTab: React.FC<RsvpSummaryTabProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
 
         <div className="bg-surface-container-lowest rounded p-5 border border-success-container shadow-soft">
-          <div className="flex items-center justify-between text-xs font-bold text-on-success-container uppercase tracking-wide">
+          <div className="flex items-center justify-between text-label font-bold text-on-success-container uppercase tracking-wide">
             <span>Confirmed Alumni</span>
             <CheckCircle2 className="w-4 h-4 text-success" />
           </div>
-          <div className="text-3xl font-bold text-on-success-container mt-1">
+          <div className="text-title font-bold text-on-success-container mt-1">
             {attendingRsvps.length}
           </div>
-          <p className="text-[11px] text-on-surface-variant mt-1">Direct RSVPs</p>
+          <p className="text-label text-on-surface-variant mt-1">Direct RSVPs</p>
         </div>
 
         <div className="bg-surface-container-lowest rounded p-5 border border-tertiary-container/50 shadow-soft">
-          <div className="flex items-center justify-between text-xs font-bold text-on-tertiary-container uppercase tracking-wide">
+          <div className="flex items-center justify-between text-label font-bold text-on-tertiary-container uppercase tracking-wide">
             <span>Companions (+1 & Kids)</span>
             <UserPlus className="w-4 h-4 text-tertiary" />
           </div>
-          <div className="text-3xl font-bold text-on-tertiary-container mt-1">
+          <div className="text-title font-bold text-on-tertiary-container mt-1">
             +{plusOnes + kidsTotal}
           </div>
-          <p className="text-[11px] text-on-surface-variant mt-1">{plusOnes} plus-ones • {kidsTotal} kids</p>
+          <p className="text-label text-on-surface-variant mt-1">{plusOnes} plus-ones • {kidsTotal} kids</p>
         </div>
 
         <div className="bg-surface-container-lowest rounded p-5 border border-secondary-container shadow-soft">
-          <div className="flex items-center justify-between text-xs font-bold text-on-secondary-container uppercase tracking-wide">
+          <div className="flex items-center justify-between text-label font-bold text-on-secondary-container uppercase tracking-wide">
             <span>Est. Total Headcount</span>
             <Users className="w-4 h-4 text-secondary" />
           </div>
-          <div className="text-3xl font-bold text-on-secondary-container mt-1">
+          <div className="text-title font-bold text-on-secondary-container mt-1">
             {totalHeadcount}
           </div>
-          <p className="text-[11px] text-on-surface-variant mt-1">Total banquet attendees</p>
+          <p className="text-label text-on-surface-variant mt-1">Total banquet attendees</p>
         </div>
 
         <div className="bg-surface-container-lowest rounded p-5 border border-primary-container/50 shadow-soft">
-          <div className="flex items-center justify-between text-xs font-bold text-on-primary-container uppercase tracking-wide">
+          <div className="flex items-center justify-between text-label font-bold text-on-primary-container uppercase tracking-wide">
             <span>Survey Definite/Likely</span>
             <Award className="w-4 h-4 text-primary" />
           </div>
-          <div className="text-3xl font-bold text-on-primary-container mt-1">
+          <div className="text-title font-bold text-on-primary-container mt-1">
             {surveyDefinite + surveyLikely}
           </div>
-          <p className="text-[11px] text-on-surface-variant mt-1">{surveyDefinite} Definite • {surveyLikely} Likely</p>
+          <p className="text-label text-on-surface-variant mt-1">{surveyDefinite} Definite • {surveyLikely} Likely</p>
         </div>
 
       </div>
@@ -109,7 +109,7 @@ export const RsvpSummaryTab: React.FC<RsvpSummaryTabProps> = ({
 
         {/* Survey Attendance Intent */}
         <div className="bg-surface-container-lowest rounded p-6 border border-outline-variant/30 shadow-soft space-y-4">
-          <h3 className="text-sm font-bold text-on-surface uppercase tracking-wide">
+          <h3 className="text-heading font-bold text-on-surface uppercase tracking-wide">
             Planning Survey Attendance Intent ({responses.length} Total)
           </h3>
 
@@ -123,7 +123,7 @@ export const RsvpSummaryTab: React.FC<RsvpSummaryTabProps> = ({
               const pct = responses.length > 0 ? Math.round((item.count / responses.length) * 100) : 0;
               return (
                 <div key={item.label} className="space-y-1">
-                  <div className="flex justify-between text-xs font-semibold text-on-surface">
+                  <div className="flex justify-between text-body font-semibold text-on-surface">
                     <span>{item.label}</span>
                     <span className={item.text}>{item.count} ({pct}%)</span>
                   </div>
@@ -142,15 +142,15 @@ export const RsvpSummaryTab: React.FC<RsvpSummaryTabProps> = ({
         {/* Dietary & Catering Notes */}
         <div className="bg-surface-container-lowest rounded p-6 border border-outline-variant/30 shadow-soft space-y-3">
           <div className="flex items-center justify-between pb-2 border-b border-outline-variant/20">
-            <h3 className="text-sm font-bold text-on-surface uppercase tracking-wide flex items-center gap-2">
+            <h3 className="text-heading font-bold text-on-surface uppercase tracking-wide flex items-center gap-2">
               <Utensils className="w-4 h-4 text-primary" />
               <span>Dietary Requirements for Caterer ({dietaryList.length})</span>
             </h3>
           </div>
 
-          <div className="space-y-2 max-h-56 overflow-y-auto pr-1 text-xs">
+          <div className="space-y-2 max-h-56 overflow-y-auto pr-1 text-body">
             {dietaryList.length === 0 ? (
-              <p className="text-outline text-xs py-4 text-center">No special dietary restrictions specified yet.</p>
+              <p className="text-outline text-body py-4 text-center">No special dietary restrictions specified yet.</p>
             ) : (
               dietaryList.map(r => (
                 <div key={r.id} className="p-2.5 bg-surface-container-low rounded border border-outline-variant/30 flex items-center justify-between">
@@ -170,11 +170,11 @@ export const RsvpSummaryTab: React.FC<RsvpSummaryTabProps> = ({
       <div className="bg-surface-container-lowest rounded p-6 border border-outline-variant/30 shadow-soft space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-outline-variant/20">
           <div>
-            <h3 className="text-base font-bold text-on-surface flex items-center gap-2">
+            <h3 className="text-heading font-bold text-on-surface flex items-center gap-2">
               <Wrench className="w-5 h-5 text-secondary" />
               <span>Volunteers & Organizing Committees by Skill (Survey Q6)</span>
             </h3>
-            <p className="text-xs text-on-surface-variant">
+            <p className="text-body text-on-surface-variant">
               Batchmates grouped by the services and tasks they offered to help organize
             </p>
           </div>
@@ -183,7 +183,7 @@ export const RsvpSummaryTab: React.FC<RsvpSummaryTabProps> = ({
           <select
             value={selectedCommittee}
             onChange={(e) => setSelectedCommittee(e.target.value)}
-            className="px-3 py-1.5 rounded border border-secondary/30 text-xs font-semibold bg-surface-container-lowest text-on-surface"
+            className="px-3 py-1.5 rounded border border-secondary/30 text-body font-semibold bg-surface-container-lowest text-on-surface"
           >
             <option value="All">All Committees ({committees.length})</option>
             {committees.map(c => (
@@ -198,22 +198,22 @@ export const RsvpSummaryTab: React.FC<RsvpSummaryTabProps> = ({
             .map(c => (
               <div key={c} className="p-4 rounded bg-surface-container-low border border-outline-variant/30 space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-outline-variant/20">
-                  <span className="font-bold text-xs text-on-surface">{c}</span>
-                  <span className="text-[10px] font-bold bg-tertiary-container/25 text-on-tertiary-container px-2 py-0.5 rounded-full">
+                  <span className="font-bold text-body text-on-surface">{c}</span>
+                  <span className="text-label font-bold bg-tertiary-container/25 text-on-tertiary-container px-2 py-0.5 rounded-full">
                     {skillMatrix[c].length} Volunteer{skillMatrix[c].length > 1 ? 's' : ''}
                   </span>
                 </div>
 
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   {skillMatrix[c].map((v, i) => (
-                    <div key={i} className="p-2 bg-surface-container-lowest rounded border border-outline-variant/30 text-xs space-y-1">
+                    <div key={i} className="p-2 bg-surface-container-lowest rounded border border-outline-variant/30 text-body space-y-1">
                       <div className="font-semibold text-on-surface">{v.name}</div>
-                      <div className="text-[11px] text-on-surface-variant flex items-center gap-1.5">
+                      <div className="text-label text-on-surface-variant flex items-center gap-1.5">
                         <Phone className="w-3 h-3 text-outline" />
                         <span>{v.contact}</span>
                       </div>
                       {v.notes && (
-                        <div className="text-[10px] text-on-surface-variant italic bg-surface-container-low p-1.5 rounded">
+                        <div className="text-label text-on-surface-variant italic bg-surface-container-low p-1.5 rounded">
                           "{v.notes}"
                         </div>
                       )}
