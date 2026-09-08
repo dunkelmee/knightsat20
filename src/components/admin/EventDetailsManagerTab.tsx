@@ -67,10 +67,10 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
       <div className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-heading font-semibold text-on-surface">
+            <h3 className="text-heading text-on-surface">
               Event Schedule & Venue Settings
             </h3>
-            <span className={`px-2 py-0.5 rounded text-label font-semibold ${
+            <span className={`px-2 py-0.5 rounded eyebrow ${
               status === 'Finalized'
                 ? 'bg-success-container text-on-success-container border border-success-container'
                 : 'bg-primary-container/20 text-on-primary-container border border-primary-container/50'
@@ -87,7 +87,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
           <button
             type="button"
             onClick={handleSetPending}
-            className="px-3 py-1.5 rounded bg-background hover:bg-surface-container text-on-surface-variant font-semibold text-body border border-secondary/30 flex items-center gap-1 transition-colors"
+            className="btn btn-secondary btn-sm"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset to Pending</span>
@@ -273,7 +273,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
 
           <button
             type="submit"
-            className="px-5 py-2 rounded bg-primary hover:opacity-90 text-on-primary font-semibold text-body shadow-soft flex items-center gap-1.5 transition-all"
+            className="btn btn-primary"
           >
             <Save className="w-3.5 h-3.5" />
             <span>Save event details</span>
@@ -285,7 +285,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
       {/* Scouted Venues Shortlist */}
       <div className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 shadow-soft space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-heading font-semibold text-on-surface flex items-center gap-2">
+          <h3 className="text-heading text-on-surface flex items-center gap-2">
             <Landmark className="w-4 h-4 text-primary" />
             <span>Scouted Venues ({scoutedVenues.length})</span>
           </h3>
@@ -295,7 +295,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
               setEditingVenue(null);
               setIsVenueModalOpen(true);
             }}
-            className="px-3 py-1.5 rounded bg-primary hover:opacity-90 text-on-primary text-body font-bold shadow-soft flex items-center gap-1.5"
+            className="btn btn-primary btn-sm"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Venue</span>
@@ -312,7 +312,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
             {scoutedVenues.map((v) => (
               <div key={v.id} className="p-3.5 rounded border border-outline-variant/30 bg-surface-container-low/60 space-y-1.5">
                 <div className="flex items-start justify-between gap-2">
-                  <h4 className="font-serif font-semibold text-heading text-on-surface">{v.name}</h4>
+                  <h4 className="font-serif text-heading text-on-surface">{v.name}</h4>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button
                       type="button"
@@ -320,7 +320,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
                         setEditingVenue(v);
                         setIsVenueModalOpen(true);
                       }}
-                      className="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant"
+                      className="btn-icon"
                       title="Edit venue"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -330,7 +330,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
                       onClick={() => {
                         if (window.confirm(`Remove "${v.name}" from the shortlist?`)) onDeleteVenue(v.id);
                       }}
-                      className="p-1.5 rounded bg-error-container hover:opacity-80 text-on-error-container"
+                      className="btn-icon btn-icon-danger"
                       title="Delete venue"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -351,7 +351,7 @@ export const EventDetailsManagerTab: React.FC<EventDetailsManagerTabProps> = ({
                   </div>
                 )}
                 {v.quotedCost != null && (
-                  <div className="text-heading font-bold text-primary">{formatPHP(v.quotedCost)}</div>
+                  <div className="font-serif text-heading text-primary">{formatPHP(v.quotedCost)}</div>
                 )}
                 {v.miscDetails && (
                   <p className="text-label text-on-surface-variant pt-1 border-t border-outline-variant/20">

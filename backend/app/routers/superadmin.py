@@ -5,7 +5,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.audit import record_action
 from app.database import get_db
 from app.models import Album, AuditLog, OtpCode, Photo, RSVPRecord, SurveyResponse, User
-from app.schemas import AdminUserOut, AuditLogOut, OrganizerUpdateRequest, SuperadminPasswordConfirm
+from app.routers.auth import to_profile_out
+from app.schemas import (
+    AdminUserOut,
+    AuditLogOut,
+    OrganizerUpdateRequest,
+    SuperadminPasswordConfirm,
+    UserProfileOut,
+)
 from app.security import check_superadmin_password, require_superadmin
 from app.storage import delete_photo_files, delete_profile_photo
 from app.superadmin_lockout import check_not_locked_out, record_failed_attempt
@@ -27,6 +34,19 @@ async def list_users(db: AsyncSession = Depends(get_db)):
         )
         for user in result.scalars().all()
     ]
+
+
+@router.get("/users/{user_id}", response_model=UserProfileOut)
+async def get_user_profile(user_id: str, db: AsyncSession = Depends(get_db)):
+    """The full profile behind a row in the users list.
+
+    The list endpoint above deliberately stays lean — it renders every account
+    at once — so the detail view fetches on demand instead.
+    """
+    user = await db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return to_profile_out(user)
 
 
 @router.patch("/users/{user_id}/organizer", response_model=AdminUserOut)

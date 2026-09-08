@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle } from 'lucide-react';
 import { AdminUserSummary } from '../../types';
 
@@ -25,7 +26,10 @@ export const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
     onConfirm(password);
   };
 
-  return (
+  // Portalled for the same reason as UserDetailModal: its caller renders it
+  // from inside a card that carries backdrop-filter, which would otherwise
+  // become the containing block for this `fixed` scrim.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 bg-inverse-surface/70 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={isDeleting ? undefined : onCancel}
@@ -39,7 +43,7 @@ export const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
             <AlertTriangle className="w-5 h-5 text-on-error-container" />
           </div>
           <div className="min-w-0">
-            <h2 className="font-serif font-semibold text-heading text-on-surface">
+            <h2 className="font-serif text-heading text-on-surface">
               Delete {user.fullName}?
             </h2>
             <p className="text-body text-on-surface-variant mt-1.5 leading-relaxed">
@@ -72,20 +76,21 @@ export const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
               type="button"
               onClick={onCancel}
               disabled={isDeleting}
-              className="flex-1 py-2.5 rounded border border-outline-variant/40 text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-semibold text-body disabled:opacity-60 transition-all"
+              className="btn btn-secondary flex-1"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isDeleting || !password}
-              className="flex-1 py-2.5 rounded bg-error hover:opacity-90 disabled:opacity-60 text-on-error font-semibold text-body shadow-soft transition-all"
+              className="btn btn-danger flex-1"
             >
               {isDeleting ? 'Deleting…' : 'Delete permanently'}
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };

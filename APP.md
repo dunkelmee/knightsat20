@@ -11,7 +11,7 @@ and a higher-level feature summary.
 | Role | Who | How it's reached | Portal |
 |---|---|---|---|
 | **Attendee** | Every registered alumnus, by default | Normal email + OTP login | Header + 5 tabs: Batch Board, Survey, Directory, Photos, Funds |
-| **Organizer** | An attendee the superadmin has granted admin access | Same login, then "To organizer view" in the header's avatar menu | Same header shell, 6 tabs replace the attendee tabs: Event Planning, Surveys, Ledger, Announcements, RSVP Roster, Photo Wall |
+| **Organizer** | An attendee the superadmin has granted admin access | Same login, then "To organizer view" in the header's avatar menu | Same header shell, 5 tabs replace the attendee tabs: Event, Surveys, Ledger, Bulletin, RSVP |
 | **Superadmin** | A single, env-configured identity (`SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD`), not an alumni account | Same login form, but the superadmin's email swaps the OTP step for a password prompt | A fully separate portal (`SuperadminPortal`) with 3 tabs: Surveys, Users, Activity Log — never shows the attendee/organizer app at all |
 
 ---
@@ -346,6 +346,10 @@ button opens the Create Album modal.
   "LIVE ON REUNION DAY" pulsing-dot badge shown only when the album is flagged live-day; the album
   title; a meta line "{photoCount} photos · {contributorCount} contributor(s)"; overlapping
   contributor-initial avatars with a "+N" overflow badge. Clicking a card opens its detail view.
+- **Delete album** (trash icon, bottom-right of the card) — shown only to an organizer, and only on
+  an album with zero photos. Confirms via a browser dialog (`Delete the empty album "{title}"? This
+  can't be undone.`) before deleting. Albums are collaborative, so there is deliberately no way to
+  delete one that has photos in it from the UI — that would be discarding other people's uploads.
 
 ### Create Album Modal
 
@@ -448,24 +452,28 @@ permanent per-account flag.
 ## 2.1 Accessing the Organizer View
 
 Toggling "To organizer view" swaps the active tab to the organizer portal; toggling back returns to
-whichever attendee tab was last active. When the organizer view is active, the six organizer tabs
+whichever attendee tab was last active. When the organizer view is active, the five organizer tabs
 fully replace the five attendee tabs in both the desktop header nav and the mobile bottom bar — they
 are never shown together. If an account without organizer access somehow reaches this state, a
 plain "You don't have organizer access." message is shown instead.
 
 The organizer portal itself has no shared shell beyond a centered container — it's a pure router
-that renders exactly one of six tab components based on the selected tab.
+that renders exactly one of five tab components based on the selected tab.
 
-The six organizer tabs:
+The five organizer tabs. There is deliberately no Photo Wall tab: albums are collaborative, so they
+are moderated from the attendee Photos tab (§1.5) rather than from a separate back office.
 
-| Tab | Label |
-|---|---|
-| `event` | Event Planning |
-| `responses` | Surveys |
-| `funds` | Ledger |
-| `announcements` | Announcements |
-| `rsvp` | RSVP Roster |
-| `photowall` | Photo Wall |
+The nav label is deliberately terser than the hero title, because one label
+serves both the desktop pill row and the mobile bottom bar, where they share
+a phone width at the 8px `nav` step (see TYPOGRAPHY_SYSTEM.md §11).
+
+| Tab | Nav label | Hero title |
+|---|---|---|
+| `event` | Event | Event Planning |
+| `responses` | Surveys | Survey Responses |
+| `funds` | Ledger | Operating Ledger |
+| `announcements` | Bulletin | Announcements |
+| `rsvp` | RSVP | RSVP Roster |
 
 ## 2.2 Event Planning Tab
 
@@ -623,8 +631,10 @@ Header "Add Planned Expense Item" / "Edit Planned Expense".
 
 ## 2.5 Announcements Tab
 
-Title "Announcements & Bulletin Manager", subtext about publishing updates and photos. A **"New
-Announcement"** button opens the Add/Edit modal.
+Section heading "Posts", subtext about publishing updates and photos. A right-aligned **"New
+Post"** button opens the Add/Edit modal. The heading uses the same treatment as the Ledger tab's
+Planned Expenses section — serif `title`, small icon, hairline rule — with the action in its own
+row below.
 
 ### Announcements list
 
@@ -683,21 +693,6 @@ Built from the survey's "skills offered" answers, grouped per skill/committee.
 
 No add/edit/delete controls exist on this tab — it's read-only aggregation of data submitted
 elsewhere.
-
-## 2.7 Photo Wall Tab (moderation)
-
-Title "Photo Wall Moderation (N)". Fetches album data independently of the other tabs.
-- **Loading state**: "Loading albums…"
-- **Empty state**: "No albums yet."
-- **Row anatomy**: album title, a "LIVE" pill if flagged live-day, "{photoCount} photos ·
-  {contributorCount} contributors". Two controls:
-  - **Live-day toggle** (star icon) — toggles the album's live-day flag immediately.
-  - **Delete** (trash icon) — confirms via browser dialog (`Delete "{title}" and all {N} of its
-    photos? This can't be undone.`) before deleting the entire album and all its photos.
-
-Moderation here is album-level only — there's no per-photo delete control in this tab (per-photo
-deletion for organizers happens from the Lightbox itself, as noted in §1.5, since organizers can
-delete any photo there, not just their own).
 
 ---
 

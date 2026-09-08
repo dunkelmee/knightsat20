@@ -4,6 +4,8 @@ import {
   MessageSquare, UserPlus, Search, Sparkles, Megaphone, UsersRound,
 } from 'lucide-react';
 import { Announcement, PublicRSVP } from '../types';
+import { HeadcountCard } from './HeadcountCard';
+import { formatPHP } from '../utils/pledgeParser';
 import { STATUS_EDGE } from '../utils/statusColors';
 
 interface BatchBoardSectionProps {
@@ -11,6 +13,9 @@ interface BatchBoardSectionProps {
   onLikeAnnouncement: (id: string) => void;
   onOpenAdminToPost: () => void;
   rsvps: PublicRSVP[];
+  totalPledges: number;
+  hasSurveyResponse: boolean;
+  onNavigateToSurvey: () => void;
 }
 
 const getInitials = (fullName: string): string =>
@@ -46,6 +51,9 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
   onLikeAnnouncement,
   onOpenAdminToPost,
   rsvps,
+  totalPledges,
+  hasSurveyResponse,
+  onNavigateToSurvey,
 }) => {
   // Announcements state
   const [selectedTag, setSelectedTag] = useState<string>('All');
@@ -84,6 +92,21 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
 
   return (
     <div id="batch-board-container" className="max-w-5xl @min-[700px]/app:max-w-[1180px] mx-auto py-6 px-4 @min-[700px]/app:px-8">
+      {/* Page summary, above both rails: it sums up the whole board, not just
+          the announcements beside it. `paper` because this body is parchment,
+          so the card brings its own dark ground. */}
+      <div className="mb-6 @min-[700px]/app:mb-[26px]">
+        <HeadcountCard
+          rsvps={rsvps}
+          variant="paper"
+          batchFund={formatPHP(totalPledges)}
+          action={{
+            label: hasSurveyResponse ? 'Edit RSVP' : 'Submit RSVP',
+            onClick: onNavigateToSurvey,
+          }}
+        />
+      </div>
+
       {/* Desktop splits the board into the mock's two rails — announcements at
           60% of the width, the attendance wall at 40% — while mobile keeps the
           single stacked column. */}

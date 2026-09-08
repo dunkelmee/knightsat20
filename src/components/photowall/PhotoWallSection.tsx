@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Images } from 'lucide-react';
+import { Images, Trash2 } from 'lucide-react';
 import { Album, UserProfile } from '../../types';
-import { fetchAlbums } from '../../api/client';
+import { deleteAlbum, fetchAlbums } from '../../api/client';
 import { AvatarStack } from '../Avatar';
 import { CreateAlbumModal } from './CreateAlbumModal';
 import { AlbumDetail } from './AlbumDetail';
@@ -11,14 +11,23 @@ interface PhotoWallSectionProps {
   isOrganizer: boolean;
 }
 
-const AlbumCard: React.FC<{ album: Album; onOpen: () => void }> = ({ album, onOpen }) => {
+const AlbumCard: React.FC<{
+  album: Album;
+  onOpen: () => void;
+  canDelete: boolean;
+  onDelete: () => void;
+}> = ({ album, onOpen, canDelete, onDelete }) => {
   const [big, ...small] = album.recentThumbUrls;
 
+  // The delete control is a SIBLING of the card, not a child: the card itself
+  // is a button, and a button inside a button is invalid HTML — the inner one
+  // never receives its own clicks reliably.
   return (
+    <div className="relative">
     <button
       type="button"
       onClick={onOpen}
-      className="relative text-left p-3.5 bg-surface-container-lowest rounded-sm shadow-soft flex flex-col gap-3"
+      className="w-full relative text-left p-3.5 bg-surface-container-lowest rounded-sm shadow-soft flex flex-col gap-3"
     >
       <div className="flex items-start gap-2.5">
         <span className="flex-1 font-serif text-heading leading-[1.15] text-on-surface">{album.title}</span>
@@ -54,6 +63,22 @@ const AlbumCard: React.FC<{ album: Album; onOpen: () => void }> = ({ album, onOp
         )}
       </div>
     </button>
+
+      {/* Only ever shown on an empty album, which is also the only case where
+          the footer's right-hand slot is free — an album with no photos has no
+          contributors, so there is no avatar stack to collide with. */}
+      {canDelete && (
+        <button
+          type="button"
+          onClick={onDelete}
+          title={`Delete the empty album "${album.title}"`}
+          aria-label={`Delete the empty album ${album.title}`}
+          className="absolute bottom-3 right-3 p-1.5 rounded-full text-error hover:bg-error-container/40 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      )}
+    </div>
   );
 };
 
@@ -64,6 +89,15 @@ export const PhotoWallSection: React.FC<PhotoWallSectionProps> = ({ currentUser,
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const loadAlbums = async () => setAlbums(await fetchAlbums());
+
+  // Organizers can clear away albums nobody filled. Deliberately limited to
+  // empty ones: albums are collaborative, so deleting one with photos in it
+  // would be throwing away other people's uploads.
+  const handleDeleteAlbum = async (album: Album) => {
+    if (!window.confirm(`Delete the empty album "${album.title}"? This can't be undone.`)) return;
+    await deleteAlbum(album.id);
+    setAlbums((prev) => prev.filter((a) => a.id !== album.id));
+  };
 
   useEffect(() => {
     (async () => {
@@ -119,7 +153,13 @@ export const PhotoWallSection: React.FC<PhotoWallSectionProps> = ({ currentUser,
       ) : (
         <div className="grid grid-cols-1 @min-[640px]/app:grid-cols-2 @min-[700px]/app:grid-cols-[repeat(auto-fit,minmax(258px,1fr))] gap-4 @min-[700px]/app:gap-5">
           {albums.map((album) => (
-            <AlbumCard key={album.id} album={album} onOpen={() => setSelectedAlbumId(album.id)} />
+            <AlbumCard
+              key={album.id}
+              album={album}
+              onOpen={() => setSelectedAlbumId(album.id)}
+              canDelete={isOrganizer && album.photoCount === 0}
+              onDelete={() => handleDeleteAlbum(album)}
+            />
           ))}
         </div>
       )}

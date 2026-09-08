@@ -5,7 +5,6 @@ import { OperatingFundsTab } from './OperatingFundsTab';
 import { AnnouncementsManagerTab } from './AnnouncementsManagerTab';
 import { RsvpSummaryTab } from './RsvpSummaryTab';
 import { EventDetailsManagerTab } from './EventDetailsManagerTab';
-import { AdminPhotoWallTab } from './AdminPhotoWallTab';
 
 interface AdminPortalProps {
   adminTab: string;
@@ -52,7 +51,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onDeleteVenue,
 }) => {
   return (
-    <div id="admin-portal-container" className="max-w-5xl mx-auto py-5 px-4">
+    // Same content rail as the attendee body (see BatchBoardSection), so the
+    // two halves of the app line up under the shared chrome above.
+    <div id="admin-portal-container" className="back-office-surface max-w-5xl @min-[700px]/app:max-w-[1180px] mx-auto py-6 px-4 @min-[700px]/app:px-8">
       {adminTab === 'event' && (
         <EventDetailsManagerTab
           eventDetails={eventDetails}
@@ -96,8 +97,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           responses={responses}
         />
       )}
-
-      {adminTab === 'photowall' && <AdminPhotoWallTab />}
     </div>
   );
 };

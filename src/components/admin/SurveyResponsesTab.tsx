@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import {
-  Search, Download, Eye, Trash2, Filter,
-  Check, FileSpreadsheet, HeartHandshake, Users
-} from 'lucide-react';
+import { Search, Download, Eye, Trash2, Filter, FileSpreadsheet } from 'lucide-react';
 import { SurveyResponse, PlannedExpense } from '../../types';
 import { formatPHP } from '../../utils/pledgeParser';
 import { exportSurveyResponsesToCSV, exportPledgesAndExpensesToCSV } from '../../utils/exportUtils';
 import { ResponseDetailModal } from './ResponseDetailModal';
+import { STATUS_EDGE, statusFromAttendance } from '../../utils/statusColors';
 
 interface SurveyResponsesTabProps {
   responses: SurveyResponse[];
@@ -25,10 +23,6 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
   const [attendanceFilter, setAttendanceFilter] = useState('All');
   const [pledgeFilter, setPledgeFilter] = useState('All');
   const [selectedResponse, setSelectedResponse] = useState<SurveyResponse | null>(null);
-
-  // Compute metrics
-  const totalPledges = responses.reduce((acc, r) => acc + (r.computedPledgeAmount || 0), 0);
-  const pledgingCount = responses.filter(r => r.computedPledgeAmount > 0).length;
 
   // Filtered responses
   const filteredResponses = responses.filter(r => {
@@ -55,44 +49,6 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
   return (
     <div id="survey-responses-tab" className="space-y-6">
 
-      {/* Top Banner & Quick Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-surface-container-lowest rounded p-5 border border-outline-variant/30 shadow-soft flex items-center justify-between">
-          <div>
-            <span className="text-label font-bold text-on-surface-variant uppercase tracking-wider">Total Submissions</span>
-            <div className="text-title font-bold text-on-surface mt-1">{responses.length}</div>
-            <p className="text-label text-on-surface-variant">Batchmates responded</p>
-          </div>
-          <div className="w-10 h-10 rounded bg-tertiary-container/25 text-on-tertiary-container flex items-center justify-center font-bold">
-            <Users className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest rounded p-5 border border-primary-container/50 shadow-soft flex items-center justify-between">
-          <div>
-            <span className="text-label font-bold text-on-primary-container uppercase tracking-wider">Total Pledges Extracted</span>
-            <div className="text-title font-bold text-primary mt-1">{formatPHP(totalPledges)}</div>
-            <p className="text-label text-on-surface-variant">{pledgingCount} batchmates pledging</p>
-          </div>
-          <div className="w-10 h-10 rounded bg-primary-container/20 text-primary flex items-center justify-center font-bold">
-            <HeartHandshake className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest rounded p-5 border border-success-container shadow-soft flex items-center justify-between">
-          <div>
-            <span className="text-label font-bold text-on-success-container uppercase tracking-wider">Pledges Collected</span>
-            <div className="text-title font-bold text-success mt-1">
-              {formatPHP(responses.filter(r => r.pledgePaidStatus === 'Fully Paid').reduce((a, b) => a + b.computedPledgeAmount, 0))}
-            </div>
-            <p className="text-label text-on-surface-variant">Marked as Fully Paid</p>
-          </div>
-          <div className="w-10 h-10 rounded bg-success-container text-success flex items-center justify-center font-bold">
-            <Check className="w-5 h-5" />
-          </div>
-        </div>
-      </div>
-
       {/* Action Toolbar & Exports */}
       <div className="bg-surface-container-lowest rounded p-5 border border-outline-variant/30 shadow-soft space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -109,33 +65,51 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
             />
           </div>
 
-          {/* Export Buttons */}
-          <div className="flex flex-wrap items-center gap-2">
+{/* Export Buttons — no flex-wrap, so the pair always shares one row.
+              The full labels cannot: "Export Pledges & Ledger CSV" alone is
+              171px against the ~92px each button gets on a 360px phone, so
+              below `sm` they run short.
+
+              Below `sm` they also fill the row rather than sitting
+              left-aligned against dead space. `flex-auto`, NOT `flex-1`:
+              flex-1 zeroes the basis and splits the row into equal halves,
+              which is narrower than "Pledges & Ledger" needs and truncates
+              it. flex-auto starts each button at its label width and shares
+              only the leftover space, so the row fills and neither clips.
+              The parent is flex-col until `lg`, so this container is already
+              full width there — only the buttons needed changing. */}
+          <div className="flex items-center gap-2">
             <button
               id="btn-export-survey-csv"
               type="button"
               onClick={() => exportSurveyResponsesToCSV(responses)}
-              className="px-3.5 py-2 rounded bg-success hover:opacity-90 text-on-success text-body font-bold shadow-soft transition-all flex items-center gap-1.5"
+              className="btn btn-secondary min-w-0 flex-auto sm:flex-none"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>Export Full CSV</span>
+              <FileSpreadsheet className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="truncate">
+                <span className="sm:hidden">Full CSV</span>
+                <span className="hidden sm:inline">Export Full CSV</span>
+              </span>
             </button>
 
             <button
               id="btn-export-financials-csv"
               type="button"
               onClick={() => exportPledgesAndExpensesToCSV(responses, expenses)}
-              className="px-3.5 py-2 rounded bg-secondary hover:opacity-90 text-on-secondary text-body font-bold shadow-soft transition-all flex items-center gap-1.5"
+              className="btn btn-secondary min-w-0 flex-auto sm:flex-none"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export Pledges & Ledger CSV</span>
+              <Download className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="truncate">
+                <span className="sm:hidden">Pledges &amp; Ledger</span>
+                <span className="hidden sm:inline">Export Pledges &amp; Ledger CSV</span>
+              </span>
             </button>
           </div>
         </div>
 
         {/* Filter chips */}
         <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-outline-variant/20 text-body">
-          <div className="flex items-center gap-2 text-on-surface-variant font-medium">
+          <div className="flex items-center gap-2 text-on-surface-variant font-semibold">
             <Filter className="w-3.5 h-3.5" />
             <span>Filters:</span>
           </div>
@@ -148,10 +122,10 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
               className="px-2.5 py-1 rounded border border-secondary/30 bg-surface-container-lowest text-on-surface-variant text-body"
             >
               <option value="All">All Statuses</option>
-              <option value="Yes, definitely!">Yes, definitely!</option>
+              <option value="Yes, definitely!">Attending</option>
               <option value="Most likely, but still confirming">Most likely</option>
-              <option value="Not sure yet">Not sure yet</option>
-              <option value="Unfortunately, I won’t be able to attend">Declined</option>
+              <option value="Not sure yet">Maybe</option>
+              <option value="Unfortunately, I won’t be able to attend">Can&apos;t join</option>
             </select>
           </div>
 
@@ -180,7 +154,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
       <div className="hidden lg:block bg-surface-container-lowest rounded border border-outline-variant/30 shadow-soft overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-body text-on-surface-variant">
-            <thead className="bg-inverse-surface text-inverse-on-surface uppercase text-label tracking-wider">
+            <thead className="bg-inverse-surface text-inverse-on-surface eyebrow">
               <tr>
                 <th className="py-3 px-4">Batchmate</th>
                 <th className="py-3 px-4">Contact</th>
@@ -220,20 +194,18 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
 
                     {/* Attendance */}
                     <td className="py-3.5 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-label font-bold ${
-                        r.attendance.includes('Yes') ? 'bg-success-container text-on-success-container' :
-                        r.attendance.includes('Most likely') ? 'bg-tertiary-container/25 text-on-tertiary-container' :
-                        r.attendance.includes('Not sure') ? 'bg-primary-container/20 text-on-primary-container' :
-                        'bg-error-container text-on-error-container'
-                      }`}>
-                        {r.attendance.replace('Unfortunately, I won’t be able to attend', 'Cannot attend')}
+                      <span
+                        className="eyebrow whitespace-nowrap"
+                        style={{ color: STATUS_EDGE[statusFromAttendance(r.attendance)].onDark }}
+                      >
+                        {STATUS_EDGE[statusFromAttendance(r.attendance)].label}
                       </span>
                     </td>
 
                     {/* Pledge */}
-                    <td className="py-3.5 px-4 font-bold">
+                    <td className="py-3.5 px-4">
                       {r.computedPledgeAmount > 0 ? (
-                        <div className="text-primary font-bold">
+                        <div className="font-serif text-heading text-primary">
                           {formatPHP(r.computedPledgeAmount)}
                           <div className="text-label text-on-surface-variant font-normal">
                             {r.pledgeOption} {r.customPledgeAmount ? `(${r.customPledgeAmount})` : ''}
@@ -284,7 +256,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
                           type="button"
                           onClick={() => setSelectedResponse(r)}
                           title="Inspect Full Response"
-                          className="p-1.5 rounded bg-tertiary-container/20 hover:bg-tertiary-container/35 text-on-tertiary-container transition-colors"
+                          className="btn-icon"
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
@@ -296,7 +268,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
                             }
                           }}
                           title="Delete response"
-                          className="p-1.5 rounded bg-error-container hover:opacity-80 text-on-error-container transition-colors"
+                          className="btn-icon btn-icon-danger"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -325,18 +297,16 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="font-serif font-semibold text-heading text-on-surface">{r.fullName}</div>
+                  <div className="font-serif text-heading text-on-surface">{r.fullName}</div>
                   {r.section2007 && (
                     <span className="text-label text-tertiary font-normal">{r.section2007}</span>
                   )}
                 </div>
-                <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-label font-bold ${
-                  r.attendance.includes('Yes') ? 'bg-success-container text-on-success-container' :
-                  r.attendance.includes('Most likely') ? 'bg-tertiary-container/25 text-on-tertiary-container' :
-                  r.attendance.includes('Not sure') ? 'bg-primary-container/20 text-on-primary-container' :
-                  'bg-error-container text-on-error-container'
-                }`}>
-                  {r.attendance.replace('Unfortunately, I won’t be able to attend', 'Cannot attend')}
+                <span
+                  className="flex-shrink-0 eyebrow whitespace-nowrap"
+                  style={{ color: STATUS_EDGE[statusFromAttendance(r.attendance)].onDark }}
+                >
+                  {STATUS_EDGE[statusFromAttendance(r.attendance)].label}
                 </span>
               </div>
 
@@ -348,14 +318,14 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
               <div className="flex items-center justify-between gap-2 pt-2 border-t border-outline-variant/20">
                 <div>
                   {r.computedPledgeAmount > 0 ? (
-                    <div className="text-primary font-bold text-heading">
+                    <div className="font-serif text-heading text-primary">
                       {formatPHP(r.computedPledgeAmount)}
                       <div className="text-label text-on-surface-variant font-normal">
                         {r.pledgeOption} {r.customPledgeAmount ? `(${r.customPledgeAmount})` : ''}
                       </div>
                     </div>
                   ) : (
-                    <span className="text-outline text-heading">₱0</span>
+                    <span className="font-serif text-heading text-outline">₱0</span>
                   )}
                 </div>
 
@@ -392,7 +362,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
                   type="button"
                   onClick={() => setSelectedResponse(r)}
                   title="Inspect Full Response"
-                  className="p-1.5 rounded bg-tertiary-container/20 hover:bg-tertiary-container/35 text-on-tertiary-container transition-colors"
+                  className="btn-icon"
                 >
                   <Eye className="w-3.5 h-3.5" />
                 </button>
@@ -404,7 +374,7 @@ export const SurveyResponsesTab: React.FC<SurveyResponsesTabProps> = ({
                     }
                   }}
                   title="Delete response"
-                  className="p-1.5 rounded bg-error-container hover:opacity-80 text-on-error-container transition-colors"
+                  className="btn-icon btn-icon-danger"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

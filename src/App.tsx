@@ -403,7 +403,15 @@ export default function App() {
   const navOnSelect = adminViewActive ? navigateToAdminTab : navigateToTab;
 
   return (
-    <div className="isolate min-h-screen bg-background text-on-background">
+    <div
+      // The back office (this view and SuperadminPortal) reverses the
+      // palette: paper chrome over a green body. The attribute drives the
+      // three fixed background layers in index.css; the base colour has to
+      // be a class rather than a rule in that file, because Tailwind's
+      // utility layer would win against it.
+      data-app-view={adminViewActive ? 'back-office' : 'attendee'}
+      className={`isolate min-h-screen text-on-background ${adminViewActive ? 'bg-[#0f3b31]' : 'bg-background'}`}
+    >
       {/* `isolate` matters here: without it, this div isn't itself a
           stacking context, so ITS OWN background paints as ordinary
           sibling-level content in the page's root stacking context — which
@@ -440,11 +448,8 @@ export default function App() {
         currentUser={currentUser}
         onLogout={handleLogout}
         onEditProfile={() => setShowProfileEdit(true)}
-        totalPledges={stats.totalPledges}
-        totalSurveys={stats.totalSurveys}
         eventDetails={eventDetails}
         mySurveyResponse={mySurveyResponse}
-        rsvps={publicRsvps}
         onNavigateToSurvey={() => setActiveTab('survey')}
       />
 
@@ -476,13 +481,17 @@ export default function App() {
         )}
 
         {/* Tab 2: Batch Board — Announcements + Attendance Wall (headcount and
-            ticket now live in the TabHero above) */}
+            ticket still in the TabHero above; the headcount card now sits
+            at the top of the board itself) */}
         {activeTab === 'board' && (
           <BatchBoardSection
             announcements={announcements}
             onLikeAnnouncement={handleLikeAnnouncement}
             onOpenAdminToPost={() => setActiveTab('admin')}
             rsvps={publicRsvps}
+            totalPledges={stats.totalPledges}
+            hasSurveyResponse={Boolean(mySurveyResponse)}
+            onNavigateToSurvey={() => setActiveTab('survey')}
           />
         )}
 
@@ -536,7 +545,7 @@ export default function App() {
       </main>
 
       {/* Floating bottom nav (mobile only — see AppNav.tsx) */}
-      <MobileNav tabs={navTabs} activeTab={navActiveKey} setActiveTab={navOnSelect} />
+      <MobileNav tabs={navTabs} activeTab={navActiveKey} setActiveTab={navOnSelect} backOffice={adminViewActive} />
 
     </div>
     </div>

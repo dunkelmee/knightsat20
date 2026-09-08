@@ -8,10 +8,14 @@ from app.audit import record_action
 from app.database import get_db
 from app.models import RSVPRecord, User
 from app.schemas import RSVPCreate, RSVPOut, RSVPPublicOut
-from app.security import get_current_user, get_organizer_actor
+from app.security import get_current_user, get_organizer_actor, require_user_or_superadmin
 from app.storage import resolve_url
 
-router = APIRouter(prefix="/api/rsvps", tags=["rsvps"], dependencies=[Depends(get_current_user)])
+# The gate admits the superadmin as well as logged-in alumni, because
+# GET /admin below is organizer-gated and the superadmin is meant to pass
+# that. POST still names get_current_user itself, so creating an RSVP
+# continues to require a real account.
+router = APIRouter(prefix="/api/rsvps", tags=["rsvps"], dependencies=[Depends(require_user_or_superadmin)])
 
 
 async def _photo_urls(db: AsyncSession, records: list[RSVPRecord]) -> dict[str, str | None]:

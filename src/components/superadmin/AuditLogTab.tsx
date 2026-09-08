@@ -23,7 +23,7 @@ export const AuditLogTab: React.FC = () => {
     <div className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 shadow-soft space-y-3">
       <div className="flex items-center gap-2 pb-3 border-b border-outline-variant/20">
         <ScrollText className="w-4 h-4 text-primary" />
-        <h3 className="text-heading font-serif font-semibold text-on-surface">
+        <h3 className="font-serif text-heading text-on-surface">
           Activity Log ({logs.length})
         </h3>
       </div>

@@ -169,4 +169,237 @@
       linear-gradient(90deg, rgb(20 33 29 / 0.05) 1px, transparent 1px);
     background-size: 32px 32px;
   }
+
+  /* ---- Back office: the attendee palette, reversed ----
+     "Back office" is both the organizer view and the superadmin portal —
+     different roles, one treatment, so the hook is named after the treatment
+     rather than after either role.
+
+     The attendee half is green chrome over a paper body; the back office
+     is paper chrome over a green body. That reversal needs no new elements —
+     the same three fixed Memory Desk layers are re-tuned for a dark ground:
+     the wash carries the green gradient itself, the graph-paper lines flip
+     from ink to white, and the grain runs hotter because it is now sitting
+     on dark rather than on parchment.
+
+     These layers still span the whole viewport, chrome included. They don't
+     need to stop at the hero, because the crest row and hero paint their own
+     opaque paper gradient on top of them — exactly how the attendee hero
+     paints over the parchment wash. */
+  [data-app-view="back-office"] .desk-wash {
+    background: linear-gradient(180deg, #0d2620 0%, #123b32 30%, #0f3b31 100%);
+  }
+  /* The green blob keeps its alpha — it reads as a glow on the dark ground.
+     Gold and terracotta come down, or they muddy into the green instead of
+     tinting it. */
+  [data-app-view="back-office"] .desk-wash span:nth-child(2) {
+    background: radial-gradient(circle, rgb(214 152 45 / 0.3), transparent 68%);
+  }
+  [data-app-view="back-office"] .desk-wash span:nth-child(3) {
+    background: radial-gradient(circle, rgb(176 86 79 / 0.28), transparent 70%);
+  }
+  [data-app-view="back-office"] .desk-grid {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.045) 1px, transparent 1px);
+  }
+  [data-app-view="back-office"] .paper-grain { opacity: 0.05; }
+
+  /* ---- Back-office tabs: frosted glass on the green ground ----
+     The tab components are untouched. This works because Tailwind v4
+     compiles every colour utility to `var(--color-*)` — `bg-surface-
+     container-lowest` is literally `background-color: var(--color-surface-
+     container-lowest)` — so redefining the tokens on the portal container
+     re-themes all ~200 coloured elements inside it at once, with no edit to
+     any tab. Per-tab passes can override individual pieces on top of this.
+
+     One caveat worth knowing: utilities carrying an alpha modifier
+     (`border-outline-variant/30`) emit a hardcoded hex first and the
+     `color-mix(… var(--color-…) …)` form second, inside an @supports block.
+     Every browser that supports color-mix therefore follows these overrides;
+     anything older silently keeps the paper hex. That is a fallback, not a
+     break, and no supported browser is in that bucket today. */
+  [data-app-view="back-office"] .back-office-surface {
+    /* Surfaces become translucent white — the card is now the frosted sheet
+       from the mock, not a paper card. */
+    --color-surface: rgb(255 255 255 / 0.07);
+    --color-surface-container-lowest: rgb(255 255 255 / 0.07);
+    --color-surface-container-low: rgb(255 255 255 / 0.05);
+    --color-surface-container: rgb(255 255 255 / 0.1);
+    --color-surface-container-high: rgb(255 255 255 / 0.14);
+    --color-surface-container-highest: rgb(255 255 255 / 0.18);
+    --color-background: rgb(255 255 255 / 0.08);
+
+    /* The three text stops, dark-hero column (TYPOGRAPHY_SYSTEM.md §6). */
+    --color-on-surface: #f2ece1;
+    --color-on-surface-variant: rgb(242 236 225 / 0.7);
+    --color-outline: rgb(242 236 225 / 0.45);
+    --color-outline-variant: rgb(255 255 255 / 0.16);
+    --color-on-background: #f2ece1;
+
+    /* Every accent has to come UP in lightness to survive a dark ground.
+       Solid-fill accents flip their `on-` pair to dark ink to match. */
+    --color-primary: #f6e6bf;
+    --color-on-primary: #0d2620;
+    --color-secondary: #e6dcc4;
+    --color-on-secondary: #0d2620;
+    --color-success: #7fd8c4;
+    --color-error: #e9a49d;
+    --color-on-error: #0d2620;
+    --color-tertiary: #e9a49d;
+
+    /* Status chips invert: a translucent tint carrying light ink, where on
+       paper they were a light fill carrying dark ink. This also retires a
+       standing contrast bug — `text-on-tertiary-container` (#fdfaf2) and
+       `text-on-primary-container` (#f6e6bf) were near-white text sitting on
+       white cards in RsvpSummaryTab, effectively invisible. On the tinted
+       chip they read correctly. */
+    --color-success-container: rgb(127 216 196 / 0.16);
+    --color-on-success-container: #7fd8c4;
+    --color-error-container: rgb(233 164 157 / 0.16);
+    --color-on-error-container: #e9a49d;
+    --color-secondary-container: rgb(240 198 116 / 0.16);
+    --color-on-secondary-container: #f0c674;
+    --color-primary-container: rgb(127 216 196 / 0.55);
+    --color-tertiary-container: rgb(233 164 157 / 0.55);
+    --color-on-tertiary-container: #e9a49d;
+
+    /* The paper shadow is invisible on dark; give it real depth instead. */
+    --shadow-soft: 0 14px 30px -16px rgb(0 0 0 / 0.55);
+  }
+
+  /* The frost itself. Tokens can carry colour but not backdrop-filter, so the
+     blur is applied by surface utility — the one place this file reaches for
+     a Tailwind class name rather than a token. */
+  [data-app-view="back-office"] .back-office-surface
+    :is(.bg-surface-container-lowest, .bg-surface-container,
+        .bg-surface-container-low, .bg-surface-container-high) {
+    backdrop-filter: blur(14px);
+  }
+
+  /* Modal panels sit on their own dark scrim, so at the card's 7% fill they
+     would barely separate from it. Same glass language, more of it. */
+  [data-app-view="back-office"] .back-office-surface .fixed {
+    --color-surface-container-lowest: rgb(255 255 255 / 0.12);
+    --color-surface-container-low: rgb(255 255 255 / 0.08);
+  }
+
+  /* Native select popups are drawn by the OS, not the page: the options keep
+     the system's light list background, so their text has to stay dark ink. */
+  [data-app-view="back-office"] .back-office-surface option {
+    color: #14211d;
+  }
+}
+
+@layer components {
+  /* The eyebrow — TYPOGRAPHY_SYSTEM.md §7's named pattern, as the single
+     definition §10 asked for. Five repeated utilities became one class so the
+     tracking stops drifting: before this landed, the mono-uppercase pattern
+     shipped at 0.1em, 0.12em, 0.14em, 0.16em and 0.2em in different files.
+
+     Weight is 500 per §4's legal-combinations table, §7's recipe and §10's
+     own CSS. Note that §5 contradicts all three by retiring 500 outright and
+     listing "all mono" under 400 — flagged, not silently resolved. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    line-height: 1.35;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+}
+
+@layer components {
+  /* ---- Buttons ----------------------------------------------------------
+     One rule for the whole back office.
+
+     FILL IS RESERVED for the single committing action on a card or form.
+     Everything else is a tint or an outline, and colour never encodes what
+     KIND of action something is — with one exception, danger.
+
+     That exception aside, this replaces a system where the same job was done
+     in bg-primary, bg-secondary, bg-success, bg-error AND bg-background
+     across five files: "Export Full CSV" was green, "Export Pledges" was
+     gold, and "Add Planned Expense" was red despite creating something.
+     Padding came in six combinations and the icons in three sizes.
+
+     These read the colour tokens rather than fixed hex, so they invert with
+     the organizer theme above: bg-primary is forest green on the attendee
+     side and gold on the organizer's dark ground, with no second rule. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: 1.55;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+  }
+  /* Normalising the icon here is the point: it was w-3.5, w-4 and w-5 before. */
+  .btn svg { width: 0.875rem; height: 0.875rem; flex-shrink: 0; }
+  .btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Weights follow TYPOGRAPHY_SYSTEM.md §5: 700 belongs to primary buttons
+     and nothing else in the app; secondary actions are 600. */
+  .btn-primary {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-weight: 700;
+    box-shadow: var(--shadow-soft);
+  }
+  .btn-primary:hover { opacity: 0.9; }
+
+  .btn-secondary {
+    background: var(--color-surface-container);
+    color: var(--color-on-surface);
+    border-color: var(--color-outline-variant);
+    font-weight: 600;
+  }
+  .btn-secondary:hover { background: var(--color-surface-container-high); }
+
+  .btn-danger {
+    background: var(--color-error-container);
+    color: var(--color-on-error-container);
+    border-color: var(--color-error-container);
+    font-weight: 600;
+  }
+  .btn-danger:hover { opacity: 0.85; }
+
+  /* Compact modifier, for actions that sit inline in a card header rather
+     than terminating a form. */
+  .btn-sm { padding: 0.3125rem 0.75rem; }
+
+  /* Icon-only row actions. Square and fixed-size so a column of them lines
+     up down a table, which p-1.5 on differently-sized icons did not. */
+  .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-container);
+    color: var(--color-on-surface-variant);
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, opacity 0.15s;
+  }
+  .btn-icon svg { width: 0.875rem; height: 0.875rem; }
+  .btn-icon:hover { background: var(--color-surface-container-high); color: var(--color-on-surface); }
+  .btn-icon:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+  .btn-icon-danger { background: var(--color-error-container); color: var(--color-on-error-container); }
+  .btn-icon-danger:hover { background: var(--color-error-container); color: var(--color-on-error-container); opacity: 0.85; }
+
+  /* Bare icon button — modal close, and nothing else. No chrome until hover,
+     so it does not compete with the actions at the foot of the dialog. */
+  .btn-icon-ghost { background: transparent; color: var(--color-outline); }
 }

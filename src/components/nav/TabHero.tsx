@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { LogOut, Pencil, ArrowLeftRight } from 'lucide-react';
-import { EventDetails, PublicRSVP, SurveyResponse, UserProfile } from '../../types';
-import { formatPHP } from '../../utils/pledgeParser';
+import { EventDetails, SurveyResponse, UserProfile } from '../../types';
 import { DesktopNav, NavTab } from './AppNav';
 import { TicketModal } from '../TicketModal';
 import crestImage from '../../assets/maksci-07-crest.png';
@@ -17,11 +16,8 @@ interface TabHeroProps {
   currentUser: UserProfile;
   onLogout: () => void;
   onEditProfile: () => void;
-  totalPledges: number;
-  totalSurveys: number;
   eventDetails: EventDetails;
   mySurveyResponse: SurveyResponse | null;
-  rsvps: PublicRSVP[];
   onNavigateToSurvey: () => void;
 }
 
@@ -29,10 +25,30 @@ interface TabHeroProps {
 // off at the desktop breakpoint (inline styles can't carry a media query).
 const GRADIENT = 'bg-[linear-gradient(168deg,#0d2620_0%,#123b32_48%,#1d4a3c_100%)]';
 
+// The organizer half of the app reverses the palette — paper chrome over the
+// green body painted by index.css's [data-app-view="back-office"] layers. Same
+// gradient geometry, warm-paper stops, so the two views read as one product.
+const GRADIENT_ORGANIZER = 'bg-[linear-gradient(168deg,#faf6ea_0%,#f2ece1_48%,#e7ddcd_100%)]';
+
+// The three ambient blobs, rendered both by the desktop backdrop (which spans
+// the crest row and hero together) and by the mobile hero. Organizer runs them
+// at roughly a third of the alpha: on paper they only need to tint the ground,
+// where on the dark hero they colour it.
+const HeroBlobs: React.FC<{ backOffice: boolean }> = ({ backOffice }) => {
+  const [green, gold, terracotta] = backOffice ? [0.2, 0.22, 0.16] : [0.6, 0.44, 0.36];
+  return (
+    <>
+      <span className="absolute rounded-full" style={{ top: '-26%', left: '-12%', width: '62%', height: '110%', background: `radial-gradient(circle,rgba(18,120,102,${green}),transparent 66%)`, filter: 'blur(26px)' }} />
+      <span className="absolute rounded-full" style={{ top: '-20%', right: '-16%', width: '66%', height: '110%', background: `radial-gradient(circle,rgba(214,152,45,${gold}),transparent 66%)`, filter: 'blur(30px)' }} />
+      <span className="absolute rounded-full" style={{ bottom: '-40%', left: '22%', width: '66%', height: '96%', background: `radial-gradient(circle,rgba(176,86,79,${terracotta}),transparent 70%)`, filter: 'blur(32px)' }} />
+    </>
+  );
+};
+
 const getInitials = (fullName: string): string =>
   fullName.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 
-const HERO_COPY: Record<string, { title: string; sub: string }> = {
+const HERO_COPY: Record<string, { title: React.ReactNode; sub: string }> = {
   survey: {
     title: 'Reunion Planning Survey',
     sub: 'Editable anytime. Help us choose the best date, venue style, and batch fund target.',
@@ -55,6 +71,33 @@ const HERO_COPY: Record<string, { title: string; sub: string }> = {
   },
 };
 
+// The organizer view is a single attendee tab ('admin') carrying six tabs of
+// its own, so its hero copy is keyed by the ADMIN_NAV_TABS key rather than by
+// activeTab — which is why this is a second map instead of more entries above.
+// HERO_COPY.admin stays as the fallback for the no-organizer-access state.
+const ADMIN_HERO_COPY: Record<string, { title: React.ReactNode; sub: string }> = {
+  event: {
+    title: 'Event Planning',
+    sub: 'Set the date, venue, and dress code. Whatever you save here publishes straight to the attendee banner.',
+  },
+  responses: {
+    title: 'Survey Responses',
+    sub: 'Every submission, the pledge parsed out of it, and who still has to pay.',
+  },
+  funds: {
+    title: 'Operating Ledger',
+    sub: 'Pledges in, planned expenses out, and what the batch fund actually has left.',
+  },
+  announcements: {
+    title: 'Bulletin',
+    sub: 'Write, tag, and pin the announcements that land on the batch board.',
+  },
+  rsvp: {
+    title: 'RSVP Roster',
+    sub: 'Confirmed heads, guests and kids, and the batchmates still deciding.',
+  },
+};
+
 export const TabHero: React.FC<TabHeroProps> = ({
   navTabs,
   navActiveKey,
@@ -66,11 +109,8 @@ export const TabHero: React.FC<TabHeroProps> = ({
   currentUser,
   onLogout,
   onEditProfile,
-  totalPledges,
-  totalSurveys,
   eventDetails,
   mySurveyResponse,
-  rsvps,
   onNavigateToSurvey,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -89,28 +129,44 @@ export const TabHero: React.FC<TabHeroProps> = ({
   const firstName = currentUser.fullName.trim().split(/\s+/)[0] || '';
   const isFinalized = eventDetails.status === 'Finalized';
 
+  // Chrome palette. Everything below reads from these rather than testing
+  // adminViewActive inline, so the two variants stay legible side by side.
+  const org = adminViewActive;
+  const gradient = org ? GRADIENT_ORGANIZER : GRADIENT;
+  // Paper chrome sits directly against the green body, so it needs a hairline
+  // to separate them. The dark chrome never did — it met the parchment body
+  // with a full tonal jump.
+  const chromeEdge = org ? 'border-b border-outline-variant' : '';
+  const textPrimary = org ? 'text-on-surface' : 'text-[#f2ece1]';
+  const textMuted = org ? 'text-on-surface-variant' : 'text-[#f6e6bf]/70';
+  const glassChip = org
+    ? 'bg-[#14211d]/[0.05] border-[#14211d]/10'
+    : 'bg-white/[0.12] border-white/20';
+
   const boardCopy = {
-    title: 'Dalawang dekada na, musta na u?',
+    // Two lines by construction, not by luck. Left to wrap on its own the
+    // break moves with the viewport and lands mid-phrase; the comma is where
+    // the line wants to turn. Each half is its own block rather than a <br>,
+    // so if a very narrow screen forces one of them to wrap further, it wraps
+    // inside its own half instead of rejoining the other.
+    title: (
+      <>
+        <span className="block">Dalawang dekada na,</span>
+        <span className="block italic">musta na u?</span>
+      </>
+    ),
     sub: isFinalized
       ? 'The official date and venue have been confirmed by the committee. Please submit your RSVP and pledge.'
       : 'Please share your preferred schedule, venue style, and batch fund pledge so we can finalize the arrangements.',
   };
-  const copy = activeTab === 'board' ? boardCopy : (HERO_COPY[activeTab] || HERO_COPY.admin);
-
-  // Headcount — computed from the live RSVP roster (see BatchBoardSection),
-  // only shown on the Board tab.
-  const attendingList = rsvps.filter(r => r.status === 'Attending');
-  const maybeList = rsvps.filter(r => r.status === 'Most likely' || r.status === 'Maybe');
-  // Guests come from everyone still in play, not just the confirmed: a "most
-  // likely" answer bringing five guests already has its own head in
-  // totalHeadcount, so counting the party only for 'Attending' silently
-  // dropped those five from the estimate.
-  const expectedList = [...attendingList, ...maybeList];
-  const plusOnesTotal = expectedList.reduce((acc, r) => acc + (r.plusOnesCount ?? (r.bringingPlusOne ? 1 : 0)), 0);
-  const kidsTotal = expectedList.reduce((acc, r) => acc + (r.kidsCount || 0), 0);
-  const guestsTotal = plusOnesTotal + kidsTotal;
-  const totalHeadcount = attendingList.length + guestsTotal + maybeList.length;
-  const pctOf = (n: number) => totalHeadcount > 0 ? `${Math.round((n / totalHeadcount) * 100)}%` : '0%';
+  // The no-access state still renders the organizer shell, but none of the six
+  // tabs — naming one of them in the hero above "You don't have organizer
+  // access." would be a lie, so it keeps the generic portal copy.
+  const copy = adminViewActive && canAccessOrganizerView
+    ? (ADMIN_HERO_COPY[navActiveKey] || HERO_COPY.admin)
+    : activeTab === 'board'
+      ? boardCopy
+      : (HERO_COPY[activeTab] || HERO_COPY.admin);
 
   return (
     <>
@@ -125,26 +181,26 @@ export const TabHero: React.FC<TabHeroProps> = ({
           the flat band on the row and the gradient on the hero below, which is
           why this is hidden there — and why the hero's own gradient/blobs are
           switched off above the breakpoint, so the wash is painted once. */}
-      <div className={`hidden @min-[700px]/app:block absolute inset-0 overflow-hidden pointer-events-none ${GRADIENT}`} aria-hidden="true">
-        <span className="absolute rounded-full" style={{ top: '-26%', left: '-12%', width: '62%', height: '110%', background: 'radial-gradient(circle,rgba(18,120,102,.6),transparent 66%)', filter: 'blur(26px)' }} />
-        <span className="absolute rounded-full" style={{ top: '-20%', right: '-16%', width: '66%', height: '110%', background: 'radial-gradient(circle,rgba(214,152,45,.44),transparent 66%)', filter: 'blur(30px)' }} />
-        <span className="absolute rounded-full" style={{ bottom: '-40%', left: '22%', width: '66%', height: '96%', background: 'radial-gradient(circle,rgba(176,86,79,.36),transparent 70%)', filter: 'blur(32px)' }} />
+      <div className={`hidden @min-[700px]/app:block absolute inset-0 overflow-hidden pointer-events-none ${gradient} ${chromeEdge}`} aria-hidden="true">
+        <HeroBlobs backOffice={org} />
       </div>
 
-      <div className="sticky top-0 z-30 @min-[700px]/app:static @min-[700px]/app:z-10 @min-[700px]/app:pt-[22px] bg-[#0d2620] @min-[700px]/app:bg-transparent">
+      <div className={`sticky top-0 z-30 @min-[700px]/app:static @min-[700px]/app:z-10 @min-[700px]/app:pt-[22px] @min-[700px]/app:bg-transparent @min-[700px]/app:border-b-0 ${
+        org ? `bg-surface-container ${chromeEdge}` : 'bg-[#0d2620]'
+      }`}>
         <div className="relative w-full max-w-[1180px] mx-auto px-5 @min-[700px]/app:px-8 py-3.5 @min-[700px]/app:py-0 flex items-center gap-3">
         <img
           src={crestImage}
           alt="MakSci '07 crest"
           className="w-11 h-11 @min-[700px]/app:w-[52px] @min-[700px]/app:h-[52px] rounded-full object-cover bg-white flex-shrink-0"
-          style={{ boxShadow: '0 0 0 3px rgba(255,255,255,.16)' }}
+          style={{ boxShadow: org ? '0 0 0 3px rgba(20,33,29,.07)' : '0 0 0 3px rgba(255,255,255,.16)' }}
         />
         <div className="flex flex-col gap-0.5">
-          <span className="font-sans text-label font-bold text-[#f2ece1]">Knights @ 20</span>
-          <span className="font-mono text-label tracking-[0.16em] uppercase text-[#f6e6bf]/70">MakSci Batch '07 Reunion</span>
+          <span className={`font-sans text-label font-bold ${textPrimary}`}>Knights @ 20</span>
+          <span className={`font-mono text-label tracking-[0.16em] uppercase ${textMuted}`}>MakSci Batch '07 Reunion</span>
         </div>
 
-        <DesktopNav tabs={navTabs} activeTab={navActiveKey} setActiveTab={onNavSelect} />
+        <DesktopNav tabs={navTabs} activeTab={navActiveKey} setActiveTab={onNavSelect} backOffice={org} />
 
         <div className="relative flex-shrink-0 ml-auto" ref={menuRef}>
           <button
@@ -152,7 +208,7 @@ export const TabHero: React.FC<TabHeroProps> = ({
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
             title={currentUser.fullName}
-            className="flex items-center gap-2 pl-1.5 pr-3.5 py-1.5 rounded-full bg-white/[0.12] backdrop-blur-md border border-white/20"
+            className={`flex items-center gap-2 pl-1.5 pr-3.5 py-1.5 rounded-full backdrop-blur-md border ${glassChip}`}
           >
             <span className="relative w-6.5 h-6.5 rounded-full overflow-hidden flex items-center justify-center font-bold text-label text-white flex-shrink-0" style={{ background: 'linear-gradient(150deg,#d6982d,#b0564f)' }}>
               {currentUser.nowPhotoUrl ? (
@@ -161,7 +217,7 @@ export const TabHero: React.FC<TabHeroProps> = ({
                 <span>{getInitials(currentUser.fullName)}</span>
               )}
             </span>
-            <span className="font-sans text-body font-semibold text-[#f2ece1]">{firstName}</span>
+            <span className={`font-sans text-body font-semibold ${textPrimary}`}>{firstName}</span>
           </button>
 
           {menuOpen && (
@@ -207,13 +263,11 @@ export const TabHero: React.FC<TabHeroProps> = ({
         </div>
       </div>
 
-      <div className={`relative @min-[700px]/app:bg-none ${GRADIENT}`}>
+      <div className={`relative @min-[700px]/app:bg-none @min-[700px]/app:border-b-0 ${gradient} ${chromeEdge}`}>
         {/* Ambient color blobs — mobile only; on desktop they come from the
             shared backdrop that also covers the crest row (see above). */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none @min-[700px]/app:hidden" aria-hidden="true">
-          <span className="absolute rounded-full" style={{ top: '-26%', left: '-12%', width: '62%', height: '110%', background: 'radial-gradient(circle,rgba(18,120,102,.6),transparent 66%)', filter: 'blur(26px)' }} />
-          <span className="absolute rounded-full" style={{ top: '-20%', right: '-16%', width: '66%', height: '110%', background: 'radial-gradient(circle,rgba(214,152,45,.44),transparent 66%)', filter: 'blur(30px)' }} />
-          <span className="absolute rounded-full" style={{ bottom: '-40%', left: '22%', width: '66%', height: '96%', background: 'radial-gradient(circle,rgba(176,86,79,.36),transparent 70%)', filter: 'blur(32px)' }} />
+          <HeroBlobs backOffice={org} />
         </div>
 
         {/* Title / subtitle / (Board-only) headcount card */}
@@ -225,71 +279,16 @@ export const TabHero: React.FC<TabHeroProps> = ({
           }`}
         >
           <div className={`min-w-0 flex flex-col gap-2.5 ${activeTab === 'board' ? 'flex-none' : 'flex-1 @min-[700px]/app:basis-[300px]'}`}>
-            <h1 className="max-w-[22ch] font-serif text-display leading-[1.02] tracking-[-0.022em] text-[#f2ece1]">
+            <h1 className={`max-w-[22ch] font-serif text-display leading-[1.02] tracking-[-0.022em] ${org ? 'text-on-surface' : 'text-[#f2ece1]'}`}>
               {copy.title}
             </h1>
-            <p className="max-w-[46ch] text-body leading-[1.62] text-[#f2ece1]/66">{copy.sub}</p>
+            <p className={`max-w-[46ch] text-body leading-[1.62] ${org ? 'text-on-surface-variant' : 'text-[#f2ece1]/66'}`}>{copy.sub}</p>
           </div>
 
+          {/* The headcount card used to live here; it now sits above the
+              announcements on the board itself (BatchBoardSection). */}
           {activeTab === 'board' && (
-            <div className="flex-none w-full @min-[700px]/app:max-w-[46ch] flex flex-col gap-2.5">
-              <div className="p-4 @min-[700px]/app:p-3.5 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex flex-col gap-3">
-                <span className="font-mono text-label tracking-[0.14em] uppercase text-[#f6e6bf]/62">Total Headcount</span>
-                {/* Grid, not flex: the figure spans all three label rows and
-                    self-centers within them, so it stays vertically centred
-                    against the stack it sums up no matter how many digits it
-                    has or how the label lines wrap.
-
-                    lining-nums is load-bearing, not cosmetic. Playfair
-                    Display defaults to OLDSTYLE figures, where 3/4/5/7/9
-                    descend below the baseline, 6/8 ascend and 0/1/2 sit at
-                    x-height. That makes the ink's centre move by up to
-                    0.17em depending on which digits are showing, so no
-                    fixed alignment can hold: a centred "5" hangs low, and
-                    the figure would visibly jump as RSVPs come in. Lining
-                    figures give every digit the same cap-top-to-baseline
-                    extent; tabular-nums keeps the width stable too.
-
-                    With that fixed, one constant nudge finishes the job.
-                    Centring aligns the LINE BOX, but Playfair's em box is
-                    lopsided (ascender 1.087em, descender 0.26em), which
-                    drops the baseline low inside it. Measured at 46px:
-                    baseline 42px, ink 11-42px, so ink centre 26.5px vs box
-                    centre 23px = 3.5px, i.e. 0.076em. In em so it scales
-                    with the responsive font size. */}
-                <div className="grid grid-cols-[auto_1fr_auto] items-start gap-x-4 @min-[700px]/app:gap-x-3">
-                  <span className="row-start-1 row-span-3 col-start-1 self-center -translate-y-[0.076em] font-serif text-display leading-none lining-nums tabular-nums text-[#f6e6bf]">{totalHeadcount}</span>
-                  <span className="row-start-1 col-start-2 self-center font-sans text-label font-semibold text-[#f2ece1]/82">{attendingList.length} alumni</span>
-                  <span className="row-start-2 col-start-2 mt-1 font-sans text-label font-semibold text-[#f0c674]">+{guestsTotal} guests &amp; kids</span>
-                  <span className="row-start-3 col-start-2 mt-1 font-sans text-label font-semibold text-[#e9a49d]">{maybeList.length} still deciding</span>
-                  <button
-                    type="button"
-                    onClick={onNavigateToSurvey}
-                    className="row-start-1 row-span-3 col-start-3 self-center ml-auto rounded-full bg-[#f6e6bf] text-[#0d2620] font-bold font-sans px-5 py-3 @min-[700px]/app:px-3.5 @min-[700px]/app:py-2.5 text-body"
-                  >
-                    {mySurveyResponse ? 'Edit RSVP' : 'Submit RSVP'}
-                  </button>
-                </div>
-                <div className="flex h-2 rounded-full overflow-hidden bg-white/[0.14]">
-                  <div className="h-full" style={{ width: pctOf(attendingList.length), background: 'linear-gradient(90deg,#7fd8c4,#2f9c85)' }} />
-                  <div className="h-full" style={{ width: pctOf(guestsTotal), background: 'linear-gradient(90deg,#f0c674,#d6982d)' }} />
-                  <div className="h-full" style={{ width: pctOf(maybeList.length), background: 'rgba(233,164,157,.75)' }} />
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2.5 border-t border-dashed border-white/22">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-mono text-label tracking-[0.14em] uppercase text-[#f6e6bf]/62">Batch fund</span>
-                    <span className="font-serif text-heading text-[#f2ece1]">{formatPHP(totalPledges)}</span>
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-mono text-label tracking-[0.14em] uppercase text-[#f6e6bf]/62">Responses</span>
-                    <span className="font-serif text-heading text-[#f2ece1]">{totalSurveys}</span>
-                  </div>
-                  <span className="text-label text-[#f2ece1]/50">
-                    {totalHeadcount === 0 ? 'Waiting for the first RSVP' : ''}
-                  </span>
-                </div>
-              </div>
-
+            <div className="flex-none">
               <button
                 type="button"
                 onClick={() => setTicketOpen(true)}

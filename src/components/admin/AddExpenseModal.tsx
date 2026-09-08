@@ -66,11 +66,11 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
         <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded bg-error-container text-on-error-container flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded bg-error-container text-on-error-container flex items-center justify-center">
               <Receipt className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-heading font-serif font-bold text-on-surface">
+              <h2 className="font-serif text-heading text-on-surface">
                 {existingExpense ? 'Edit Planned Expense' : 'Add Planned Expense Item'}
               </h2>
               <p className="text-body text-on-surface-variant">
@@ -82,14 +82,14 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded text-outline hover:text-on-surface hover:bg-surface-container"
+            className="btn-icon btn-icon-ghost"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="p-3 bg-error-container text-on-error-container text-body font-medium rounded border border-error-container">
+          <div className="p-3 bg-error-container text-on-error-container text-body rounded border border-error-container">
             {error}
           </div>
         )}
@@ -97,7 +97,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
 
           <div>
-            <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Expense Name / Description <span className="text-error">*</span>
             </label>
             <input
@@ -112,7 +112,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+              <label className="block text-label font-semibold text-on-surface-variant mb-1">
                 Category
               </label>
               <select
@@ -129,11 +129,11 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+              <label className="block text-label font-semibold text-on-surface-variant mb-1">
                 Estimated Amount (₱) <span className="text-error">*</span>
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-on-surface-variant">₱</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-semibold text-on-surface-variant">₱</span>
                 <input
                   type="number"
                   min="0"
@@ -142,7 +142,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                   placeholder="25000"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-body font-bold focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full pl-8 pr-3 py-2.5 rounded border border-secondary/30 text-on-surface text-body focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
@@ -150,7 +150,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+              <label className="block text-label font-semibold text-on-surface-variant mb-1">
                 Target Payment Date
               </label>
               <input
@@ -162,7 +162,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+              <label className="block text-label font-semibold text-on-surface-variant mb-1">
                 Status
               </label>
               <select
@@ -179,7 +179,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Notes & Supplier Details <span className="text-outline font-normal">(Optional)</span>
             </label>
             <textarea
@@ -195,13 +195,13 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded border border-secondary/30 text-on-surface-variant text-body font-semibold hover:bg-surface-container"
+              className="btn btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded bg-error hover:opacity-90 text-on-error text-body font-bold shadow-soft"
+              className="btn btn-primary"
             >
               {existingExpense ? 'Save Changes' : 'Add Expense to Ledger'}
             </button>

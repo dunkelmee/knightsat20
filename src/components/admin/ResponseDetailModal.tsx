@@ -24,7 +24,7 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
         <div className="flex items-start justify-between pb-4 border-b border-outline-variant/30">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-heading font-serif font-bold text-on-surface">{response.fullName}</h2>
+              <h2 className="font-serif text-heading text-on-surface">{response.fullName}</h2>
               {response.section2007 && (
                 <span className="px-2.5 py-0.5 rounded-full text-label font-semibold bg-tertiary-container/25 text-on-tertiary-container">
                   {response.section2007}
@@ -39,7 +39,7 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded text-outline hover:text-on-surface hover:bg-surface-container transition-all"
+            className="btn-icon btn-icon-ghost"
           >
             <X className="w-5 h-5" />
           </button>
@@ -64,8 +64,8 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
 
           {/* Q2: Attendance */}
           <div className="p-4 bg-tertiary-container/15 rounded border border-tertiary-container/40 space-y-1">
-            <div className="text-label font-bold text-on-tertiary-container uppercase tracking-wide">Q2. Attendance</div>
-            <div className="font-bold text-on-surface">{response.attendance}</div>
+            <div className="eyebrow text-on-tertiary-container">Q2. Attendance</div>
+            <div className="text-body font-semibold text-on-surface">{response.attendance}</div>
             {response.attendanceReason && (
               <p className="text-body text-on-surface-variant mt-1 italic">
                 Decision factor: "{response.attendanceReason}"
@@ -75,10 +75,10 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
 
           {/* Q3: Preferred Date */}
           <div className="p-4 bg-surface-container-low rounded border border-outline-variant/30 space-y-1">
-            <div className="text-label font-bold text-on-surface-variant uppercase tracking-wide">Q3. Preferred Date & Range</div>
+            <div className="eyebrow text-on-surface-variant">Q3. Preferred Date & Range</div>
             <div className="flex flex-wrap gap-1.5 pt-1">
               {response.preferredMonths.map(m => (
-                <span key={m} className="px-2 py-0.5 bg-surface-container-lowest border border-outline-variant/40 rounded text-body font-medium text-on-surface">
+                <span key={m} className="px-2 py-0.5 bg-surface-container-lowest border border-outline-variant/40 rounded text-body font-semibold text-on-surface">
                   {m}
                 </span>
               ))}
@@ -92,7 +92,7 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
 
           {/* Q4: Venue */}
           <div className="p-4 bg-surface-container-low rounded border border-outline-variant/30 space-y-1">
-            <div className="text-label font-bold text-on-surface-variant uppercase tracking-wide">Q4. Venue Preference</div>
+            <div className="eyebrow text-on-surface-variant">Q4. Venue Preference</div>
             <div className="text-on-surface font-semibold">
               {response.preferredVenueType
                 .map((type) => (type === 'Other' && response.venueTypeOther ? `Other: ${response.venueTypeOther}` : type))
@@ -108,10 +108,10 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
           {/* Q5: Contributions & Sponsorship */}
           <div className="p-4 bg-primary-container/15 rounded border border-primary-container/40 space-y-3">
             <div className="flex items-center justify-between">
-              <div className="text-label font-bold text-on-primary-container uppercase tracking-wide">
+              <div className="eyebrow text-on-primary-container">
                 Q5. Pledge & Sponsorship
               </div>
-              <div className="text-heading font-bold text-primary">
+              <div className="font-serif text-heading text-primary">
                 {formatPHP(response.computedPledgeAmount)}
               </div>
             </div>
@@ -148,7 +148,7 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
                 <select
                   value={response.pledgePaidStatus || 'Unpaid / Pledged'}
                   onChange={(e) => onUpdatePaymentStatus(response.id, e.target.value as any)}
-                  className="text-body font-bold px-3 py-1.5 rounded border border-primary-container bg-surface-container-lowest text-on-surface focus:outline-none"
+                  className="text-body px-3 py-1.5 rounded border border-primary-container bg-surface-container-lowest text-on-surface focus:outline-none"
                 >
                   <option value="Unpaid / Pledged">Unpaid / Pledged</option>
                   <option value="Partially Paid">Partially Paid</option>
@@ -160,10 +160,10 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
 
           {/* Q6: Skills Offered */}
           <div className="p-4 bg-surface-container-low rounded border border-outline-variant/30 space-y-2">
-            <div className="text-label font-bold text-on-surface-variant uppercase tracking-wide">Q6. Skills & Services Offered</div>
+            <div className="eyebrow text-on-surface-variant">Q6. Skills & Services Offered</div>
             <div className="flex flex-wrap gap-1.5">
               {response.skillsOffered.map(s => (
-                <span key={s} className="px-2.5 py-1 bg-surface-container-lowest border border-outline-variant/40 rounded text-body font-medium text-on-surface">
+                <span key={s} className="px-2.5 py-1 bg-surface-container-lowest border border-outline-variant/40 rounded text-body font-semibold text-on-surface">
                   {s}
                 </span>
               ))}
@@ -178,7 +178,7 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
           {/* Q7: Organization & Q8: Guests */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-4 bg-surface-container-low rounded border border-outline-variant/30 space-y-1">
-              <div className="text-label font-bold text-on-surface-variant uppercase tracking-wide">Q7. Organizing & Recommendations</div>
+              <div className="eyebrow text-on-surface-variant">Q7. Organizing & Recommendations</div>
               <div className="text-body text-on-surface">Willingness: <strong>{response.willingToOrganize}</strong></div>
               {response.nominatedOrganizer && (
                 <div className="text-body text-on-surface-variant mt-1">Suggested Organizer / Agency: <strong>{response.nominatedOrganizer}</strong></div>
@@ -186,7 +186,7 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
             </div>
 
             <div className="p-4 bg-surface-container-low rounded border border-outline-variant/30 space-y-1">
-              <div className="text-label font-bold text-on-surface-variant uppercase tracking-wide">Q8. Guests / Companions</div>
+              <div className="eyebrow text-on-surface-variant">Q8. Guests / Companions</div>
               <div className="text-body text-on-surface">+1 Guest: <strong>{response.bringingPlusOne}</strong></div>
               <div className="text-body text-on-surface">Kids: <strong>{response.bringingKids} {response.kidsCount ? `(${response.kidsCount})` : ''}</strong></div>
             </div>
@@ -195,7 +195,7 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
           {/* Q9: Suggestions */}
           {response.otherSuggestions && (
             <div className="p-4 bg-tertiary-container/15 rounded border border-tertiary-container/40 space-y-1">
-              <div className="text-label font-bold text-on-tertiary-container uppercase tracking-wide">Q9. Other Suggestions</div>
+              <div className="eyebrow text-on-tertiary-container">Q9. Other Suggestions</div>
               <p className="text-body text-on-surface-variant whitespace-pre-line">
                 {response.otherSuggestions}
               </p>
@@ -209,7 +209,7 @@ export const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 rounded bg-secondary text-on-secondary text-body font-bold hover:opacity-90 transition-all"
+            className="btn btn-secondary"
           >
             Close Inspector
           </button>

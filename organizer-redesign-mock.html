@@ -1,0 +1,1237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Organizer View Redesign — Interactive Mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Plus+Jakarta+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Organizer View Redesign — mock only. Nothing here is wired to
+   the app; it mirrors src/index.css tokens + TYPOGRAPHY_SYSTEM.md
+   so the reversal can be judged against the real palette.
+   ============================================================ */
+
+:root {
+  /* --- palette, verbatim from src/index.css @theme --- */
+  --surface:            #fdfaf2;
+  --surface-low:        #f8f3e4;
+  --surface-container:  #f2ece1;
+  --surface-high:       #ece4d2;
+  --surface-lowest:     #ffffff;
+  --on-surface:         #14211d;
+  --on-surface-variant: #4a544f;
+  --outline:            #6b756f;
+  --outline-variant:    #cdbf9f;
+  --background:         #e7ddcd;
+  --primary:            #0e5a4d;
+  --primary-container:  #12786a;
+  --gold:               #d6982d;
+  --gold-light:         #f6e6bf;
+  --terracotta:         #b0564f;
+  --cream:              #f2ece1;
+
+  /* --- type scale: the only five sizes (TYPOGRAPHY_SYSTEM.md §3) --- */
+  --text-display: clamp(30px, 6.6cqw, 48px);
+  --text-title:   24px;
+  --text-heading: 16px;
+  --text-body:    12px;
+  --text-label:   10px;
+  --text-nav:     8px;
+
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans:  'Plus Jakarta Sans', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:  'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --radius:    0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+
+  /* --- THE REVERSAL ---------------------------------------------
+     Attendee: green chrome + green hero, paper body.
+     Organizer: paper chrome + paper hero, green body.
+     ------------------------------------------------------------ */
+  --chrome-flat:     #f2ece1;                                                     /* mobile sticky bar, flat */
+  --chrome-gradient: linear-gradient(168deg, #faf6ea 0%, #f2ece1 48%, #e7ddcd 100%);
+
+  /* Body green — swapped live by the "Body green" control */
+  --body-gradient:   linear-gradient(168deg, #0d2620 0%, #123b32 48%, #1a4a3c 100%);
+
+  /* On-green text stops (TYPOGRAPHY_SYSTEM.md §6, dark-hero column) */
+  --on-green:      #f2ece1;
+  --on-green-2:    rgb(242 236 225 / .70);
+  --on-green-3:    rgb(246 230 191 / .60);
+
+  /* Glass card on green — the mirror of the attendee hero's white/10 card */
+  --card-bg:     rgb(255 255 255 / .07);
+  --card-border: rgb(255 255 255 / .16);
+  --card-bg-2:   rgb(255 255 255 / .10);
+
+  /* Status hues, lightened for a dark ground (src/utils/statusColors.ts) */
+  --st-attending: #7fd8c4;
+  --st-likely:    #b3a3e0;
+  --st-maybe:     #f0c674;
+  --st-decline:   #e9a49d;
+}
+
+/* Body-green variants, toggled by the control panel */
+.app[data-green="mid"]   { --body-gradient: linear-gradient(168deg, #0e5a4d 0%, #12786a 52%, #14806f 100%);
+                           --card-bg: rgb(255 255 255 / .10); --card-border: rgb(255 255 255 / .22); }
+.app[data-green="split"] { --body-gradient: linear-gradient(180deg, #0d2620 0%, #123b32 30%, #0f3b31 100%); }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--on-surface);
+  background: #cfc4b0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- type utilities: five steps, nothing else ---------- */
+.t-display { font-size: var(--text-display); line-height: 1.02; letter-spacing: -.022em; }
+.t-title   { font-size: var(--text-title);   line-height: 1.08; letter-spacing: -.015em; }
+.t-heading { font-size: var(--text-heading); line-height: 1.20; letter-spacing: -.01em; }
+.t-body    { font-size: var(--text-body);    line-height: 1.55; }
+.t-label   { font-size: var(--text-label);   line-height: 1.35; }
+.serif  { font-family: var(--font-serif); font-weight: 400; }
+.sans   { font-family: var(--font-sans); }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+.fig { font-family: var(--font-serif); font-weight: 400; font-variant-numeric: lining-nums tabular-nums; }
+.w600 { font-weight: 600; }
+.w700 { font-weight: 700; }
+
+/* ---------- stage + device frame ---------- */
+.stage {
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  scroll-behavior: smooth;
+}
+.app {
+  container-type: inline-size;
+  container-name: app;
+  width: 100%;
+  min-height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+}
+.stage[data-view="mobile"] { padding: 18px 0; background: #b9ad98; }
+.stage[data-view="mobile"] .app {
+  width: 390px;
+  /* Height + its own scroll, NOT overflow:hidden — the frame has to be the
+     scrollport itself, or the sticky crest row and floating tab bar would be
+     trapped in a box that never scrolls. */
+  height: calc(100vh - 36px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 26px;
+  box-shadow: 0 30px 70px -30px rgb(14 44 37 / .75);
+}
+</style>
+<style>
+/* ============================================================
+   1. CHROME — sticky bar + hero, now NEUTRAL
+   Structure mirrors TabHero.tsx exactly: the crest row is a
+   sibling of the hero body so it can stay sticky for the whole
+   page scroll; on desktop one shared backdrop paints both.
+   ============================================================ */
+.chrome { position: relative; }
+
+.chrome-backdrop {           /* desktop only — covers crest row + hero together */
+  display: none;
+  position: absolute; inset: 0;
+  overflow: hidden; pointer-events: none;
+  background: var(--chrome-gradient);
+  border-bottom: 1px solid var(--outline-variant);
+}
+.chrome-backdrop span { position: absolute; border-radius: 50%; }
+/* Same three blobs as the attendee hero, dialled to ~1/3 alpha so they
+   tint the paper instead of colouring it. */
+.blob-g { top: -26%; left: -12%;  width: 62%; height: 110%; background: radial-gradient(circle, rgb(18 120 102 / .20), transparent 66%); filter: blur(26px); }
+.blob-y { top: -20%; right: -16%; width: 66%; height: 110%; background: radial-gradient(circle, rgb(214 152 45 / .22), transparent 66%); filter: blur(30px); }
+.blob-t { bottom: -40%; left: 22%; width: 66%; height: 96%;  background: radial-gradient(circle, rgb(176 86 79 / .16), transparent 70%); filter: blur(32px); }
+
+.crest-row {
+  position: sticky; top: 0; z-index: 30;
+  background: var(--chrome-flat);
+  border-bottom: 1px solid var(--outline-variant);
+}
+.crest-inner {
+  position: relative;
+  width: 100%; max-width: 1180px; margin: 0 auto;
+  padding: 14px 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+.crest {
+  width: 44px; height: 44px; border-radius: 50%;
+  flex-shrink: 0; object-fit: cover;
+  background: linear-gradient(150deg, #0e5a4d, #123b32);
+  color: var(--gold-light);
+  display: grid; place-items: center;
+  font-family: var(--font-serif); font-size: 15px;
+  box-shadow: 0 0 0 3px rgb(20 33 29 / .07);
+}
+.brand { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.brand .name { font-size: var(--text-label); font-weight: 700; color: var(--on-surface); }
+.brand .kicker { color: var(--on-surface-variant); }
+
+/* Organizer badge — the one piece of chrome that stays green, so the
+   neutral bar still says "you are in the back office". */
+.chrome-right { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.role-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 9px; border-radius: 999px;
+  background: var(--primary); color: var(--gold-light);
+  flex-shrink: 0;
+}
+/* Below the breakpoint the bar is already carrying crest + wordmark + avatar,
+   so the chip drops to the shield alone rather than pushing the row to wrap. */
+@container app (max-width: 699.98px) {
+  .role-chip .rc-label { display: none; }
+  .role-chip { padding: 6px; }
+}
+
+/* Desktop pill nav — reversed: dark active pill on a light group,
+   where the attendee has a cream active pill on a dark group. */
+.desktop-nav {
+  display: none;
+  align-items: center; gap: 4px;
+  padding: 6px; border-radius: 999px;
+  background: rgb(20 33 29 / .05);
+  border: 1px solid rgb(20 33 29 / .10);
+  backdrop-filter: blur(12px);
+}
+.desktop-nav button {
+  display: flex; align-items: center; gap: 6px;
+  padding: 9px 12px; border: 0; border-radius: 999px;
+  background: transparent; cursor: pointer;
+  font-family: var(--font-sans); font-size: var(--text-label); font-weight: 600;
+  color: var(--on-surface-variant); white-space: nowrap;
+  transition: background-color .15s, color .15s;
+}
+.desktop-nav button:hover { color: var(--on-surface); }
+.desktop-nav button[aria-current="page"] { background: #0d2620; color: var(--gold-light); }
+.desktop-nav svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.avatar-chip {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px 6px 6px; border-radius: 999px;
+  background: rgb(20 33 29 / .05);
+  border: 1px solid rgb(20 33 29 / .10);
+  cursor: pointer;
+}
+.avatar-chip .av {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: linear-gradient(150deg, #d6982d, #b0564f);
+  color: #fff; font-size: var(--text-label); font-weight: 700;
+}
+.avatar-chip .who { font-size: var(--text-body); font-weight: 600; color: var(--on-surface); }
+
+/* ---- hero ---- */
+.hero { position: relative; background: var(--chrome-gradient); border-bottom: 1px solid var(--outline-variant); }
+.hero-blobs { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.hero-inner {
+  position: relative;
+  width: 100%; max-width: 1180px; margin: 0 auto;
+  padding: 20px 20px 18px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.hero-copy { min-width: 0; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.hero h1 { margin: 0; max-width: 22ch; font-family: var(--font-serif); font-weight: 400; color: var(--on-surface); }
+.hero p  { margin: 0; max-width: 46ch; color: var(--on-surface-variant); line-height: 1.62; }
+
+</style>
+<style>
+/* ============================================================
+   2. BODY — the green half. Everything the attendee view puts
+   on parchment now sits on the forest gradient, so cards become
+   glass and the three text stops flip to the dark-hero column.
+   ============================================================ */
+main {
+  position: relative;
+  flex: 1;
+  background: var(--body-gradient);
+  color: var(--on-green);
+  padding-bottom: 96px;
+  isolation: isolate;
+}
+/* Ambient wash — the desk-wash blobs from src/index.css, at the alpha they
+   run at on the attendee hero rather than the muted body values. */
+.body-wash { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.body-wash span { position: absolute; border-radius: 50%; filter: blur(60px); }
+.body-wash span:nth-child(1) { top: -10%; left: -16%;  width: 68%; height: 46%; background: radial-gradient(circle, rgb(18 120 102 / .55), transparent 68%); }
+.body-wash span:nth-child(2) { top: -6%;  right: -18%; width: 64%; height: 40%; background: radial-gradient(circle, rgb(214 152 45 / .30), transparent 68%); }
+.body-wash span:nth-child(3) { bottom: 4%; left: 6%;   width: 76%; height: 38%; background: radial-gradient(circle, rgb(176 86 79 / .28), transparent 70%); }
+/* Graph-paper grid, inverted to white so it reads on green */
+.body-grid {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image: linear-gradient(rgb(255 255 255 / .045) 1px, transparent 1px),
+                    linear-gradient(90deg, rgb(255 255 255 / .045) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+/* Paper grain — same fractalNoise texture as src/index.css .paper-grain,
+   at a higher opacity because it is now sitting on a dark ground. */
+.body-grain { position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: .05; }
+.tab-panel {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 1180px; margin: 0 auto;
+  padding: 24px 20px;
+  display: flex; flex-direction: column; gap: 22px;
+}
+.tab-panel[hidden] { display: none; }
+
+/* ---- section headings ---- */
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+.sec-head .h { font-family: var(--font-serif); font-weight: 400; color: var(--on-green); display: flex; align-items: center; gap: 8px; }
+.sec-head .rule { flex: 1; min-width: 20px; height: 1px; background: rgb(255 255 255 / .18); }
+.sec-head svg { width: 16px; height: 16px; color: var(--gold-light); opacity: .8; }
+.sec-sub { color: var(--on-green-2); }
+
+/* ---- glass card ---- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(14px);
+  padding: 18px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.card.tight { gap: 10px; padding: 16px; }
+.card h3, .card h4 { margin: 0; font-family: var(--font-serif); font-weight: 400; font-size: var(--text-heading); line-height: 1.2; letter-spacing: -.01em; color: var(--on-green); }
+.muted  { color: var(--on-green-2); }
+.muted2 { color: var(--on-green-3); }
+
+/* ---- metric cards: eyebrow + serif title figure + tertiary footnote ---- */
+.metrics { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.metric {
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg); backdrop-filter: blur(14px);
+  padding: 16px; display: flex; flex-direction: column; gap: 6px;
+  position: relative; overflow: hidden;
+}
+.metric::after {                       /* status hairline, replaces the old coloured border */
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--accent, var(--gold-light)); opacity: .85;
+}
+.metric .eyebrow { color: var(--on-green-3); }
+.metric .v { font-size: var(--text-title); line-height: 1.08; letter-spacing: -.015em; color: var(--on-green); }
+.metric .v.accent { color: var(--gold-light); }
+.metric .f { font-size: var(--text-label); color: var(--on-green-3); }
+.metric.surplus { background: rgb(127 216 196 / .12); border-color: rgb(127 216 196 / .35); }
+.metric.short   { background: rgb(233 164 157 / .14); border-color: rgb(233 164 157 / .40); }
+
+/* ---- badges / chips: every one is the mono eyebrow (§9) ---- */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px; border-radius: 999px;
+  font-family: var(--font-mono); font-size: var(--text-label); font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase; line-height: 1.35;
+  border: 1px solid transparent; white-space: nowrap;
+}
+.b-attending { background: rgb(127 216 196 / .14); color: var(--st-attending); border-color: rgb(127 216 196 / .32); }
+.b-likely    { background: rgb(179 163 224 / .14); color: var(--st-likely);    border-color: rgb(179 163 224 / .32); }
+.b-maybe     { background: rgb(240 198 116 / .14); color: var(--st-maybe);     border-color: rgb(240 198 116 / .32); }
+.b-decline   { background: rgb(233 164 157 / .14); color: var(--st-decline);   border-color: rgb(233 164 157 / .32); }
+.b-neutral   { background: rgb(255 255 255 / .08); color: var(--on-green-2);   border-color: rgb(255 255 255 / .18); }
+
+/* ---- filter chips ---- */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  font-family: var(--font-sans); font-size: var(--text-label); font-weight: 600;
+  background: rgb(255 255 255 / .07); color: var(--on-green-2);
+  border: 1px solid rgb(255 255 255 / .16);
+  transition: background-color .15s, color .15s;
+}
+.chip:hover { color: var(--on-green); }
+.chip[aria-pressed="true"] { background: var(--gold-light); color: #0d2620; border-color: var(--gold-light); }
+
+/* ---- form controls on green ---- */
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field > label { font-size: var(--text-label); font-weight: 600; color: var(--on-green-2); }
+.field .help { font-size: var(--text-label); color: var(--on-green-3); }
+input[type="text"], input[type="number"], input[type="search"], select, textarea {
+  width: 100%; padding: 9px 11px;
+  font-family: var(--font-sans); font-size: var(--text-body); line-height: 1.55;
+  color: var(--on-green);
+  background: rgb(255 255 255 / .06);
+  border: 1px solid rgb(255 255 255 / .22);
+  border-radius: var(--radius);
+  outline: none;
+}
+input::placeholder, textarea::placeholder { color: rgb(242 236 225 / .38); }
+input:focus, select:focus, textarea:focus { border-color: var(--gold-light); background: rgb(255 255 255 / .10); }
+select option { color: #14211d; }
+.radio-row { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.radio {
+  display: flex; align-items: flex-start; gap: 9px; cursor: pointer;
+  padding: 12px; border-radius: var(--radius);
+  background: rgb(255 255 255 / .05); border: 1px solid rgb(255 255 255 / .18);
+}
+.radio[data-on="true"] { background: rgb(127 216 196 / .12); border-color: rgb(127 216 196 / .45); }
+.radio .dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgb(255 255 255 / .5); margin-top: 1px; flex-shrink: 0; }
+.radio[data-on="true"] .dot { border-color: var(--st-attending); box-shadow: inset 0 0 0 3px var(--st-attending); }
+.radio .t { font-size: var(--text-label); font-weight: 600; color: var(--on-green); }
+.radio .s { font-size: var(--text-label); color: var(--on-green-3); }
+
+/* ---- buttons: sans body 700 primary / 600 secondary (§5) ---- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 9px 16px; border-radius: var(--radius); cursor: pointer;
+  font-family: var(--font-sans); font-size: var(--text-body); border: 1px solid transparent;
+  white-space: nowrap;
+}
+.btn svg { width: 14px; height: 14px; }
+.btn-primary   { background: var(--gold-light); color: #0d2620; font-weight: 700; }
+.btn-secondary { background: rgb(255 255 255 / .08); color: var(--on-green); border-color: rgb(255 255 255 / .24); font-weight: 600; }
+.btn-ghost     { background: transparent; color: var(--on-green-2); border-color: rgb(255 255 255 / .20); font-weight: 600; }
+.btn-danger    { background: rgb(233 164 157 / .14); color: var(--st-decline); border-color: rgb(233 164 157 / .34); font-weight: 600; }
+.btn-primary:hover { filter: brightness(1.06); }
+.btn-secondary:hover, .btn-ghost:hover { background: rgb(255 255 255 / .14); }
+.saved { color: var(--st-attending); font-size: var(--text-label); font-weight: 600; }
+
+/* ---- table ---- */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 640px; }
+thead th {
+  text-align: left; padding: 0 12px 9px;
+  font-family: var(--font-mono); font-size: var(--text-label); font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--on-green-3);
+  border-bottom: 1px solid rgb(255 255 255 / .16); white-space: nowrap;
+}
+tbody td { padding: 11px 12px; font-size: var(--text-body); color: var(--on-green); border-bottom: 1px solid rgb(255 255 255 / .09); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: rgb(255 255 255 / .04); }
+td .nm { font-family: var(--font-serif); font-weight: 400; font-size: var(--text-heading); line-height: 1.2; }
+td .sub { font-size: var(--text-label); color: var(--on-green-3); }
+td .money { font-family: var(--font-serif); font-weight: 400; font-size: var(--text-heading); font-variant-numeric: lining-nums tabular-nums; color: var(--gold-light); }
+td select { padding: 5px 8px; font-size: var(--text-label); }
+.icon-btn {
+  width: 28px; height: 28px; border-radius: var(--radius); cursor: pointer;
+  display: grid; place-items: center;
+  background: rgb(255 255 255 / .07); border: 1px solid rgb(255 255 255 / .18); color: var(--on-green-2);
+}
+.icon-btn:hover { background: rgb(255 255 255 / .16); color: var(--on-green); }
+.icon-btn svg { width: 13px; height: 13px; }
+
+/* ---- mobile card list (replaces the table below 700px) ---- */
+.row-cards { display: none; flex-direction: column; gap: 10px; }
+.row-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 14px; display: flex; flex-direction: column; gap: 9px; }
+.row-card .kv { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.row-card .k { font-family: var(--font-mono); font-size: var(--text-label); font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--on-green-3); }
+
+/* ---- misc ---- */
+.stack   { display: flex; flex-direction: column; gap: 14px; }
+.row     { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.grid2   { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.empty   { padding: 26px; text-align: center; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.empty .h { font-family: var(--font-serif); font-weight: 400; font-size: var(--text-title); line-height: 1.08; color: var(--on-green); }
+.preview-strip { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; border-radius: var(--radius); background: rgb(255 255 255 / .05); border: 1px dashed rgb(255 255 255 / .26); }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: rgb(255 255 255 / .09); border: 1px solid rgb(255 255 255 / .18); font-size: var(--text-label); font-weight: 600; color: var(--on-green); }
+.quote { font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: var(--text-body); line-height: 1.55; color: var(--on-green-2); }
+.note { font-size: var(--text-label); color: var(--on-green-3); }
+.album { border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--card-border); background: var(--card-bg); }
+.album .thumb { height: 96px; background: linear-gradient(135deg, rgb(255 255 255 / .16), rgb(255 255 255 / .04)); display: grid; place-items: center; color: var(--on-green-3); }
+.album .meta { padding: 12px; display: flex; flex-direction: column; gap: 5px; }
+
+/* ============================================================
+   3. MOBILE BOTTOM NAV — chrome, so it stays in the neutral
+   family with the top bar. The dark-glass alternative is on the
+   control panel ("Bottom nav") for comparison.
+   ============================================================ */
+.mobile-nav {
+  position: sticky; bottom: 12px; z-index: 40;
+  margin: -74px 12px 0; height: 62px; border-radius: 26px;
+  background: rgb(255 255 255 / .88);
+  border: 1px solid rgb(255 255 255 / .9);
+  box-shadow: 0 12px 28px -14px rgb(14 44 37 / .55);
+  backdrop-filter: blur(18px);
+  display: flex; align-items: stretch; justify-content: space-around; padding: 0 6px;
+}
+.app[data-nav="dark"] .mobile-nav {
+  background: rgb(13 38 32 / .78);
+  border-color: rgb(255 255 255 / .16);
+}
+.mobile-nav button {
+  flex: 1; border: 0; background: transparent; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  padding: 0; min-width: 0;
+}
+.mobile-nav .ic {
+  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  color: var(--outline);
+}
+.app[data-nav="dark"] .mobile-nav .ic { color: rgb(242 236 225 / .55); }
+.mobile-nav .ic svg { width: 17px; height: 17px; }
+.mobile-nav button[aria-current="page"] .ic {
+  width: 34px; height: 34px;
+  background: linear-gradient(155deg, #0e5a4d, #0d2620);
+  border: 1px solid rgb(255 255 255 / .35);
+  box-shadow: 0 8px 16px -8px rgb(14 44 37 / .5);
+  color: var(--gold-light);
+}
+.app[data-nav="dark"] .mobile-nav button[aria-current="page"] .ic {
+  background: linear-gradient(155deg, #f6e6bf, #e6cf98);
+  border-color: rgb(255 255 255 / .9);
+  color: #0b4a3f;
+}
+.mobile-nav .lb {
+  font-family: var(--font-sans); font-size: var(--text-nav); font-weight: 700;
+  letter-spacing: .02em; text-transform: uppercase;
+  color: rgb(74 84 79 / .55);
+}
+.app[data-nav="dark"] .mobile-nav .lb { color: rgb(242 236 225 / .5); }
+.mobile-nav button[aria-current="page"] .lb { color: var(--primary); }
+.app[data-nav="dark"] .mobile-nav button[aria-current="page"] .lb { color: var(--gold-light); }
+
+/* ============================================================
+   4. CONTAINER QUERIES — the app's real breakpoints (700 / 1040),
+   matching the @container/app usage in TabHero.tsx + AppNav.tsx.
+   ============================================================ */
+@container app (min-width: 700px) {
+  .chrome-backdrop { display: block; }
+  .crest-row { position: static; background: transparent; border-bottom: 0; padding-top: 22px; }
+  .crest-inner { padding: 0 32px; }
+  .crest { width: 52px; height: 52px; font-size: 17px; }
+  .hero { background: none; border-bottom: 0; }
+  .hero-blobs { display: none; }
+  .hero-inner { padding: 24px 32px 34px; min-height: 130px; justify-content: flex-end; }
+  .desktop-nav { display: flex; margin: 0 auto; }
+  .mobile-nav { display: none; }
+  .tab-panel { padding: 28px 32px; }
+  main { padding-bottom: 40px; }
+  .metrics { grid-template-columns: repeat(3, 1fr); }
+  .metrics.four { grid-template-columns: repeat(4, 1fr); }
+  .grid2 { grid-template-columns: 1fr 1fr; }
+  .radio-row { grid-template-columns: 1fr 1fr; }
+  .split { display: grid; grid-template-columns: minmax(0, 60%) minmax(0, 1fr); gap: 26px; align-items: start; }
+  .table-wrap { display: block; }
+  .row-cards { display: none !important; }
+}
+@container app (max-width: 699.98px) {
+  .table-wrap { display: none; }
+  .row-cards { display: flex; }
+}
+@container app (min-width: 1040px) {
+  .desktop-nav { margin: 0; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .desktop-nav button { padding: 9px 15px; }
+}
+
+/* ============================================================
+   5. MOCK CONTROL PANEL — not part of the design.
+   ============================================================ */
+.controls {
+  position: fixed; right: 14px; bottom: 14px; z-index: 100;
+  background: rgb(20 33 29 / .93); color: #f2ece1;
+  border: 1px solid rgb(255 255 255 / .16); border-radius: 14px;
+  padding: 12px 13px; display: flex; flex-direction: column; gap: 10px;
+  box-shadow: 0 18px 40px -18px rgb(0 0 0 / .7);
+  backdrop-filter: blur(14px); max-width: 260px;
+}
+.controls.collapsed .cbody { display: none; }
+.controls .chead { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+.controls .chead b { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: rgb(246 230 191 / .8); }
+.controls .cbody { display: flex; flex-direction: column; gap: 10px; }
+.controls .grp { display: flex; flex-direction: column; gap: 5px; }
+.controls .grp > span { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: rgb(242 236 225 / .5); }
+.controls .seg { display: flex; gap: 4px; }
+.controls .seg button {
+  flex: 1; padding: 5px 8px; border-radius: 7px; cursor: pointer;
+  font-family: var(--font-sans); font-size: 10px; font-weight: 600;
+  background: rgb(255 255 255 / .08); color: rgb(242 236 225 / .7);
+  border: 1px solid rgb(255 255 255 / .14);
+}
+.controls .seg button[data-on="true"] { background: #f6e6bf; color: #0d2620; border-color: #f6e6bf; }
+.controls .hint { font-size: 9.5px; line-height: 1.5; color: rgb(242 236 225 / .45); }
+</style>
+</head>
+<body>
+
+<!-- ===================== MOCK CONTROL PANEL (not the design) ===================== -->
+<div class="controls" id="controls">
+  <div class="chead" onclick="document.getElementById('controls').classList.toggle('collapsed')">
+    <b>Mock controls</b><span style="opacity:.5">&#9662;</span>
+  </div>
+  <div class="cbody">
+    <div class="grp"><span>Viewport</span>
+      <div class="seg" data-ctl="view">
+        <button data-v="desktop" data-on="true">Desktop</button>
+        <button data-v="mobile">Mobile</button>
+      </div>
+    </div>
+    <div class="grp"><span>Body green</span>
+      <div class="seg" data-ctl="green">
+        <button data-v="deep" data-on="true">Deep</button>
+        <button data-v="split">Flat</button>
+        <button data-v="mid">Mid</button>
+      </div>
+    </div>
+    <div class="grp"><span>Bottom nav (mobile)</span>
+      <div class="seg" data-ctl="nav">
+        <button data-v="paper" data-on="true">Paper</button>
+        <button data-v="dark">Dark glass</button>
+      </div>
+    </div>
+    <p class="hint">Neutral chrome, green body &mdash; the attendee view reversed. Type follows TYPOGRAPHY_SYSTEM.md &sect;9 (organizer table).</p>
+  </div>
+</div>
+
+<div class="stage" id="stage" data-view="desktop">
+<div class="app" id="app" data-green="deep" data-nav="paper">
+
+  <!-- ===================== CHROME: neutral sticky bar + hero ===================== -->
+  <div class="chrome">
+    <div class="chrome-backdrop" aria-hidden="true">
+      <span class="blob-g"></span><span class="blob-y"></span><span class="blob-t"></span>
+    </div>
+
+    <div class="crest-row">
+      <div class="crest-inner">
+        <div class="crest serif">K20</div>
+        <div class="brand">
+          <span class="name sans">Knights @ 20</span>
+          <span class="kicker eyebrow">MakSci Batch '07</span>
+        </div>
+        <nav class="desktop-nav" id="desktopNav" aria-label="Primary"></nav>
+
+        <div class="chrome-right">
+          <span class="role-chip eyebrow" title="Organizer view">
+            <i data-i="shield"></i><span class="rc-label">Organizer</span>
+          </span>
+          <button class="avatar-chip" type="button">
+            <span class="av">CC</span>
+            <span class="who">Chris</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-blobs" aria-hidden="true">
+        <span class="blob-g" style="position:absolute;border-radius:50%"></span>
+        <span class="blob-y" style="position:absolute;border-radius:50%"></span>
+        <span class="blob-t" style="position:absolute;border-radius:50%"></span>
+      </div>
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <h1 class="t-display" id="heroTitle">Event Planning</h1>
+          <p class="t-body" id="heroSub">Set the date, venue, and the details that publish straight to the attendee banner.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== BODY: green ===================== -->
+  <main>
+    <div class="body-wash" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div class="body-grid" aria-hidden="true"></div>
+    <div class="body-grain" aria-hidden="true">
+      <svg width="100%" height="100%"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#grain)"/></svg>
+    </div>
+
+    <!-- ---------- EVENT PLANNING ---------- -->
+    <section class="tab-panel" data-tab="event">
+      <div class="card">
+        <div class="between">
+          <div class="stack" style="gap:6px">
+            <div class="row" style="gap:8px">
+              <h3>Event Schedule &amp; Venue Settings</h3>
+              <span class="badge b-maybe"><i data-i="clock"></i>Pending</span>
+            </div>
+            <p class="t-body muted" style="margin:0;max-width:60ch">Update date, venue, time, and address. Changes reflect immediately on the public banner and event pages.</p>
+          </div>
+          <button class="btn btn-ghost" type="button"><i data-i="rotate"></i>Reset to Pending</button>
+        </div>
+        <div class="stack" style="gap:8px">
+          <span class="eyebrow muted2">Live public banner preview</span>
+          <div class="preview-strip">
+            <span class="pill"><i data-i="calendar"></i>Saturday, December 5, 2026</span>
+            <span class="pill"><i data-i="pin"></i>Grand Ballroom, Dusit Thani Manila</span>
+            <span class="pill"><i data-i="clock"></i>5:30 PM &ndash; 10:30 PM</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Main settings</h3>
+        <div class="field">
+          <label>Event Status *</label>
+          <div class="radio-row">
+            <div class="radio" data-on="false" onclick="pickRadio(this)">
+              <span class="dot"></span>
+              <span class="stack" style="gap:2px">
+                <span class="t">Pending / Survey Phase</span>
+                <span class="s">Date &amp; venue still being decided</span>
+              </span>
+            </div>
+            <div class="radio" data-on="true" onclick="pickRadio(this)">
+              <span class="dot"></span>
+              <span class="stack" style="gap:2px">
+                <span class="t">Finalized &amp; Confirmed</span>
+                <span class="s">Contract signed / fixed date &amp; venue</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label>Event Date *</label>
+            <input type="text" value="Saturday, December 5, 2026" />
+            <span class="help">Leave blank to fall back to &ldquo;Pending / For finalization&rdquo;.</span>
+          </div>
+          <div class="field">
+            <label>Event Time &amp; Duration</label>
+            <input type="text" placeholder="e.g. 5:30 PM - 10:30 PM" value="5:30 PM - 10:30 PM" />
+          </div>
+          <div class="field">
+            <label>Venue Name *</label>
+            <input type="text" value="Grand Ballroom, Dusit Thani Manila" />
+          </div>
+          <div class="field">
+            <label>Venue Address / Area</label>
+            <input type="text" placeholder="e.g. Ayala Center, Makati City" />
+          </div>
+          <div class="field">
+            <label>Dress Code / Attire</label>
+            <input type="text" placeholder="e.g. Smart Casual / Semi-Formal" />
+          </div>
+          <div class="field">
+            <label>Reunion Theme / Catchphrase</label>
+            <input type="text" placeholder="e.g. MakSci Batch 2007: 20 Years After" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Committee Notes / Special Instructions</label>
+          <textarea rows="2" placeholder="Anything the committee needs to remember"></textarea>
+        </div>
+        <div class="row">
+          <button class="btn btn-primary" type="button" onclick="flashSaved(this)"><i data-i="check"></i>Save Event Details</button>
+          <span class="saved" hidden>Saved successfully! Updated across the site.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="between">
+          <div class="stack" style="gap:4px">
+            <h3>Scouted Venues (3)</h3>
+            <span class="note">Committee-internal &mdash; not shown to attendees.</span>
+          </div>
+          <button class="btn btn-secondary" type="button"><i data-i="plus"></i>Add Venue</button>
+        </div>
+        <div class="grid2">
+          <div class="card tight" style="background:rgb(255 255 255 / .05)">
+            <div class="between">
+              <h4>Dusit Thani Manila (Grand Ballroom)</h4>
+              <div class="row" style="gap:5px">
+                <button class="icon-btn" type="button" title="Edit"><i data-i="pencil"></i></button>
+                <button class="icon-btn" type="button" title="Delete"><i data-i="trash"></i></button>
+              </div>
+            </div>
+            <span class="note">Saturday, April 24, 2027 &middot; Ayala Center, Makati City</span>
+            <span class="fig" style="font-size:var(--text-heading);color:var(--gold-light)">&#8369;385,000</span>
+            <p class="t-body muted" style="margin:0">Includes AV, 2 function rooms, corkage waived for wine.</p>
+          </div>
+          <div class="card tight" style="background:rgb(255 255 255 / .05)">
+            <div class="between">
+              <h4>Blue Leaf Filipinas</h4>
+              <div class="row" style="gap:5px">
+                <button class="icon-btn" type="button" title="Edit"><i data-i="pencil"></i></button>
+                <button class="icon-btn" type="button" title="Delete"><i data-i="trash"></i></button>
+              </div>
+            </div>
+            <span class="note">Saturday, May 15, 2027 &middot; Aseana City, Para&ntilde;aque</span>
+            <span class="fig" style="font-size:var(--text-heading);color:var(--gold-light)">&#8369;298,000</span>
+            <p class="t-body muted" style="margin:0">Outdoor pavilion; rain plan needs a tent add-on.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- SURVEYS ---------- -->
+    <section class="tab-panel" data-tab="responses" hidden>
+      <div class="metrics">
+        <div class="metric" style="--accent:#7fd8c4">
+          <span class="eyebrow">Total submissions</span>
+          <span class="v fig">107</span>
+          <span class="f">Batchmates responded</span>
+        </div>
+        <div class="metric" style="--accent:#f0c674">
+          <span class="eyebrow">Total pledges extracted</span>
+          <span class="v fig accent">&#8369;412,000</span>
+          <span class="f">83 batchmates pledging</span>
+        </div>
+        <div class="metric" style="--accent:#e9a49d">
+          <span class="eyebrow">Pledges collected</span>
+          <span class="v fig">&#8369;316,000</span>
+          <span class="f">Marked as Fully Paid</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="between">
+          <div class="field" style="flex:1;min-width:220px">
+            <input type="search" placeholder="Search by name, contact, section, skill, venue..." />
+          </div>
+          <div class="row" style="gap:8px">
+            <button class="btn btn-secondary" type="button"><i data-i="download"></i>Export Full CSV</button>
+            <button class="btn btn-secondary" type="button"><i data-i="download"></i>Export Pledges &amp; Ledger</button>
+          </div>
+        </div>
+        <div class="stack" style="gap:8px">
+          <span class="eyebrow muted2">Attendance</span>
+          <div class="chips" data-group="att">
+            <button class="chip" aria-pressed="true">All Statuses</button>
+            <button class="chip" aria-pressed="false">Yes, definitely!</button>
+            <button class="chip" aria-pressed="false">Most likely</button>
+            <button class="chip" aria-pressed="false">Not sure yet</button>
+            <button class="chip" aria-pressed="false">Declined</button>
+          </div>
+          <span class="eyebrow muted2" style="margin-top:4px">Pledges</span>
+          <div class="chips" data-group="pl">
+            <button class="chip" aria-pressed="true">All Amounts</button>
+            <button class="chip" aria-pressed="false">With Pledges</button>
+            <button class="chip" aria-pressed="false">Fully Paid</button>
+            <button class="chip" aria-pressed="false">Unpaid or Pledged</button>
+            <button class="chip" aria-pressed="false">In-Kind only</button>
+          </div>
+        </div>
+        <span class="note">Showing <b style="color:var(--on-green)">107</b> of 107 responses.</span>
+      </div>
+
+      <div class="card" style="padding-top:16px">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Batchmate</th><th>Attendance</th><th>Pledge</th><th>Payment status</th><th>Skills / In-kind</th><th></th></tr>
+            </thead>
+            <tbody id="responsesBody"></tbody>
+          </table>
+        </div>
+        <div class="row-cards" id="responsesCards"></div>
+      </div>
+    </section>
+
+    <!-- ---------- LEDGER ---------- -->
+    <section class="tab-panel" data-tab="funds" hidden>
+      <div class="metrics">
+        <div class="metric" style="--accent:#f0c674">
+          <span class="eyebrow">Total pledges</span>
+          <span class="v fig accent">&#8369;412,000</span>
+          <span class="f">Paid &#8369;316,000 &middot; Pending &#8369;96,000</span>
+        </div>
+        <div class="metric" style="--accent:#e9a49d">
+          <span class="eyebrow">Total planned expenses</span>
+          <span class="v fig">&#8369;337,500</span>
+          <span class="f">9 budgeted ledger items</span>
+        </div>
+        <div class="metric surplus" style="--accent:#7fd8c4">
+          <span class="eyebrow">Net running balance</span>
+          <span class="v fig" style="color:var(--st-attending)">&#8369;74,500</span>
+          <span class="f">Surplus &mdash; pledges exceed planned costs</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="between">
+          <div class="stack" style="gap:4px">
+            <h3>Planned Expenses Ledger</h3>
+            <span class="note">Add supplier estimates and operating costs as they are quoted.</span>
+          </div>
+          <div class="row" style="gap:8px">
+            <button class="btn btn-secondary" type="button"><i data-i="download"></i>Export Financial Ledger</button>
+            <button class="btn btn-primary" type="button"><i data-i="plus"></i>Add Planned Expense</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Expense</th><th>Category</th><th>Amount</th><th>Target date</th><th>Status</th><th></th></tr></thead>
+            <tbody id="ledgerBody"></tbody>
+          </table>
+        </div>
+        <div class="row-cards" id="ledgerCards"></div>
+        <div class="between" style="padding-top:12px;border-top:1px dashed rgb(255 255 255 / .22)">
+          <span class="eyebrow muted2">Grand total</span>
+          <span class="fig t-title" style="color:var(--gold-light)">&#8369;337,500</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- ANNOUNCEMENTS ---------- -->
+    <section class="tab-panel" data-tab="announcements" hidden>
+      <div class="split">
+        <div class="stack">
+          <div class="sec-head">
+            <span class="h t-title"><i data-i="bell"></i>Posted</span>
+            <span class="rule"></span>
+            <button class="btn btn-primary" type="button"><i data-i="plus"></i>New announcement</button>
+          </div>
+          <div class="card tight">
+            <div class="between">
+              <div class="row" style="gap:6px">
+                <span class="badge b-maybe">Pinned</span>
+                <span class="badge b-neutral">Venue &middot; Mar 14</span>
+              </div>
+              <div class="row" style="gap:5px">
+                <button class="icon-btn" type="button" title="Unpin"><i data-i="pin"></i></button>
+                <button class="icon-btn" type="button" title="Edit"><i data-i="pencil"></i></button>
+                <button class="icon-btn" type="button" title="Delete"><i data-i="trash"></i></button>
+              </div>
+            </div>
+            <h3>Venue shortlist is down to two</h3>
+            <p class="t-body muted" style="margin:0">Dusit and Blue Leaf both held our date until end of month. Vote on the survey before Friday so we can put down a deposit.</p>
+            <span class="note">42 likes &middot; posted by Chris C.</span>
+          </div>
+          <div class="card tight">
+            <div class="between">
+              <span class="badge b-neutral">Finance &middot; Mar 02</span>
+              <div class="row" style="gap:5px">
+                <button class="icon-btn" type="button" title="Pin"><i data-i="pin"></i></button>
+                <button class="icon-btn" type="button" title="Edit"><i data-i="pencil"></i></button>
+                <button class="icon-btn" type="button" title="Delete"><i data-i="trash"></i></button>
+              </div>
+            </div>
+            <h3>We crossed &#8369;400,000 in pledges</h3>
+            <p class="t-body muted" style="margin:0">Thank you to the 83 batchmates who have pledged. Collection reminders go out next week.</p>
+            <span class="note">67 likes &middot; posted by Chris C.</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Compose</h3>
+          <div class="field"><label>Title *</label><input type="text" placeholder="What is the update?" /></div>
+          <div class="field"><label>Tag</label>
+            <select><option>Survey</option><option>Venue</option><option>Finance</option><option>Important</option><option>General</option></select>
+          </div>
+          <div class="field"><label>Caption</label><textarea rows="4" placeholder="Write the announcement body"></textarea></div>
+          <div class="field"><label>Image URL</label><input type="text" placeholder="Optional banner image" /></div>
+          <div class="row">
+            <button class="btn btn-primary" type="button"><i data-i="check"></i>Publish</button>
+            <button class="btn btn-ghost" type="button">Save draft</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- RSVP ROSTER ---------- -->
+    <section class="tab-panel" data-tab="rsvp" hidden>
+      <div class="metrics four">
+        <div class="metric" style="--accent:#7fd8c4"><span class="eyebrow">Attending</span><span class="v fig">96</span><span class="f">Confirmed heads</span></div>
+        <div class="metric" style="--accent:#b3a3e0"><span class="eyebrow">Most likely</span><span class="v fig">11</span><span class="f">Still confirming</span></div>
+        <div class="metric" style="--accent:#f0c674"><span class="eyebrow">Guests &amp; kids</span><span class="v fig">21</span><span class="f">Plus-ones and children</span></div>
+        <div class="metric" style="--accent:#e9a49d"><span class="eyebrow">Declined</span><span class="v fig">8</span><span class="f">Cannot attend</span></div>
+      </div>
+
+      <div class="card">
+        <div class="between">
+          <div class="field" style="flex:1;min-width:220px"><input type="search" placeholder="Search the roster by name or message" /></div>
+          <button class="btn btn-secondary" type="button"><i data-i="download"></i>Export roster</button>
+        </div>
+        <div class="chips" data-group="rsvp">
+          <button class="chip" aria-pressed="true">All</button>
+          <button class="chip" aria-pressed="false">Attending</button>
+          <button class="chip" aria-pressed="false">Most likely</button>
+          <button class="chip" aria-pressed="false">Not sure yet</button>
+          <button class="chip" aria-pressed="false">Can't join</button>
+        </div>
+      </div>
+
+      <div class="grid2" id="rosterGrid"></div>
+    </section>
+
+    <!-- ---------- PHOTO WALL ---------- -->
+    <section class="tab-panel" data-tab="photowall" hidden>
+      <div class="metrics">
+        <div class="metric" style="--accent:#7fd8c4"><span class="eyebrow">Albums</span><span class="v fig">6</span><span class="f">2 created this week</span></div>
+        <div class="metric" style="--accent:#f0c674"><span class="eyebrow">Photos uploaded</span><span class="v fig">341</span><span class="f">By 47 contributors</span></div>
+        <div class="metric" style="--accent:#e9a49d"><span class="eyebrow">Awaiting review</span><span class="v fig">12</span><span class="f">Flagged or uncaptioned</span></div>
+      </div>
+
+      <div class="card">
+        <div class="between">
+          <div class="stack" style="gap:4px">
+            <h3>Albums</h3>
+            <span class="note">Deleting an album removes every photo inside it.</span>
+          </div>
+          <button class="btn btn-primary" type="button"><i data-i="plus"></i>New album</button>
+        </div>
+        <div class="grid2" id="albumGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="mobile-nav" id="mobileNav" aria-label="Primary"></nav>
+</div>
+</div>
+<style>
+  /* Stacked fallback for the two-rail announcements layout. Scoped to below
+     the breakpoint on purpose: a flat `.split` rule here would override the
+     >=700px @container rule above it, since container queries add no
+     specificity and this stylesheet comes later. */
+  @container app (max-width: 699.98px) {
+    .split { display: flex; flex-direction: column; gap: 22px; }
+  }
+  i[data-i] { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  i[data-i] svg { width: 1em; height: 1em; }
+  .btn i[data-i] svg { width: 14px; height: 14px; }
+  .desktop-nav button i[data-i] svg { width: 15px; height: 15px; }
+  .icon-btn i[data-i] svg { width: 13px; height: 13px; }
+  .sec-head .h i[data-i] svg { width: 18px; height: 18px; color: var(--gold-light); opacity: .85; }
+  .mobile-nav .ic i[data-i] svg { width: 17px; height: 17px; }
+  .pill i[data-i] svg, .badge i[data-i] svg { width: 11px; height: 11px; }
+</style>
+
+<script>
+/* ------------------------------------------------------------------
+   Mock wiring only. No app code is touched by any of this.
+   ------------------------------------------------------------------ */
+var P = {
+  shield:   '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  clock:    '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  rotate:   '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',
+  calendar: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  pin:      '<path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  plus:     '<path d="M12 5v14M5 12h14"/>',
+  pencil:   '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  trash:    '<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>',
+  check:    '<path d="M20 6 9 17l-5-5"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/>',
+  bell:     '<path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+  clipboard:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h6"/>',
+  receipt:  '<path d="M4 2v20l2.5-1.5L9 22l2.5-1.5L14 22l2.5-1.5L19 22V2l-2.5 1.5L14 2l-2.5 1.5L9 2 6.5 3.5z"/><path d="M8 8h8M8 12h8"/>',
+  users:    '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/>',
+  images:   '<rect x="3" y="3" width="14" height="14" rx="2"/><path d="M21 7v12a2 2 0 0 1-2 2H7"/><circle cx="8" cy="8" r="1.6"/><path d="M3 14l3.5-3.5 4 4"/>',
+  eye:      '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>'
+};
+function svg(n) {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" ' +
+         'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (P[n] || '') + '</svg>';
+}
+function paintIcons(root) {
+  (root || document).querySelectorAll('i[data-i]').forEach(function (el) {
+    if (!el.firstChild) el.innerHTML = svg(el.getAttribute('data-i'));
+  });
+}
+
+/* ---- the six organizer tabs, mirroring ADMIN_NAV_TABS in nav/AppNav.tsx.
+   `short` is the shortened mobile label proposed in TYPOGRAPHY_SYSTEM.md §11,
+   which is what lets the bottom bar sit at the 8px nav step without crowding. */
+var TABS = [
+  { key: 'event',        label: 'Event Planning', short: 'Event',   icon: 'calendar',  title: 'Event Planning',    sub: 'Set the date, venue, and the details that publish straight to the attendee banner.' },
+  { key: 'responses',    label: 'Surveys',        short: 'Surveys', icon: 'clipboard', title: 'Survey Responses',  sub: 'Every submission, the pledge parsed out of it, and who has not paid yet.' },
+  { key: 'funds',        label: 'Ledger',         short: 'Ledger',  icon: 'receipt',   title: 'Operating Ledger',  sub: 'Pledges in, planned expenses out, and what the batch fund actually has left.' },
+  { key: 'announcements',label: 'Announcements',  short: 'Posts',   icon: 'bell',      title: 'Announcements',     sub: 'Write, tag, and pin the posts that land on the batch board.' },
+  { key: 'rsvp',         label: 'RSVP Roster',    short: 'RSVP',    icon: 'users',     title: 'RSVP Roster',       sub: 'Confirmed heads, guests, and the batchmates still deciding.' },
+  { key: 'photowall',    label: 'Photo Wall',     short: 'Photos',  icon: 'images',    title: 'Photo Wall',        sub: 'Moderate albums and uploads before reunion day projects them.' }
+];
+
+var active = 'event';
+
+function renderNav() {
+  var d = document.getElementById('desktopNav');
+  var m = document.getElementById('mobileNav');
+  d.innerHTML = TABS.map(function (t) {
+    return '<button type="button" data-key="' + t.key + '"' + (t.key === active ? ' aria-current="page"' : '') +
+           '><i data-i="' + t.icon + '"></i><span>' + t.label + '</span></button>';
+  }).join('');
+  m.innerHTML = TABS.map(function (t) {
+    return '<button type="button" data-key="' + t.key + '"' + (t.key === active ? ' aria-current="page"' : '') +
+           '><span class="ic"><i data-i="' + t.icon + '"></i></span><span class="lb">' + t.short + '</span></button>';
+  }).join('');
+  [d, m].forEach(function (nav) {
+    nav.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () { select(b.getAttribute('data-key')); });
+    });
+  });
+  paintIcons(d); paintIcons(m);
+}
+
+function select(key) {
+  active = key;
+  var t = TABS.filter(function (x) { return x.key === key; })[0];
+  document.getElementById('heroTitle').textContent = t.title;
+  document.getElementById('heroSub').textContent = t.sub;
+  document.querySelectorAll('.tab-panel').forEach(function (p) {
+    p.hidden = p.getAttribute('data-tab') !== key;
+  });
+  renderNav();
+  if (location.hash !== '#' + key) history.replaceState(null, '', '#' + key);
+  document.getElementById('stage').scrollTop = 0;
+  document.getElementById('app').scrollTop = 0;
+}
+
+/* ---- sample rows -------------------------------------------------- */
+var RESPONSES = [
+  { n: 'Maria Isabel Santos', s: 'Section A', a: 'attending', al: 'Attending',   p: '₱8,000',  tier: 'Gold tier',    pay: 'Fully Paid',        sk: 'Photography, Emcee' },
+  { n: 'Paolo Reyes',         s: 'Section B', a: 'likely',    al: 'Most likely', p: '₱5,000',  tier: 'Silver tier',  pay: 'Partially Paid',    sk: 'Sound system (in-kind)' },
+  { n: 'Grace Villanueva',    s: 'Section C', a: 'attending', al: 'Attending',   p: '₱12,000', tier: 'Platinum tier',pay: 'Fully Paid',        sk: 'Program design, Host' },
+  { n: 'Dennis Ocampo',       s: 'Section A', a: 'maybe',     al: 'Not sure yet',p: '₱2,000',  tier: 'Base tier',    pay: 'Unpaid / Pledged',  sk: '—' },
+  { n: 'Aileen Cruz',         s: 'Section D', a: 'attending', al: 'Attending',   p: '₱6,500',  tier: 'Silver tier',  pay: 'Fully Paid',        sk: 'Catering contact' },
+  { n: 'Ramon delos Reyes',   s: 'Section B', a: 'decline',   al: 'Cannot attend',p: '₱0',     tier: '',             pay: '',                  sk: '—' }
+];
+function payCell(v) {
+  if (!v) return '<span class="note">—</span>';
+  return '<select><option' + (v === 'Unpaid / Pledged' ? ' selected' : '') + '>Unpaid / Pledged</option>' +
+         '<option' + (v === 'Partially Paid' ? ' selected' : '') + '>Partially Paid</option>' +
+         '<option' + (v === 'Fully Paid' ? ' selected' : '') + '>Fully Paid</option></select>';
+}
+function renderResponses() {
+  document.getElementById('responsesBody').innerHTML = RESPONSES.map(function (r) {
+    return '<tr>' +
+      '<td><div class="nm">' + r.n + '</div><div class="sub">' + r.s + '</div></td>' +
+      '<td><span class="badge b-' + r.a + '">' + r.al + '</span></td>' +
+      '<td><span class="money">' + r.p + '</span>' + (r.tier ? '<div class="sub">' + r.tier + '</div>' : '') + '</td>' +
+      '<td>' + payCell(r.pay) + '</td>' +
+      '<td class="muted">' + r.sk + '</td>' +
+      '<td><div class="row" style="gap:5px;flex-wrap:nowrap">' +
+        '<button class="icon-btn" title="Inspect full response"><i data-i="eye"></i></button>' +
+        '<button class="icon-btn" title="Delete response"><i data-i="trash"></i></button>' +
+      '</div></td></tr>';
+  }).join('');
+  document.getElementById('responsesCards').innerHTML = RESPONSES.map(function (r) {
+    return '<div class="row-card">' +
+      '<div class="between"><span class="nm" style="font-family:var(--font-serif);font-size:var(--text-heading)">' + r.n + '</span>' +
+        '<span class="badge b-' + r.a + '">' + r.al + '</span></div>' +
+      '<div class="kv"><span class="k">Pledge</span><span class="money">' + r.p + '</span></div>' +
+      '<div class="kv"><span class="k">Section</span><span class="t-body muted">' + r.s + '</span></div>' +
+      '<div class="kv"><span class="k">Skills</span><span class="t-body muted">' + r.sk + '</span></div>' +
+      (r.pay ? '<div class="field">' + payCell(r.pay) + '</div>' : '') +
+      '<div class="row" style="gap:6px"><button class="btn btn-secondary" style="flex:1"><i data-i="eye"></i>Inspect</button>' +
+      '<button class="btn btn-danger"><i data-i="trash"></i></button></div>' +
+    '</div>';
+  }).join('');
+}
+
+var LEDGER = [
+  { n: 'Venue reservation (50% down)', c: 'Venue',         a: '₱192,500', d: 'Apr 30, 2027', s: 'attending', sl: 'Committed' },
+  { n: 'Catering — buffet, 130 pax', c: 'Food',       a: '₱91,000',  d: 'Nov 20, 2026', s: 'maybe',     sl: 'Quoted' },
+  { n: 'Souvenir shirts',             c: 'Merch',         a: '₱28,000',  d: 'TBD',          s: 'likely',    sl: 'Estimated' },
+  { n: 'AV and lights top-up',        c: 'Production',    a: '₱18,000',  d: 'Nov 30, 2026', s: 'maybe',     sl: 'Quoted' },
+  { n: 'Printing and signage',        c: 'Collateral',    a: '₱8,000',   d: 'TBD',          s: 'likely',    sl: 'Estimated' }
+];
+function renderLedger() {
+  document.getElementById('ledgerBody').innerHTML = LEDGER.map(function (e) {
+    return '<tr>' +
+      '<td><div class="nm">' + e.n + '</div></td>' +
+      '<td><span class="badge b-neutral">' + e.c + '</span></td>' +
+      '<td><span class="money">' + e.a + '</span></td>' +
+      '<td class="muted">' + e.d + '</td>' +
+      '<td><span class="badge b-' + e.s + '">' + e.sl + '</span></td>' +
+      '<td><div class="row" style="gap:5px;flex-wrap:nowrap">' +
+        '<button class="icon-btn" title="Edit"><i data-i="pencil"></i></button>' +
+        '<button class="icon-btn" title="Delete"><i data-i="trash"></i></button>' +
+      '</div></td></tr>';
+  }).join('');
+  document.getElementById('ledgerCards').innerHTML = LEDGER.map(function (e) {
+    return '<div class="row-card">' +
+      '<div class="between"><span class="nm" style="font-family:var(--font-serif);font-size:var(--text-heading)">' + e.n + '</span>' +
+      '<span class="money">' + e.a + '</span></div>' +
+      '<div class="row" style="gap:6px"><span class="badge b-neutral">' + e.c + '</span><span class="badge b-' + e.s + '">' + e.sl + '</span></div>' +
+      '<div class="kv"><span class="k">Target date</span><span class="t-body muted">' + e.d + '</span></div>' +
+    '</div>';
+  }).join('');
+}
+
+var ROSTER = [
+  { n: 'Maria Isabel Santos', s: 'attending', sl: 'Attending',    q: 'Excited to see everyone. Twenty years!', c: '+1 guest · 2 kids', d: 'Mar 12' },
+  { n: 'Paolo Reyes',         s: 'likely',    sl: 'Most likely',  q: 'Depends on a work trip that week, but I am 90% in.', c: 'No companions', d: 'Mar 11' },
+  { n: 'Grace Villanueva',    s: 'attending', sl: 'Attending',    q: 'Flying in from Singapore. Book me for the program.', c: '+1 guest', d: 'Mar 10' },
+  { n: 'Dennis Ocampo',       s: 'maybe',     sl: 'Not sure yet', q: 'Waiting on the final date before I commit.', c: 'No companions', d: 'Mar 09' },
+  { n: 'Aileen Cruz',         s: 'attending', sl: 'Attending',    q: 'Count me in for the food committee too.', c: '+2 kids', d: 'Mar 08' },
+  { n: 'Ramon delos Reyes',   s: 'decline',   sl: "Can't join",   q: 'Out of the country that whole quarter. Next time!', c: '—', d: 'Mar 06' }
+];
+function renderRoster() {
+  document.getElementById('rosterGrid').innerHTML = ROSTER.map(function (r) {
+    return '<div class="card tight">' +
+      '<div class="between"><span style="font-family:var(--font-serif);font-size:var(--text-heading);line-height:1.2">' + r.n + '</span>' +
+      '<span class="badge b-' + r.s + '">' + r.sl + '</span></div>' +
+      '<p class="quote" style="margin:0">&ldquo;' + r.q + '&rdquo;</p>' +
+      '<div class="between"><span class="eyebrow muted2">' + r.c + '</span><span class="eyebrow muted2">' + r.d + '</span></div>' +
+    '</div>';
+  }).join('');
+}
+
+var ALBUMS = [
+  { t: 'Graduation Day 2007', n: 92,  by: 'Grace V.' },
+  { t: 'Intramurals ’05', n: 64, by: 'Paolo R.' },
+  { t: 'Field Trip — Baguio', n: 118, by: 'Maria S.' },
+  { t: 'Reunion Prep Meetups', n: 67, by: 'Chris C.' }
+];
+function renderAlbums() {
+  document.getElementById('albumGrid').innerHTML = ALBUMS.map(function (a) {
+    return '<div class="album">' +
+      '<div class="thumb"><i data-i="images" style="font-size:22px"></i></div>' +
+      '<div class="meta">' +
+        '<span style="font-family:var(--font-serif);font-size:var(--text-heading);line-height:1.2">' + a.t + '</span>' +
+        '<span class="eyebrow muted2">' + a.n + ' photos · ' + a.by + '</span>' +
+        '<div class="row" style="gap:6px;margin-top:4px">' +
+          '<button class="btn btn-secondary" style="flex:1"><i data-i="pencil"></i>Rename</button>' +
+          '<button class="btn btn-danger"><i data-i="trash"></i></button>' +
+        '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+/* ---- small interactions ------------------------------------------- */
+function pickRadio(el) {
+  el.parentElement.querySelectorAll('.radio').forEach(function (r) { r.setAttribute('data-on', 'false'); });
+  el.setAttribute('data-on', 'true');
+}
+function flashSaved(btn) {
+  var s = btn.parentElement.querySelector('.saved');
+  s.hidden = false;
+  setTimeout(function () { s.hidden = true; }, 3000);
+}
+document.addEventListener('click', function (e) {
+  var chip = e.target.closest('.chip');
+  if (chip) {
+    chip.parentElement.querySelectorAll('.chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+    chip.setAttribute('aria-pressed', 'true');
+  }
+});
+
+/* ---- control panel ------------------------------------------------- */
+document.querySelectorAll('.controls .seg').forEach(function (seg) {
+  seg.addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    seg.querySelectorAll('button').forEach(function (x) { x.setAttribute('data-on', 'false'); });
+    b.setAttribute('data-on', 'true');
+    var ctl = seg.getAttribute('data-ctl'), v = b.getAttribute('data-v');
+    if (ctl === 'view')  document.getElementById('stage').setAttribute('data-view', v);
+    if (ctl === 'green') document.getElementById('app').setAttribute('data-green', v);
+    if (ctl === 'nav')   document.getElementById('app').setAttribute('data-nav', v);
+  });
+});
+
+renderResponses(); renderLedger(); renderRoster(); renderAlbums();
+/* Deep-linkable tabs: #responses, #funds, #rsvp, ... so a specific screen can
+   be shared or reloaded straight into view. */
+function fromHash() {
+  var k = (location.hash || '').replace('#', '');
+  return TABS.some(function (t) { return t.key === k; }) ? k : 'event';
+}
+renderNav(); select(fromHash()); paintIcons();
+window.addEventListener('hashchange', function () { select(fromHash()); });
+</script>
+</body>
+</html>

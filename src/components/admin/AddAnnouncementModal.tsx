@@ -78,7 +78,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
 
         <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
           <div>
-            <h2 className="text-heading font-serif font-bold text-on-surface">
+            <h2 className="font-serif text-heading text-on-surface">
               {existingAnnouncement ? 'Edit Announcement' : 'Create Batch Announcement'}
             </h2>
             <p className="text-body text-on-surface-variant">
@@ -89,14 +89,14 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded text-outline hover:text-on-surface hover:bg-surface-container"
+            className="btn-icon btn-icon-ghost"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="p-3 bg-error-container text-on-error-container text-body font-medium rounded border border-error-container">
+          <div className="p-3 bg-error-container text-on-error-container text-body rounded border border-error-container">
             {error}
           </div>
         )}
@@ -104,7 +104,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
 
           <div>
-            <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Title <span className="text-error">*</span>
             </label>
             <input
@@ -119,7 +119,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+              <label className="block text-label font-semibold text-on-surface-variant mb-1">
                 Category Tag
               </label>
               <select
@@ -137,7 +137,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+              <label className="block text-label font-semibold text-on-surface-variant mb-1">
                 Author / Department
               </label>
               <input
@@ -151,7 +151,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">
+            <label className="block text-label font-semibold text-on-surface-variant mb-1">
               Caption & Body Content <span className="text-error">*</span>
             </label>
             <textarea
@@ -166,7 +166,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
 
           {/* Image Upload & Presets */}
           <div className="space-y-2 p-4 bg-surface-container-low rounded border border-outline-variant/30">
-            <label className="block text-label font-bold text-on-surface-variant uppercase tracking-wide">
+            <label className="block text-label font-semibold text-on-surface-variant">
               Cover Image (Upload or Pick Preset)
             </label>
 
@@ -199,7 +199,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3 py-2 rounded bg-surface-container-lowest border border-secondary/30 hover:bg-surface-container text-on-surface-variant text-body font-semibold flex items-center gap-1.5 shadow-soft"
+                className="btn btn-secondary"
               >
                 <Upload className="w-3.5 h-3.5 text-secondary" />
                 <span>Upload From Device</span>
@@ -223,7 +223,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
                     key={p.label}
                     type="button"
                     onClick={() => setImageUrl(p.url)}
-                    className="text-label px-2 py-1 bg-surface-container-lowest border border-outline-variant/40 hover:border-secondary rounded text-on-surface-variant"
+                    className="btn btn-secondary btn-sm"
                   >
                     {p.label}
                   </button>
@@ -236,7 +236,7 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
           <div className="flex items-center justify-between p-3 rounded bg-primary-container/15 border border-primary-container/40">
             <div className="flex items-center gap-2">
               <Pin className="w-4 h-4 text-primary" />
-              <span className="text-body font-bold text-on-primary-container">Pin Announcement to Top</span>
+              <span className="text-body font-semibold text-on-primary-container">Pin Announcement to Top</span>
             </div>
             <input
               type="checkbox"
@@ -250,13 +250,13 @@ export const AddAnnouncementModal: React.FC<AddAnnouncementModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded border border-secondary/30 text-on-surface-variant text-body font-semibold hover:bg-surface-container"
+              className="btn btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded bg-primary hover:opacity-90 text-on-primary text-body font-bold shadow-soft"
+              className="btn btn-primary"
             >
               {existingAnnouncement ? 'Save Announcement' : 'Publish Announcement'}
             </button>

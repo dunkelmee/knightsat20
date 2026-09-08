@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { ShieldCheck, ShieldOff, Trash2, Users } from 'lucide-react';
+import { Eye, ShieldCheck, ShieldOff, Trash2, Users } from 'lucide-react';
 import { AdminUserSummary } from '../../types';
 import { ApiError, deleteSuperadminUser, fetchSuperadminUsers, updateUserOrganizerStatus } from '../../api/client';
 import { DeleteUserModal } from './DeleteUserModal';
+import { UserDetailModal } from './UserDetailModal';
 
 export const UsersTab: React.FC = () => {
   const [users, setUsers] = useState<AdminUserSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userPendingDelete, setUserPendingDelete] = useState<AdminUserSummary | null>(null);
+  const [userBeingViewed, setUserBeingViewed] = useState<AdminUserSummary | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState('');
 
@@ -54,7 +56,7 @@ export const UsersTab: React.FC = () => {
     <div className="bg-surface-container-lowest rounded p-4 sm:p-5 border border-outline-variant/30 shadow-soft space-y-3">
       <div className="flex items-center gap-2 pb-3 border-b border-outline-variant/20">
         <Users className="w-4 h-4 text-primary" />
-        <h3 className="text-heading font-serif font-semibold text-on-surface">
+        <h3 className="font-serif text-heading text-on-surface">
           All Users ({users.length})
         </h3>
       </div>
@@ -70,14 +72,14 @@ export const UsersTab: React.FC = () => {
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-serif font-semibold text-heading text-on-surface truncate">{user.fullName}</span>
+                  <span className="font-serif text-heading text-on-surface truncate">{user.fullName}</span>
                   {user.isOrganizer && (
-                    <span className="flex-shrink-0 text-label font-bold px-1.5 py-0.5 rounded-full bg-primary-container/15 text-primary">
+                    <span className="flex-shrink-0 eyebrow px-1.5 py-0.5 rounded-full bg-primary-container/15 text-primary">
                       ORGANIZER
                     </span>
                   )}
                   {!user.onboardingCompleted && (
-                    <span className="flex-shrink-0 text-label font-semibold px-1.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant">
+                    <span className="flex-shrink-0 eyebrow px-1.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant">
                       Setup pending
                     </span>
                   )}
@@ -91,13 +93,19 @@ export const UsersTab: React.FC = () => {
               <div className="flex-shrink-0 flex flex-col items-stretch gap-1.5">
                 <button
                   type="button"
+                  onClick={() => setUserBeingViewed(user)}
+                  title="View profile details"
+                  className="btn btn-secondary btn-sm w-full"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>View</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => handleToggle(user)}
                   title={user.isOrganizer ? 'Revoke organizer access' : 'Grant organizer access'}
-                  className={`flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded text-body font-semibold transition-colors ${
-                    user.isOrganizer
-                      ? 'bg-error-container text-on-error-container hover:opacity-80'
-                      : 'bg-primary text-on-primary hover:opacity-90'
-                  }`}
+                  className={`btn btn-sm w-full ${user.isOrganizer ? 'btn-danger' : 'btn-primary'}`}
                 >
                   {user.isOrganizer ? <ShieldOff className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
                   <span>{user.isOrganizer ? 'Revoke' : 'Grant'}</span>
@@ -108,7 +116,7 @@ export const UsersTab: React.FC = () => {
                   onClick={() => openDeleteModal(user)}
                   disabled={deletingId === user.id}
                   title="Delete user and all their data"
-                  className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded text-body font-semibold border border-error text-error hover:bg-error-container/40 disabled:opacity-60 transition-colors"
+                  className="btn btn-secondary btn-sm w-full"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>{deletingId === user.id ? 'Deleting…' : 'Delete'}</span>
@@ -117,6 +125,10 @@ export const UsersTab: React.FC = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {userBeingViewed && (
+        <UserDetailModal user={userBeingViewed} onClose={() => setUserBeingViewed(null)} />
       )}
 
       {userPendingDelete && (

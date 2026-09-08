@@ -26,6 +26,26 @@ def require_superadmin(request: Request) -> None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Superadmin login required")
 
 
+async def require_user_or_superadmin(request: Request, db: AsyncSession = Depends(get_db)) -> None:
+    """Router-level gate for routers a superadmin must also be able to read.
+
+    `get_organizer_actor` below already admits the superadmin, but a
+    router-level `Depends(get_current_user)` runs before the endpoint's own
+    dependency and rejects them first: the superadmin is an env-configured
+    identity, not a `User` row, so it has no SESSION_USER_ID_KEY. That made
+    the superadmin branch of `get_organizer_actor` unreachable on any router
+    guarded that way.
+
+    This only widens the router-level gate. Endpoints that name
+    `get_current_user` in their own signature still require a real account,
+    so anything acting *as* a user (creating an RSVP, uploading a photo)
+    continues to reject the superadmin exactly as before.
+    """
+    if is_superadmin(request):
+        return
+    await get_current_user(request, db)
+
+
 async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)) -> User:
     user_id = request.session.get(SESSION_USER_ID_KEY)
     if not user_id:

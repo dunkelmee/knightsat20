@@ -71,7 +71,8 @@ async def _get_user_by_email(db: AsyncSession, email: str) -> User | None:
     return result.scalars().first()
 
 
-def _to_profile_out(user: User) -> UserProfileOut:
+def to_profile_out(user: User) -> UserProfileOut:
+    """Shared with the superadmin router, which serves the same shape."""
     return UserProfileOut(
         id=user.id,
         email=user.email,
@@ -158,7 +159,7 @@ async def verify(payload: VerifyOtpRequest, request: Request, db: AsyncSession =
     await db.commit()
 
     return AuthSessionOut(
-        user=_to_profile_out(user), has_submitted_survey=await _has_submitted_survey(db, user.id)
+        user=to_profile_out(user), has_submitted_survey=await _has_submitted_survey(db, user.id)
     )
 
 
@@ -178,7 +179,7 @@ async def session_status(request: Request, db: AsyncSession = Depends(get_db)):
     if not user:
         return AuthSessionOut(user=None)
     return AuthSessionOut(
-        user=_to_profile_out(user), has_submitted_survey=await _has_submitted_survey(db, user.id)
+        user=to_profile_out(user), has_submitted_survey=await _has_submitted_survey(db, user.id)
     )
 
 
@@ -202,7 +203,7 @@ async def update_profile(
     await db.refresh(current_user)
 
     return AuthSessionOut(
-        user=_to_profile_out(current_user),
+        user=to_profile_out(current_user),
         has_submitted_survey=await _has_submitted_survey(db, current_user.id),
     )
 

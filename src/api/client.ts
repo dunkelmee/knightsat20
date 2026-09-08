@@ -154,6 +154,10 @@ export const superadminLogin = (email: string, password: string) =>
 export const fetchSuperadminSession = () =>
   apiFetch<{ isSuperadmin: boolean }>('/auth/superadmin-session');
 export const fetchSuperadminUsers = () => apiFetch<AdminUserSummary[]>('/superadmin/users');
+// The list above is deliberately lean; the full profile is fetched per row
+// when the detail modal opens.
+export const fetchSuperadminUser = (id: string) =>
+  apiFetch<UserProfile>(`/superadmin/users/${id}`);
 export const updateUserOrganizerStatus = (id: string, isOrganizer: boolean) =>
   patch<AdminUserSummary>(`/superadmin/users/${id}/organizer`, { isOrganizer });
 export const deleteSuperadminUser = (id: string, password: string) =>
