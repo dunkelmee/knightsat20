@@ -81,7 +81,7 @@ const PhotoTile: React.FC<{ url: string | null | undefined; label: string; then?
 };
 
 const DirectoryCardSkeleton: React.FC = () => (
-  <div className="bg-surface-container-lowest rounded p-3 shadow-soft animate-pulse">
+  <div className="bg-surface-container-low rounded p-3 shadow-soft animate-pulse">
     <div className="flex gap-2">
       <div className="flex-1 aspect-square rounded bg-surface-container-high" />
       <div className="flex-1 aspect-square rounded bg-surface-container-high" />
@@ -101,7 +101,7 @@ const DirectoryCard: React.FC<{ person: DirectoryPerson }> = ({ person }) => {
     (section): section is string => Boolean(section)
   );
   return (
-    <div className="relative p-3 bg-surface-container-lowest shadow-soft flex flex-col gap-2.5">
+    <div className="relative p-3 bg-surface-container-low shadow-soft flex flex-col gap-2.5">
       <span
         className="absolute top-2 right-2 z-10 w-2.5 h-2.5 rounded-full"
         style={{ background: status.dot, boxShadow: '0 0 0 2px #fdfaf2' }}
@@ -308,7 +308,7 @@ export const DirectorySection: React.FC = () => {
           onClick={() => setIsFilterSheetOpen(false)}
         >
           <div
-            className="w-full max-w-md max-h-[80vh] overflow-y-auto bg-surface-container-lowest rounded-t-2xl rounded-b-md p-4.5 shadow-soft space-y-3.5"
+            className="w-full max-w-md max-h-[80vh] overflow-y-auto bg-surface-container-low rounded-t-2xl rounded-b-md p-4.5 shadow-soft space-y-3.5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-2.5">

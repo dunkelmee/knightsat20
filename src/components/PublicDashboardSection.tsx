@@ -82,7 +82,7 @@ export const PublicDashboardSection: React.FC<PublicDashboardSectionProps> = ({
   );
 
   const scheduleCard = (
-    <div className="rounded bg-surface-container-lowest shadow-soft p-5 space-y-3.5">
+    <div className="rounded bg-surface-container-low shadow-soft p-5 space-y-3.5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="font-serif text-heading text-on-surface">Official schedule</span>
         <span
@@ -134,25 +134,28 @@ export const PublicDashboardSection: React.FC<PublicDashboardSectionProps> = ({
   return (
     <div id="public-dashboard-container" className="max-w-5xl @min-[700px]/app:max-w-[1180px] mx-auto py-6 px-4 @min-[700px]/app:px-8 space-y-5">
 
-      {/* Balance hero */}
-      <div className="relative overflow-hidden rounded-3xl p-5.5" style={{ background: 'linear-gradient(150deg,#14211d,#0b1a16)' }}>
-        <div className="absolute -top-[40%] -right-[10%] w-[56%] h-[180%] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle,rgba(18,120,102,.5),transparent 68%)' }} />
-        <div className="relative flex flex-wrap gap-5 items-end justify-between">
+      {/* Balance hero — an ordinary paper card like the rest of the attendee
+          view. It used to be a dark slab with its own green blob; the ink
+          moved to Batch Green and the two glass tiles to parchment. No halo
+          here: the headcount card on the board is the one that gets it, and
+          one glowing card per screen is what makes it read as special. */}
+      <div className="rounded-3xl p-5.5 bg-surface-container-low border border-outline-variant/50 shadow-soft">
+        <div className="flex flex-wrap gap-5 items-end justify-between">
           <div className="flex flex-col gap-1.5">
-            <span className="font-mono text-label tracking-[0.16em] uppercase text-[#f6e6bf]/60">Net running balance</span>
-            <span className="font-serif text-display leading-none text-[#f6e6bf]">{formatPHP(runningBalance)}</span>
-            <span className="text-label text-white/55">{runningBalance >= 0 ? 'Projected budget surplus' : 'Pledges needed for full budget'}</span>
+            <span className="eyebrow text-on-surface-variant">Net running balance</span>
+            <span className="font-serif text-display leading-none text-primary">{formatPHP(runningBalance)}</span>
+            <span className="text-label text-on-surface-variant">{runningBalance >= 0 ? 'Projected budget surplus' : 'Pledges needed for full budget'}</span>
           </div>
           <div className="flex gap-2.5 flex-wrap">
-            <div className="min-w-[128px] p-3.5 rounded-2xl bg-white/[0.08] backdrop-blur-md border border-white/15 flex flex-col gap-1">
-              <span className="font-mono text-label tracking-[0.14em] uppercase text-white/50">Total pledges</span>
-              <span className="font-serif text-heading text-[#7fd8c4]">{formatPHP(totalPledges)}</span>
-              <span className="text-label text-white/40">From {stats.pledgingCount} responses</span>
+            <div className="min-w-[128px] p-3.5 rounded-2xl bg-surface-container border border-outline-variant/50 flex flex-col gap-1">
+              <span className="eyebrow text-on-surface-variant">Total pledges</span>
+              <span className="font-serif text-heading text-primary">{formatPHP(totalPledges)}</span>
+              <span className="text-label text-on-surface-variant">From {stats.pledgingCount} responses</span>
             </div>
-            <div className="min-w-[128px] p-3.5 rounded-2xl bg-white/[0.08] backdrop-blur-md border border-white/15 flex flex-col gap-1">
-              <span className="font-mono text-label tracking-[0.14em] uppercase text-white/50">Planned expenses</span>
-              <span className="font-serif text-heading text-[#f6e6bf]">{formatPHP(totalExpenses)}</span>
-              <span className="text-label text-white/40">Across {expenses.length} receipts</span>
+            <div className="min-w-[128px] p-3.5 rounded-2xl bg-surface-container border border-outline-variant/50 flex flex-col gap-1">
+              <span className="eyebrow text-on-surface-variant">Planned expenses</span>
+              <span className="font-serif text-heading text-secondary">{formatPHP(totalExpenses)}</span>
+              <span className="text-label text-on-surface-variant">Across {expenses.length} receipts</span>
             </div>
           </div>
         </div>
@@ -189,7 +192,7 @@ export const PublicDashboardSection: React.FC<PublicDashboardSectionProps> = ({
                 {expenses.map((e) => {
                   const st = STATUS_STYLE[e.status];
                   return (
-                    <div key={e.id} className="p-4 bg-surface-container-lowest shadow-soft flex flex-col gap-2" style={{ borderTop: `3px solid ${st.fg}` }}>
+                    <div key={e.id} className="p-4 bg-surface-container-low shadow-soft flex flex-col gap-2" style={{ borderTop: `3px solid ${st.fg}` }}>
                       <div className="flex items-baseline justify-between gap-2">
                         <span className="font-mono text-label tracking-[0.14em] uppercase text-on-surface-variant/60">{e.category}</span>
                         <span className="px-2.5 py-0.5 rounded-full font-mono text-label font-semibold tracking-wide uppercase" style={{ background: st.bg, color: st.fg, border: `1px solid ${st.bd}` }}>

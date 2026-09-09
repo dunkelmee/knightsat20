@@ -65,7 +65,7 @@ const pillClass = (active: boolean, size: PillSize = 'default') =>
       : 'bg-black/[0.025] border border-outline-variant/40 text-on-surface-variant'
   }`;
 
-const cardClass = 'bg-surface-container-lowest rounded p-4.5 sm:p-5 @min-[700px]/app:px-5 @min-[700px]/app:py-4.5 shadow-soft space-y-3';
+const cardClass = 'bg-surface-container-low rounded p-4.5 sm:p-5 @min-[700px]/app:px-5 @min-[700px]/app:py-4.5 shadow-soft space-y-3';
 
 // Every numbered question renders its heading through this, so the type stays
 // identical across all three steps — serif for the question, mono for a badge,
@@ -332,7 +332,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
   if (isSubmitted) {
     return (
       <div id="survey-success-container" className="max-w-lg mx-auto py-10 px-4">
-        <div className="relative bg-surface-container-lowest rounded-xl shadow-soft p-7 text-center space-y-3.5">
+        <div className="relative bg-surface-container-low rounded-xl shadow-soft p-7 text-center space-y-3.5">
           <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 -rotate-3 w-20 h-6 bg-[#f6e6bf]/75 border border-white/50" />
 
           <h2 className="font-serif text-display leading-none text-on-surface">

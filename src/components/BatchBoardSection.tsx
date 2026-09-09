@@ -175,14 +175,17 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
           </div>
         ) : (
           <div className="grid gap-5 grid-cols-1 @min-[640px]/app:grid-cols-2 @min-[700px]/app:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-            {sortedAnnouncements.map((item, i) => (
+            {sortedAnnouncements.map((item) => (
+              /* One colour for every card. This used to rotate three warm
+                 tones by index — #fdfaf2 / #f8f3e4 / #f9f2e2, the last of
+                 which was not a token at all — which made the grid reshuffle
+                 its own colours whenever an announcement was added, pinned or
+                 filtered, since the tone came from list position rather than
+                 from the card. */
               <article
                 key={item.id}
                 id={`announcement-card-${item.id}`}
-                className="relative flex flex-col gap-2 rounded p-4.5 shadow-soft"
-                style={{
-                  background: item.imageUrl ? '#fdfaf2' : (i % 3 === 0 ? '#fdfaf2' : i % 3 === 1 ? '#f8f3e4' : '#f9f2e2'),
-                }}
+                className="relative flex flex-col gap-2 rounded p-4.5 shadow-soft bg-surface-container-low"
               >
                 <span
                   className="absolute -top-1.5 left-5 w-3.5 h-3.5 rounded-full shadow"
@@ -292,7 +295,7 @@ export const BatchBoardSection: React.FC<BatchBoardSectionProps> = ({
                 return (
                   <div
                     key={r.id}
-                    className="p-4 rounded bg-surface-container-lowest shadow-soft flex flex-col gap-2"
+                    className="p-4 rounded bg-surface-container-low shadow-soft flex flex-col gap-2"
                     style={{ borderTop: `3px solid ${st.edge}` }}
                   >
                     <div className="flex items-center gap-2.5">

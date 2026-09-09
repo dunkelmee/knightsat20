@@ -171,7 +171,7 @@ export const AlbumDetail: React.FC<AlbumDetailProps> = ({ albumId, currentUser, 
                 key={photo.id}
                 type="button"
                 onClick={() => setLightboxIndex(i)}
-                className="relative p-2 pb-6.5 bg-surface-container-lowest shadow-soft"
+                className="relative p-2 pb-6.5 bg-surface-container-low shadow-soft"
               >
                 <img src={photo.thumbUrl} alt={photo.caption || ''} className="w-full aspect-square object-cover" />
                 {photo.caption && (

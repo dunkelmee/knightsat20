@@ -35,7 +35,7 @@ export const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, onC
   return (
     <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="w-full max-w-sm bg-surface-container-lowest rounded-xl p-6 shadow-soft space-y-4"
+        className="w-full max-w-sm bg-surface-container-low rounded-xl p-6 shadow-soft space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">

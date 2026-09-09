@@ -54,7 +54,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({ photo, onCancel, onSav
   };
 
   return (
-    <div className="bg-surface-container-lowest rounded p-3.5 space-y-3">
+    <div className="bg-surface-container-low rounded p-3.5 space-y-3">
       <div className="space-y-1.5">
         <label htmlFor="photo-caption" className="font-mono text-label tracking-[0.14em] uppercase text-on-surface-variant/70">
           Caption
@@ -137,7 +137,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({ photo, onCancel, onSav
 
       {/* Sticky so Save stays reachable while scrolling a long list of
           batchmates — on a phone it would otherwise sit below the fold. */}
-      <div className="sticky bottom-0 -mx-3.5 -mb-3.5 px-3.5 py-3 bg-surface-container-lowest border-t border-outline-variant/30 flex items-center justify-end gap-2">
+      <div className="sticky bottom-0 -mx-3.5 -mb-3.5 px-3.5 py-3 bg-surface-container-low border-t border-outline-variant/30 flex items-center justify-end gap-2">
         <button
           type="button"
           onClick={onCancel}

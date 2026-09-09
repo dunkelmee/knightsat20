@@ -27,7 +27,7 @@ const AlbumCard: React.FC<{
     <button
       type="button"
       onClick={onOpen}
-      className="w-full relative text-left p-3.5 bg-surface-container-lowest rounded-sm shadow-soft flex flex-col gap-3"
+      className="w-full relative text-left p-3.5 bg-surface-container-low rounded-sm shadow-soft flex flex-col gap-3"
     >
       <div className="flex items-start gap-2.5">
         <span className="flex-1 font-serif text-heading leading-[1.15] text-on-surface">{album.title}</span>

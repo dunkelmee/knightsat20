@@ -12,10 +12,9 @@ interface HeadcountCardProps {
   rsvps: HeadcountRsvp[];
   // Which ground the card is standing on. `hero` and `surface` are both dark
   // green — the attendee hero and the back-office body — so the card is glass
-  // and borrows the ground's colour. `paper` is the attendee page body, which
-  // is parchment: there the card has to bring its own dark ground, the same
-  // way the Funds tab's balance hero does, because the figures and stat lines
-  // are cream and gold in every variant.
+  // and its ink is cream and gold. `paper` is the attendee page body: an
+  // ordinary white card like every other one there, with ink to match, and a
+  // halo of the hero's own colours as the one thing that marks it out.
   variant: 'hero' | 'surface' | 'paper';
   // Attendee only: the board also reports the fund and offers the RSVP CTA.
   batchFund?: string;
@@ -24,8 +23,14 @@ interface HeadcountCardProps {
 
 // Ring order, and the only place it is defined. Colours and labels come from
 // STATUS_EDGE, so a hue and a word mean the same thing here as on the
-// attendance wall — `onDark` because both of this card's grounds are dark.
+// attendance wall: `onDark` on the two dark grounds, `edge` on paper — the
+// same pair the wall itself switches between.
 const RING: RSVPRecord['status'][] = ['Attending', 'Most likely', 'Maybe', 'Decline'];
+
+// The hero's three ambient blobs (see TabHero's HeroBlobs). The literal
+// gradient stops behind them are all deep green and would glow nearly
+// monochrome; these are what actually give the hero its colour.
+const HERO_GLOW = 'linear-gradient(168deg,#12786a,#d6982d,#b0564f)';
 
 const R = 57;
 const CIRCUMFERENCE = 2 * Math.PI * R;
@@ -51,6 +56,18 @@ export const HeadcountCard: React.FC<HeadcountCardProps> = ({
   );
   const expected = inPlay.length + guests;
 
+  const onPaper = variant === 'paper';
+  const ink = {
+    arc: (status: RSVPRecord['status']) =>
+      onPaper ? STATUS_EDGE[status].edge : STATUS_EDGE[status].onDark,
+    track: onPaper ? 'rgba(20,33,29,.09)' : 'rgba(255,255,255,.12)',
+    figure: onPaper ? 'text-primary' : 'text-[#f6e6bf]',
+    caption: onPaper ? 'text-on-surface-variant' : 'text-[#f6e6bf]/62',
+    value: onPaper ? 'text-on-surface' : 'text-[#f2ece1]',
+    divider: onPaper ? 'border-on-surface/18' : 'border-white/22',
+    cta: onPaper ? 'bg-primary text-on-primary' : 'bg-[#f6e6bf] text-[#0d2620]',
+  };
+
   // Arcs are laid end to end around the ring by advancing the dash offset.
   let offset = 0;
   const arcs = counts.map((n, i) => {
@@ -63,7 +80,7 @@ export const HeadcountCard: React.FC<HeadcountCardProps> = ({
         cy="64"
         r={R}
         fill="none"
-        stroke={STATUS_EDGE[RING[i]].onDark}
+        stroke={ink.arc(RING[i])}
         strokeWidth="14"
         strokeDasharray={`${length} ${CIRCUMFERENCE - length}`}
         strokeDashoffset={-offset}
@@ -73,14 +90,14 @@ export const HeadcountCard: React.FC<HeadcountCardProps> = ({
     return arc;
   });
 
-  return (
+  const card = (
     <div
-      className={`rounded-2xl p-4 flex flex-col gap-3.5 ${
+      className={`relative rounded-2xl p-4 flex flex-col gap-3.5 ${
         variant === 'hero'
           ? 'backdrop-blur-xl bg-white/10 border border-white/20'
           : variant === 'surface'
             ? 'backdrop-blur-xl bg-surface-container-lowest border border-outline-variant/30 shadow-soft'
-            : 'bg-[linear-gradient(150deg,#14211d,#0b1a16)] border border-white/10 shadow-soft'
+            : 'bg-surface-container-low border border-outline-variant/50 shadow-soft'
       }`}
     >
       {/* Capped, not stretched. In the hero and back office this card is about
@@ -91,7 +108,7 @@ export const HeadcountCard: React.FC<HeadcountCardProps> = ({
         <div className="relative flex-none w-28 h-28 @min-[700px]/app:w-32 @min-[700px]/app:h-32">
           {/* -rotate-90 puts the first arc at 12 o'clock instead of 3. */}
           <svg viewBox="0 0 128 128" className="w-full h-full -rotate-90" aria-hidden="true">
-            <circle cx="64" cy="64" r={R} fill="none" stroke="rgba(255,255,255,.12)" strokeWidth="14" />
+            <circle cx="64" cy="64" r={R} fill="none" stroke={ink.track} strokeWidth="14" />
             {arcs}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-px">
@@ -100,10 +117,10 @@ export const HeadcountCard: React.FC<HeadcountCardProps> = ({
                 centre would shift with whichever digits are showing and the
                 number would wobble inside the ring as replies come in. The
                 -0.076em nudge corrects Playfair's lopsided em box. */}
-            <span className="font-serif text-display leading-none lining-nums tabular-nums text-[#f6e6bf] -translate-y-[0.076em]">
+            <span className={`font-serif text-display leading-none lining-nums tabular-nums -translate-y-[0.076em] ${ink.figure}`}>
               {totalResponses}
             </span>
-            <span className="eyebrow text-[#f6e6bf]/62">responses</span>
+            <span className={`eyebrow ${ink.caption}`}>responses</span>
           </div>
         </div>
 
@@ -116,11 +133,11 @@ export const HeadcountCard: React.FC<HeadcountCardProps> = ({
             const st = STATUS_EDGE[status];
             return (
               <div key={status} className={`flex items-center gap-2 ${counts[i] === 0 ? 'opacity-45' : ''}`}>
-                <span className="flex-none w-2.5 h-2.5 rounded-[3px]" style={{ background: st.onDark }} />
-                <span className="flex-1 min-w-0 eyebrow truncate" style={{ color: st.onDark }}>
+                <span className="flex-none w-2.5 h-2.5 rounded-[3px]" style={{ background: ink.arc(status) }} />
+                <span className="flex-1 min-w-0 eyebrow truncate" style={{ color: ink.arc(status) }}>
                   {st.label}
                 </span>
-                <span className="font-serif text-heading leading-none lining-nums tabular-nums text-[#f2ece1]">
+                <span className={`font-serif text-heading leading-none lining-nums tabular-nums ${ink.value}`}>
                   {counts[i]}
                 </span>
               </div>
@@ -129,31 +146,51 @@ export const HeadcountCard: React.FC<HeadcountCardProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 pt-2.5 border-t border-dashed border-white/22">
+      <div className={`flex flex-wrap items-center gap-3 pt-2.5 border-t border-dashed ${ink.divider}`}>
         <div className="flex flex-col gap-0.5">
-          <span className="eyebrow text-[#f6e6bf]/62">Guests &amp; kids</span>
-          <span className="font-serif text-heading lining-nums tabular-nums text-[#f2ece1]">{guests}</span>
+          <span className={`eyebrow ${ink.caption}`}>Guests &amp; kids</span>
+          <span className={`font-serif text-heading lining-nums tabular-nums ${ink.value}`}>{guests}</span>
         </div>
         <div className="flex flex-col gap-0.5">
-          <span className="eyebrow text-[#f6e6bf]/62">Expected headcount</span>
-          <span className="font-serif text-heading lining-nums tabular-nums text-[#f2ece1]">{expected}</span>
+          <span className={`eyebrow ${ink.caption}`}>Expected headcount</span>
+          <span className={`font-serif text-heading lining-nums tabular-nums ${ink.value}`}>{expected}</span>
         </div>
         {batchFund && (
           <div className="flex flex-col gap-0.5">
-            <span className="eyebrow text-[#f6e6bf]/62">Batch fund</span>
-            <span className="font-serif text-heading text-[#f2ece1]">{batchFund}</span>
+            <span className={`eyebrow ${ink.caption}`}>Batch fund</span>
+            <span className={`font-serif text-heading ${ink.value}`}>{batchFund}</span>
           </div>
         )}
         {action && (
           <button
             type="button"
             onClick={action.onClick}
-            className="ml-auto max-[380px]:w-full rounded-full bg-[#f6e6bf] text-[#0d2620] font-sans text-body font-bold px-5 py-3 @min-[700px]/app:px-3.5 @min-[700px]/app:py-2.5"
+            className={`ml-auto max-[380px]:w-full rounded-full font-sans text-body font-bold px-5 py-3 @min-[700px]/app:px-3.5 @min-[700px]/app:py-2.5 ${ink.cta}`}
           >
             {action.label}
           </button>
         )}
       </div>
+    </div>
+  );
+
+  if (!onPaper) return card;
+
+  // The halo is a blurred copy of the hero's palette sitting behind the card,
+  // as a SIBLING rather than a ::before with a negative z-index. A negative
+  // z-index child would have to escape the card's own box to sit behind its
+  // background, and the app root is `isolate`, so it would land beneath the
+  // desk-wash layers instead of just beneath the card. Painting order does
+  // the job on its own: the halo is declared first, the card is positioned,
+  // so the card paints over it.
+  return (
+    <div className="relative">
+      <div
+        aria-hidden="true"
+        className="absolute -inset-[7px] rounded-[23px] blur-[16px] opacity-45"
+        style={{ background: HERO_GLOW }}
+      />
+      {card}
     </div>
   );
 };
