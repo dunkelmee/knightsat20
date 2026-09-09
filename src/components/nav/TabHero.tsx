@@ -157,7 +157,7 @@ export const TabHero: React.FC<TabHeroProps> = ({
     ),
     sub: isFinalized
       ? 'The official date and venue have been confirmed by the committee. Please submit your RSVP and pledge.'
-      : 'Please share your preferred schedule, venue style, and batch fund pledge so we can finalize the arrangements.',
+      : 'Please share your preferred schedule, venue style, and batch fund pledge so we can finalize the arrangements. Once finalized, you\'ll see the event details on your ticket.',
   };
   // The no-access state still renders the organizer shell, but none of the six
   // tabs — naming one of them in the hero above "You don't have organizer
